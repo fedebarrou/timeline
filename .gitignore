@@ -32,3 +32,4 @@ pnpm-debug.log*
 
 # machine-specific Claude Code settings
 .claude/settings.local.json
+test-results/

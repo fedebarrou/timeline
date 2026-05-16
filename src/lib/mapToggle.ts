@@ -1,5 +1,7 @@
 import { createMap, addMarker, flyTo, type MarkerData } from './mapModern';
-import type { Map as MLMap } from 'maplibre-gl';
+import type maplibregl from 'maplibre-gl';
+
+type MLMap = maplibregl.Map;
 
 let modernMap: MLMap | null = null;
 let initialized = false;

@@ -75,7 +75,7 @@ const allMarkers = events.map((e) => {
   };
 }).filter(Boolean);
 ---
-<BaseLayout title={`${era.data.name} · Línea de tiempo`}>
+<BaseLayout title={`${era.data.name} · Línea de tiempo`} navTitle={`Era · ${era.data.name}`}>
   <style>main { padding-top: 7rem !important; }</style>
   <EraTheme era={era} />
   <TimelineNav events={events} eras={eras} allEras={allEras} currentEraId={era.data.id} />

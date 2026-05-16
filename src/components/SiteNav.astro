@@ -1,4 +1,10 @@
 ---
+interface Props {
+  navTitle?: string;
+}
+const { navTitle } = Astro.props;
+const titleText = navTitle ?? 'Adán → Mahoma';
+
 const links = [
   { href: '/', label: 'Inicio' },
   { href: '/personajes', label: 'Personajes' },
@@ -8,8 +14,8 @@ const links = [
   { href: '/sobre', label: 'Sobre' },
 ];
 ---
-<nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg/95 backdrop-blur-lg border-b border-border shadow-lg">
-  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase hover:text-accent" title="Volver al inicio">Adán → Mahoma</a>
+<nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg shadow-lg">
+  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase hover:text-accent" title="Volver al inicio">{titleText}</a>
   <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70">
     {links.map((l) => (
       <li><a href={l.href} class="hover:opacity-100 hover:text-accent">{l.label}</a></li>

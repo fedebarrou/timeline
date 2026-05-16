@@ -1,4 +1,7 @@
-import maplibregl, { Map as MLMap, Marker as MLMarker } from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
+
+type MLMap = maplibregl.Map;
+type MLMarker = maplibregl.Marker;
 
 const STYLE_URL = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
