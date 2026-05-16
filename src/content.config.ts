@@ -1,7 +1,8 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 const eras = defineCollection({
-  type: 'data',
+  loader: glob({ pattern: '**/*.json', base: './src/content/eras' }),
   schema: z.object({
     id: z.string(),
     order: z.number().int(),
@@ -67,7 +68,7 @@ const proposedLocationSchema = z.object({
 });
 
 const locations = defineCollection({
-  type: 'data',
+  loader: glob({ pattern: '**/*.json', base: './src/content/locations' }),
   schema: z.object({
     id: z.string(),
     ancientName: z.string(),
@@ -125,7 +126,7 @@ const deepDiveLinkSchema = z.object({
 });
 
 const events = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/events' }),
   schema: z.object({
     id: z.string(),
     order: z.number().int(),
@@ -195,7 +196,7 @@ const traditionRefSchema = z.object({
 });
 
 const characters = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/characters' }),
   schema: z.object({
     id: z.string(),
     name: z.string(),
