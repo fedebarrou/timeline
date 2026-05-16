@@ -14,7 +14,7 @@ export function createMap(container: HTMLElement): MLMap {
     style: STYLE_URL,
     center: [35, 30],
     zoom: 3.2,
-    attributionControl: true,
+    attributionControl: {},
   });
 }
 

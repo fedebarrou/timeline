@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
 // TODO: enable after Tasks 22-26
 // import ComparativeBlock from './ComparativeBlock.astro';
 // import SourceBadge from './SourceBadge.astro';
@@ -8,7 +9,7 @@ import type { CollectionEntry } from 'astro:content';
 interface Props { event: CollectionEntry<'events'>; }
 const { event } = Astro.props;
 const data = event.data;
-const { Content } = await event.render();
+const { Content } = await render(event);
 const primaryLocation = data.locations[0];
 ---
 <section
