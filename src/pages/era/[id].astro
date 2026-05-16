@@ -94,7 +94,7 @@ const sceneConfigs = events.map((e) => {
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
   if (!loc) return null;
-  const charPins = (e.data.characters ?? []).map((c: { id: string; role: string }) => {
+  const charPins = (e.data.characters ?? []).map((c: { id: string; role: string; lore?: string }) => {
     const cd = charByIdMap.get(c.id);
     return {
       id: c.id,
@@ -102,6 +102,7 @@ const allMarkers = events.map((e) => {
       portrait: cd?.portrait ?? null,
       avatar: cd?.avatar ?? null,
       role: c.role,                                  // per-event role
+      lore: c.lore ?? null,                          // event-specific narrative lore
       meaning: cd?.alternateNames?.meaning ?? null,  // name meaning
       significance: cd?.significance ?? null,         // short bio
     };

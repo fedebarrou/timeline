@@ -154,6 +154,7 @@ const events = defineCollection({
     characters: z.array(z.object({
       id: z.string(),
       role: z.string(),
+      lore: z.string().optional(),
     })).default([]),
     tags: z.array(z.string()).default([]),
     precededBy: z.array(z.string()).default([]),
