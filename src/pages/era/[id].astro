@@ -8,6 +8,7 @@ import MapToggleButton from '../../components/MapToggleButton.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
 import PlayButton from '../../components/PlayButton.astro';
+import VoiceSettings from '../../components/VoiceSettings.astro';
 
 export async function getStaticPaths() {
   const eras = await getCollection('eras');
@@ -89,4 +90,5 @@ const allMarkers = events.map((e) => {
   </script>
 
   <PlayButton />
+  <VoiceSettings />
 </BaseLayout>

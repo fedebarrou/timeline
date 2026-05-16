@@ -1,0 +1,76 @@
+<div class="voice-settings fixed bottom-6 left-6 z-50" data-voice-settings>
+  <button
+    type="button"
+    class="px-3 py-2 rounded-full border border-border bg-bg/80 backdrop-blur text-xs tracking-wider uppercase hover:border-accent flex items-center gap-2"
+    data-voice-toggle
+    aria-label="Configurar voz"
+  >
+    <span aria-hidden="true">&#9881;</span>
+    <span>Voz</span>
+  </button>
+  <div class="voice-panel hidden absolute bottom-full mb-2 left-0 w-80 rounded-lg border border-border bg-bg/95 backdrop-blur p-4 shadow-lg" data-voice-panel>
+    <h4 class="text-xs tracking-wider uppercase opacity-70 mb-3">Voz del narrador</h4>
+    <select
+      class="w-full bg-surface border border-border rounded px-2 py-2 text-sm text-text"
+      data-voice-select
+    >
+      <option>Cargando voces...</option>
+    </select>
+    <p class="text-[10px] opacity-60 mt-3 leading-snug">
+      Para voces de mejor calidad usá <strong>Microsoft Edge</strong> o <strong>Chrome</strong> en escritorio — incluyen voces neurales como "Microsoft Pablo Online (Natural)".
+    </p>
+    <button
+      type="button"
+      class="mt-3 text-xs underline opacity-70 hover:opacity-100"
+      data-voice-test
+    >
+      &#9654; Probar voz
+    </button>
+  </div>
+</div>
+
+<script>
+  import { getSpanishVoices, setVoice, getCurrentVoiceName, speak, onVoicesChanged } from '../lib/tts';
+
+  const root = document.querySelector<HTMLElement>('[data-voice-settings]');
+  if (root) {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-voice-toggle]')!;
+    const panel = root.querySelector<HTMLElement>('[data-voice-panel]')!;
+    const select = root.querySelector<HTMLSelectElement>('[data-voice-select]')!;
+    const testBtn = root.querySelector<HTMLButtonElement>('[data-voice-test]')!;
+
+    function populate() {
+      const voices = getSpanishVoices();
+      const current = getCurrentVoiceName();
+      select.innerHTML = '';
+      if (voices.length === 0) {
+        select.innerHTML = '<option>Tu navegador no expone voces en español.</option>';
+        return;
+      }
+      voices.forEach((v) => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})`;
+        if (v.name === current) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+    populate();
+    onVoicesChanged(populate);
+
+    select.addEventListener('change', () => {
+      setVoice(select.value);
+    });
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panel.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target as Node)) panel.classList.add('hidden');
+    });
+    testBtn.addEventListener('click', () => {
+      speak('Génesis. En el principio creó Dios los cielos y la tierra. Y el espíritu de Dios se movía sobre la faz de las aguas.', { rate: 0.85 });
+    });
+  }
+</script>
