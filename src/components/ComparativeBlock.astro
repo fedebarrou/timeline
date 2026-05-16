@@ -17,28 +17,35 @@ interface Props {
 }
 const { comparative } = Astro.props;
 const cols = [
-  { key: 'tora',   label: 'TORÁ',   icon: '📜', data: comparative.tora },
-  { key: 'biblia', label: 'BIBLIA', icon: '✝',  data: comparative.biblia },
-  { key: 'coran',  label: 'CORÁN',  icon: '☪',  data: comparative.coran },
+  { key: 'tora',   label: 'TORÁ',   icon: '📜', data: comparative.tora,   accent: '#d4a574' },
+  { key: 'biblia', label: 'BIBLIA', icon: '✝',  data: comparative.biblia, accent: '#e8b87a' },
+  { key: 'coran',  label: 'CORÁN',  icon: '☪',  data: comparative.coran,  accent: '#8b9bc4' },
 ].filter((c) => c.data);
 ---
 <div class="comparative mt-10 border border-border rounded-lg p-5 bg-surface/40" data-comparative>
-  <p class="text-xs tracking-[0.3em] uppercase opacity-60 mb-4">Las tradiciones difieren</p>
-  <div class="grid md:grid-cols-3 gap-4">
+  <p class="text-xs tracking-[0.3em] uppercase opacity-60 mb-5">Las tradiciones difieren</p>
+  <div class="grid grid-cols-3 gap-3 md:gap-5">
     {cols.map((col, i) => (
-      <div class="tradition-col border-l-2 border-primary/60 pl-4" data-stagger-index={i}>
-        <div class="text-[10px] tracking-[0.3em] opacity-70 mb-1">{col.icon} {col.label}</div>
-        <div class="text-xs opacity-60 mb-2">{col.data!.citation}</div>
-        <p class="text-sm leading-relaxed">{col.data!.summary}</p>
+      <div
+        class="tradition-col flex flex-col gap-2 p-3 rounded-md bg-bg/30 border-t-2"
+        style={`border-top-color: ${col.accent}`}
+        data-stagger-index={i}
+      >
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-block w-2 h-2 rounded-full" style={`background: ${col.accent}`}></span>
+          <span class="text-[10px] tracking-[0.3em] opacity-80">{col.icon} {col.label}</span>
+        </div>
+        <div class="text-[11px] opacity-60">{col.data!.citation}</div>
+        <p class="text-sm leading-relaxed flex-1">{col.data!.summary}</p>
         {col.data!.fullText && (
-          <details class="mt-3 text-xs opacity-80">
-            <summary class="cursor-pointer hover:opacity-100">+ ver cita textual</summary>
-            <blockquote class="mt-2 italic border-l-2 border-muted pl-3">{col.data!.fullText}</blockquote>
+          <details class="mt-2 text-xs opacity-80">
+            <summary class="cursor-pointer hover:opacity-100 select-none">+ ver cita textual</summary>
+            <blockquote class="mt-2 italic border-l-2 border-muted pl-3 text-[12px]">{col.data!.fullText}</blockquote>
           </details>
         )}
         {col.data!.keyDifferences.length > 0 && (
-          <ul class="mt-3 text-xs space-y-1">
-            {col.data!.keyDifferences.map((d) => <li class="opacity-70">• {d}</li>)}
+          <ul class="mt-2 text-xs space-y-1">
+            {col.data!.keyDifferences.map((d) => <li class="opacity-70 leading-snug">• {d}</li>)}
           </ul>
         )}
       </div>
