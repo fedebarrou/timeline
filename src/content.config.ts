@@ -201,6 +201,7 @@ const characters = defineCollection({
   schema: z.object({
     id: z.string(),
     name: z.string(),
+    group: z.enum(['patriarcas', 'vigilantes', 'descendientes-cain', 'linaje-set']).optional(),
     portrait: z.string().optional(),
     alternateNames: z.object({
       hebrew: z.string().optional(),

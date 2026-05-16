@@ -3,49 +3,94 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import { getCollection } from 'astro:content';
 
-const chars = (await getCollection('characters')).sort((a, b) =>
-  (a.data.birthYear ?? 0) - (b.data.birthYear ?? 0));
+const allChars = await getCollection('characters');
+
+const GROUPS = [
+  { id: 'patriarcas',         label: 'Patriarcas pre-diluvio',                description: 'La línea de Adán hasta Noé y sus hijos, según las genealogías canónicas.' },
+  { id: 'linaje-set',         label: 'Línea de Set',                          description: 'Genealogía completa entre Set y Noé que se menciona en Génesis 5.' },
+  { id: 'descendientes-cain', label: 'Descendientes de Caín',                 description: 'La rama paralela: los inventores de la civilización temprana — y su corrupción.' },
+  { id: 'vigilantes',         label: 'Vigilantes y figuras apócrifas',        description: 'Ángeles caídos, Nephilim y tradiciones extra-bíblicas (Libro de Enoc, Cábala).' },
+] as const;
+
+function byBirth(a: any, b: any) {
+  return (a.data.birthYear ?? 99999) - (b.data.birthYear ?? 99999);
+}
+const charsByGroup = new Map<string, typeof allChars>();
+GROUPS.forEach((g) => {
+  charsByGroup.set(g.id, allChars.filter((c) => c.data.group === g.id).sort(byBirth));
+});
+const ungrouped = allChars.filter((c) => !c.data.group);
 ---
 <BaseLayout title="Personajes">
-  <section class="px-6 py-16 max-w-5xl mx-auto">
+  <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Personajes</h1>
-    <p class="opacity-70 mb-10">Vidas y menciones en las tres tradiciones.</p>
-    <ul class="grid md:grid-cols-2 gap-6">
-      {chars.map((c) => (
-        <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
-          <a href={`/personajes/${c.data.id}`}>
-            <div class="flex items-start gap-4">
-              <PortraitPlaceholder name={c.data.name} src={c.data.portrait} size="md" />
-              <div>
-                <h2 class="font-display text-2xl">{c.data.name}</h2>
-                {c.data.alternateNames.meaning && (
-                  <p class="text-sm md:text-base italic opacity-70 mt-2 font-display">"{c.data.alternateNames.meaning}"</p>
-                )}
-                <div class="lifespan-stats mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                  {c.data.birthYear !== undefined && (
-                    <span class="inline-flex items-baseline gap-1 opacity-80">
-                      <span class="opacity-60 tracking-wider uppercase text-[10px]">★ Nació</span>
-                      <span class="font-display text-sm">año {c.data.birthYear}</span>
-                    </span>
-                  )}
-                  {c.data.deathYear !== undefined && (
-                    <span class="inline-flex items-baseline gap-1 opacity-80">
-                      <span class="opacity-60 tracking-wider uppercase text-[10px]">† Murió</span>
-                      <span class="font-display text-sm">año {c.data.deathYear}</span>
-                    </span>
-                  )}
-                  {c.data.ageAtDeath && (
-                    <span class="inline-flex items-baseline gap-1 px-2 py-1 rounded-full border border-primary/40">
-                      <span class="font-display text-base text-primary">{c.data.ageAtDeath}</span>
-                      <span class="opacity-70 text-[10px] tracking-wider uppercase">años vividos</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-      ))}
-    </ul>
+    <p class="opacity-70 mb-12">Vidas y menciones en las tres tradiciones — agrupados por linaje.</p>
+
+    {GROUPS.map((group) => {
+      const chars = charsByGroup.get(group.id) ?? [];
+      if (chars.length === 0) return null;
+      return (
+        <div class="character-group mb-16">
+          <header class="mb-6 border-b border-border pb-3">
+            <h2 class="font-display text-2xl">{group.label}</h2>
+            <p class="text-sm opacity-70 mt-1">{group.description}</p>
+          </header>
+          <ul class="grid md:grid-cols-2 gap-6">
+            {chars.map((c) => (
+              <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
+                <a href={`/personajes/${c.data.id}`}>
+                  <div class="flex items-start gap-4">
+                    <PortraitPlaceholder name={c.data.name} src={c.data.portrait ?? undefined} size="md" />
+                    <div class="flex-1">
+                      <h3 class="font-display text-2xl">{c.data.name}</h3>
+                      {c.data.alternateNames.meaning && (
+                        <p class="text-sm md:text-base italic opacity-70 mt-2 font-display">"{c.data.alternateNames.meaning}"</p>
+                      )}
+                      <div class="lifespan-stats mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                        {c.data.birthYear !== undefined && (
+                          <span class="inline-flex items-baseline gap-1 opacity-80">
+                            <span class="opacity-60 tracking-wider uppercase text-[10px]">★ Nació</span>
+                            <span class="font-display text-sm">año {c.data.birthYear}</span>
+                          </span>
+                        )}
+                        {c.data.deathYear !== undefined && (
+                          <span class="inline-flex items-baseline gap-1 opacity-80">
+                            <span class="opacity-60 tracking-wider uppercase text-[10px]">† Murió</span>
+                            <span class="font-display text-sm">año {c.data.deathYear}</span>
+                          </span>
+                        )}
+                        {c.data.ageAtDeath && (
+                          <span class="inline-flex items-baseline gap-1 px-2 py-1 rounded-full border border-primary/40">
+                            <span class="font-display text-base text-primary">{c.data.ageAtDeath}</span>
+                            <span class="opacity-70 text-[10px] tracking-wider uppercase">años vividos</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+
+    {ungrouped.length > 0 && (
+      <div class="character-group mb-16">
+        <header class="mb-6 border-b border-border pb-3">
+          <h2 class="font-display text-2xl">Sin clasificar</h2>
+        </header>
+        <ul class="grid md:grid-cols-2 gap-6">
+          {ungrouped.map((c) => (
+            <li class="border border-border rounded-lg p-5">
+              <a href={`/personajes/${c.data.id}`}>
+                <h3 class="font-display text-2xl">{c.data.name}</h3>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
   </section>
 </BaseLayout>

@@ -21,12 +21,13 @@ locations.forEach((l) => {
           {items.map((l) => (
             <li class="border border-border rounded-lg overflow-hidden bg-surface/30 hover:border-accent transition-colors">
               {l.data.portrait ? (
-                <div class="aspect-[16/9] overflow-hidden">
+                <div class="aspect-[16/9] overflow-hidden relative">
                   <img
                     src={l.data.portrait}
                     alt={l.data.ancientName}
                     loading="lazy"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover scale-125"
+                    style="object-position: center;"
                   />
                 </div>
               ) : (

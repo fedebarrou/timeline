@@ -74,7 +74,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       const safeInitials = initials.replace(/'/g, "\\'");
       fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--era-primary);font-family:var(--era-display,'Cinzel',serif);">${
         char.portrait
-          ? `<img src="${safePortrait}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentNode.textContent='${safeInitials}'" />`
+          ? `<img src="${safePortrait}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.display='none';this.parentNode.textContent='${safeInitials}'" />`
           : initials
       }</div>`;
 
@@ -104,7 +104,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     locGroup.setAttribute('data-marker-location-portrait', '');
     locGroup.setAttribute('opacity', '0');
 
-    const W = 64, H = 40;
+    const W = 90, H = 50;
     const offsetX = 12;
     const offsetY = -28 - H; // sit above the marker dot
 
@@ -112,8 +112,8 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     fo.setAttribute('x', `${offsetX}`);
     fo.setAttribute('y', `${offsetY}`);
     fo.setAttribute('width', `${W}`);
-    fo.setAttribute('height', `${H + 10}`); // extra room for caption
-    fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:2px;align-items:center;font-family:var(--era-display,'Cinzel',serif);"><div style="width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);box-shadow:0 2px 6px rgba(0,0,0,0.4);"><img src="${marker.locationPortrait.replace(/"/g, '&quot;')}" alt="${(marker.locationName ?? '').replace(/"/g, '&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none'" /></div>${marker.locationName ? `<div style="font-size:5px;color:var(--era-text);text-align:center;letter-spacing:0.5px;text-transform:uppercase;opacity:0.8;">${marker.locationName.replace(/</g, '&lt;')}</div>` : ''}</div>`;
+    fo.setAttribute('height', `${H + 22}`); // extra room for wrapped caption
+    fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:2px;align-items:center;font-family:var(--era-display,'Cinzel',serif);"><div style="width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);box-shadow:0 2px 6px rgba(0,0,0,0.4);"><img src="${marker.locationPortrait.replace(/"/g, '&quot;')}" alt="${(marker.locationName ?? '').replace(/"/g, '&quot;')}" style="width:140%;height:140%;object-fit:cover;display:block;margin-left:-20%;margin-top:-20%;" onerror="this.style.display='none'" /></div>${marker.locationName ? `<div style="font-size:6px;color:var(--era-text);text-align:center;letter-spacing:0.3px;text-transform:uppercase;opacity:0.85;line-height:1.2;white-space:normal;word-wrap:break-word;max-width:${W}px;">${marker.locationName.replace(/</g, '&lt;')}</div>` : ''}</div>`;
 
     locGroup.appendChild(fo);
     g.appendChild(locGroup);

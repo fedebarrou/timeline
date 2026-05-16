@@ -16,7 +16,7 @@ const sizeClasses = {
 <div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden flex-shrink-0`} title={name}>
   {src ? (
     <>
-      <img src={src} alt={name} loading="lazy" class="w-full h-full object-cover" data-portrait-img />
+      <img src={src} alt={name} loading="lazy" class="w-full h-full object-cover object-top" data-portrait-img />
       <div class="portrait-fallback absolute inset-0 flex items-center justify-center opacity-0" data-portrait-fallback>
         <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
         <span class="relative text-primary tracking-wider">{initials}</span>
