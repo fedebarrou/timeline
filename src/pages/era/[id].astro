@@ -7,6 +7,7 @@ import ModernMapLayer from '../../components/ModernMapLayer.astro';
 import MapToggleButton from '../../components/MapToggleButton.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
+import PlayButton from '../../components/PlayButton.astro';
 
 export async function getStaticPaths() {
   const eras = await getCollection('eras');
@@ -80,4 +81,12 @@ const allMarkers = events.map((e) => {
       initScrollytelling(sceneConfigs);
     });
   </script>
+
+  <script>
+    import { initNarrators } from '../../lib/narratorWiring';
+    document.addEventListener('DOMContentLoaded', initNarrators);
+    if (document.readyState !== 'loading') initNarrators();
+  </script>
+
+  <PlayButton />
 </BaseLayout>
