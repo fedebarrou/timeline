@@ -1,0 +1,55 @@
+{
+  "id": "primordial",
+  "order": 1,
+  "name": "Primordial",
+  "tagline": "Cuna del mundo",
+  "yearRange": { "from": 0, "to": 1657 },
+  "gregorianRange": { "from": -3760, "to": -2103 },
+  "palette": {
+    "bg": "#1a0f0a",
+    "bgGradient": "linear-gradient(180deg,#1a0f0a 0%,#2a1810 100%)",
+    "surface": "#2a1f17",
+    "primary": "#d4a574",
+    "secondary": "#8b5a3c",
+    "accent": "#e8b87a",
+    "text": "#e8d5b7",
+    "muted": "rgba(232,213,183,.55)",
+    "border": "rgba(212,165,116,.2)"
+  },
+  "typography": {
+    "display": "'Cinzel', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 400,
+    "letterSpacing": "0.08em"
+  },
+  "texture": {
+    "type": "cave-rock",
+    "url": "/textures/primordial.png",
+    "blendMode": "multiply",
+    "opacity": 0.12
+  },
+  "motifs": {
+    "ornaments": ["/svg/motifs/primordial-glyph.svg"],
+    "dividers": "/svg/motifs/primordial-divider.svg",
+    "iconStyle": "crude"
+  },
+  "map": {
+    "paperColor": "#2a1810",
+    "landStroke": "#d4a574",
+    "landFill": "transparent",
+    "waterStyle": "wavy-lines",
+    "routeStyle": "dashed-ember",
+    "labelFont": "'Cinzel', serif",
+    "labelColor": "#d4a574"
+  },
+  "ambience": {
+    "particles": "embers",
+    "sound": null,
+    "scrollFeel": "heavy"
+  },
+  "transition": {
+    "intoNext": "dawn-warming",
+    "duration": 2000
+  }
+}
