@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection, getEntry } from 'astro:content';
+import EventScene from '../components/EventScene.astro';
+import EraTransition from '../components/EraTransition.astro';
+import ManuscriptMap from '../components/ManuscriptMap.astro';
+import ModernMapLayer from '../components/ModernMapLayer.astro';
+import MapToggleButton from '../components/MapToggleButton.astro';
+import EraTheme from '../components/EraTheme.astro';
+
+const events = (await getCollection('events')).sort((a, b) => a.data.order - b.data.order);
+const eras = (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order);
+
+type EventEntry = (typeof events)[number];
+type EraEntry = (typeof eras)[number];
+type Scene = { type: 'event'; event: EventEntry } | { type: 'transition'; from: EraEntry; to: EraEntry };
+
+const scenes: Scene[] = [];
+let lastEra: string | null = null;
+for (const event of events) {
+  if (lastEra && lastEra !== event.data.era) {
+    const from = await getEntry('eras', lastEra);
+    const to = await getEntry('eras', event.data.era);
+    if (from && to) scenes.push({ type: 'transition', from, to });
+  }
+  scenes.push({ type: 'event', event });
+  lastEra = event.data.era;
+}
+
+const sceneConfigs = events.map((e) => ({
+  eventId: e.data.id,
+  eraId: e.data.era,
+  svgPosition: e.data.locations[0]?.svgPosition ?? [500, 300],
+  coords: e.data.locations[0]?.coords,
+}));
+
+const allMarkers = events.flatMap((e) =>
+  e.data.locations.map((l) => ({
+    id: `${e.data.id}-${l.id}`,
+    svgPosition: l.svgPosition,
+    label: l.ancientName,
+    coords: l.coords,
+  }))
+);
+---
+<BaseLayout title="Línea de tiempo · Adán → Mahoma">
+  {eras.map((era) => <EraTheme era={era} />)}
+
+  <div class="relative">
+    <div class="map-sticky hidden lg:block fixed top-16 right-0 w-[60%] h-[calc(100vh-4rem)]">
+      <ManuscriptMap />
+      <ModernMapLayer />
+      <MapToggleButton />
+    </div>
+
+    <div class="scenes">
+      {scenes.map((s) => s.type === 'transition'
+        ? <EraTransition from={s.from} to={s.to} />
+        : <EventScene event={s.event} />
+      )}
+    </div>
+  </div>
+
+  <script define:vars={{ sceneConfigs, allMarkers }}>
+    Promise.all([
+      import('../lib/sceneController'),
+      import('../lib/mapMarkers'),
+      import('../lib/mapToggle'),
+    ]).then(([{ initScrollytelling }, { renderMarker }, { registerMarkers }]) => {
+      const svg = document.querySelector('[data-map-root]');
+      if (svg) {
+        allMarkers.forEach((m) => renderMarker(svg, m));
+      }
+      registerMarkers(allMarkers.filter((m) => m.coords).map((m) => ({
+        id: m.id, coords: m.coords, label: m.label,
+      })));
+      initScrollytelling(sceneConfigs);
+    });
+  </script>
+</BaseLayout>
