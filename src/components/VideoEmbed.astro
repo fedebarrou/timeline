@@ -1,0 +1,50 @@
+---
+interface Props {
+  video?: {
+    provider: 'youtube' | 'vimeo' | 'internal';
+    id: string;
+    title?: string;
+    creator: string;
+    duration: string;
+  };
+}
+const { video } = Astro.props;
+const embedUrl = video
+  ? video.provider === 'youtube'
+    ? `https://www.youtube-nocookie.com/embed/${video.id}`
+    : video.provider === 'vimeo'
+      ? `https://player.vimeo.com/video/${video.id}`
+      : ''
+  : '';
+---
+{video && (
+  <div class="video-embed mt-6" data-video-embed>
+    <button
+      type="button"
+      class="block w-full aspect-video rounded-lg bg-surface border border-border hover:border-accent transition-colors text-left p-6"
+      data-video-thumbnail
+      data-embed-url={embedUrl}
+    >
+      <span class="text-xs tracking-wider opacity-60">▶ VER EXPLICACIÓN EN VIDEO</span>
+      <p class="font-display text-xl mt-2">{video.title ?? video.creator}</p>
+      <p class="text-xs opacity-60 mt-1">{video.creator} · {video.duration}</p>
+    </button>
+  </div>
+)}
+
+<script>
+  document.querySelectorAll('[data-video-embed]').forEach((wrapper) => {
+    const btn = wrapper.querySelector<HTMLButtonElement>('[data-video-thumbnail]');
+    btn?.addEventListener('click', () => {
+      const url = btn.dataset.embedUrl;
+      if (!url) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.className = 'w-full aspect-video rounded-lg';
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture';
+      iframe.allowFullscreen = true;
+      wrapper.innerHTML = '';
+      wrapper.appendChild(iframe);
+    });
+  });
+</script>
