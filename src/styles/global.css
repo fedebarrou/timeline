@@ -31,3 +31,16 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+@keyframes marker-passive-pulse {
+  0%   { r: 5;  opacity: 0.5; }
+  50%  { r: 10; opacity: 0.0; }
+  100% { r: 5;  opacity: 0.5; }
+}
+.marker-passive-pulse {
+  animation: marker-passive-pulse 3s ease-in-out infinite;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marker-passive-pulse { animation: none; opacity: 0.3; }
+}

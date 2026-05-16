@@ -25,12 +25,23 @@ const events = allEvents
   .sort((a, b) => a.data.order - b.data.order);
 const eras = [era];
 
-const sceneConfigs = events.map((e) => ({
-  eventId: e.data.id,
-  eraId: e.data.era,
-  svgPosition: e.data.locations[0]?.svgPosition ?? [500, 300],
-  coords: e.data.locations[0]?.coords,
-}));
+const sceneConfigs = events.map((e) => {
+  const primaryLoc = e.data.locations[0];
+  const locById = new Map(e.data.locations.map((l: { id: string; svgPosition: [number, number] }) => [l.id, l.svgPosition]));
+  const journeys = (e.data.journey ?? []).map((j: { from: string; to: string; style: string }) => {
+    const from = locById.get(j.from);
+    const to = locById.get(j.to);
+    if (!from || !to) return null;
+    return { from, to, style: j.style };
+  }).filter(Boolean);
+  return {
+    eventId: e.data.id,
+    eraId: e.data.era,
+    svgPosition: primaryLoc?.svgPosition ?? [500, 300],
+    coords: primaryLoc?.coords,
+    journeys,
+  };
+});
 
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
@@ -40,6 +51,7 @@ const allMarkers = events.map((e) => {
     svgPosition: loc.svgPosition,
     label: e.data.title + (loc.ancientName ? ` (${loc.ancientName})` : ''),
     coords: loc.coords,
+    characterIds: (e.data.characters ?? []).map((c: { id: string }) => c.id),
   };
 }).filter(Boolean);
 ---
@@ -55,7 +67,7 @@ const allMarkers = events.map((e) => {
   </div>
 
   <div class="relative">
-    <div class="map-sticky hidden lg:block fixed top-[7rem] right-0 w-[60%] h-[calc(100vh-7rem)]">
+    <div class="map-sticky hidden md:block fixed top-[7rem] right-0 w-[55%] md:w-[50%] lg:w-[60%] h-[calc(100vh-7rem)]">
       <ManuscriptMap />
       <ModernMapLayer />
       <MapToggleButton />
