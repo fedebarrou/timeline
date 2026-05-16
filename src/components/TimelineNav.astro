@@ -22,7 +22,7 @@ const prevEra = currentEraIdx > 0 ? sortedAllEras[currentEraIdx - 1] : null;
 const nextHref = nextEra ? `/era/${nextEra.data.id}` : '/';
 const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 ---
-<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg/80 backdrop-blur border-b border-border" data-timeline-nav>
+<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg/95 backdrop-blur-lg border-b border-border shadow-lg" data-timeline-nav>
   <div class="relative h-8 max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-8">
 
     {/* Left slot: back to all eras */}
