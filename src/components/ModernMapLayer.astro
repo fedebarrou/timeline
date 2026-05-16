@@ -1,0 +1,19 @@
+---
+---
+<div class="modern-map-wrapper hidden absolute inset-0" data-modern-map-wrapper>
+  <div data-modern-map class="w-full h-full"></div>
+</div>
+
+<style>
+  .modern-marker .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--era-accent);
+    box-shadow: 0 0 12px var(--era-accent);
+  }
+  .modern-marker .ring {
+    position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid var(--era-primary); opacity: 0.4;
+  }
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
