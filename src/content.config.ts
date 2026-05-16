@@ -203,6 +203,7 @@ const characters = defineCollection({
     name: z.string(),
     group: z.enum(['patriarcas', 'vigilantes', 'descendientes-cain', 'linaje-set']).optional(),
     portrait: z.string().optional(),
+    avatar: z.string().optional(),
     alternateNames: z.object({
       hebrew: z.string().optional(),
       arabic: z.string().optional(),

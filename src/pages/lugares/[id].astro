@@ -19,6 +19,12 @@ const eventsHere = events.filter((e) => data.events?.includes(e.data.id));
   <TranslucentBackdrop src={data.portrait} alt={data.ancientName} />
 
   <article class="relative z-10 px-6 py-16 max-w-4xl mx-auto">
+    <a href="/lugares" class="back-link inline-flex items-center gap-2 text-xs tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity mb-8">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Volver a lugares
+    </a>
     <header class="mb-10">
       <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-2">Lugar · {data.region}</p>
       <h1 class="font-display text-5xl">{data.ancientName}</h1>

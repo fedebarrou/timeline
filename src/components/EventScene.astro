@@ -38,6 +38,7 @@ const charactersInEvent = await Promise.all(
       role: c.role,
       name: ch.data.name,
       portrait: ch.data.portrait,
+      avatar: ch.data.avatar,
       meaning: ch.data.alternateNames?.meaning,
       birthYear: ch.data.birthYear,
       deathYear: ch.data.deathYear,
@@ -82,7 +83,7 @@ const charactersInEvent = await Promise.all(
                 class="char-pin group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-surface/40 hover:border-accent transition-colors"
                 title={`Ver perfil de ${c.name}`}
               >
-                <PortraitPlaceholder name={c.name} src={c.portrait ?? undefined} size="sm" />
+                <PortraitPlaceholder name={c.name} src={c.portrait ?? undefined} avatar={c.avatar ?? undefined} size="sm" />
                 <span class="text-sm font-display">{c.name}</span>
                 <span class="text-[10px] tracking-wider uppercase opacity-60">{c.role.replace(/-/g, ' ')}</span>
 

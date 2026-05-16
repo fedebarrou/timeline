@@ -16,55 +16,62 @@ const { src, alt = '' } = Astro.props;
     position: fixed;
     top: 4rem;
     right: 0;
-    width: 55vw;
+    width: 60vw;
     height: calc(100vh - 4rem);
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    /* feather edges using mask + gradient */
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      rgba(0,0,0,0.85) 28%,
-      rgba(0,0,0,1) 55%,
-      rgba(0,0,0,0.85) 85%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      rgba(0,0,0,0.85) 28%,
-      rgba(0,0,0,1) 55%,
-      rgba(0,0,0,0.85) 85%,
-      transparent 100%
-    );
+    /* Aggressive horizontal AND vertical mask so all edges fade to transparent */
+    -webkit-mask-image:
+      linear-gradient(to left,
+        transparent 0%,
+        rgba(0,0,0,0.4) 8%,
+        rgba(0,0,0,1) 35%,
+        rgba(0,0,0,1) 65%,
+        rgba(0,0,0,0.4) 92%,
+        transparent 100%),
+      linear-gradient(to top,
+        transparent 0%,
+        rgba(0,0,0,1) 18%,
+        rgba(0,0,0,1) 82%,
+        transparent 100%);
+    -webkit-mask-composite: source-in;
+            mask-image:
+      linear-gradient(to left,
+        transparent 0%,
+        rgba(0,0,0,0.4) 8%,
+        rgba(0,0,0,1) 35%,
+        rgba(0,0,0,1) 65%,
+        rgba(0,0,0,0.4) 92%,
+        transparent 100%),
+      linear-gradient(to top,
+        transparent 0%,
+        rgba(0,0,0,1) 18%,
+        rgba(0,0,0,1) 82%,
+        transparent 100%);
+            mask-composite: intersect;
   }
+  /* Era-bg color soft halo on top and bottom (extra blending into page bg) */
   .translucent-backdrop::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, var(--era-bg) 0%, transparent 12%, transparent 88%, var(--era-bg) 100%);
+    background:
+      linear-gradient(to bottom, var(--era-bg) 0%, transparent 18%, transparent 82%, var(--era-bg) 100%),
+      linear-gradient(to left, transparent 0%, transparent 65%, var(--era-bg) 100%);
     z-index: 1;
     pointer-events: none;
   }
   .translucent-backdrop img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
-    opacity: 0.42;
-    filter: blur(0.3px) saturate(0.9);
+    object-fit: contain;
+    object-position: right bottom;
+    opacity: 0.55;
+    filter: blur(0.4px) saturate(0.85);
   }
   @media (max-width: 768px) {
-    .translucent-backdrop {
-      width: 80vw;
-      opacity: 0.7;
-    }
-    .translucent-backdrop img { opacity: 0.25; }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .translucent-backdrop img {
-      transition: opacity 800ms ease;
-    }
+    .translucent-backdrop { width: 85vw; }
+    .translucent-backdrop img { opacity: 0.3; }
   }
 </style>

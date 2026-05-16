@@ -40,7 +40,7 @@ const ungrouped = allChars.filter((c) => !c.data.group);
               <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
                 <a href={`/personajes/${c.data.id}`}>
                   <div class="flex items-start gap-4">
-                    <PortraitPlaceholder name={c.data.name} src={c.data.portrait ?? undefined} size="md" />
+                    <PortraitPlaceholder name={c.data.name} src={c.data.portrait ?? undefined} avatar={c.data.avatar ?? undefined} size="md" />
                     <div class="flex-1">
                       <h3 class="font-display text-2xl">{c.data.name}</h3>
                       {c.data.alternateNames.meaning && (

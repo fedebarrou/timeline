@@ -1,11 +1,13 @@
 ---
 interface Props {
   name: string;
-  src?: string;
+  src?: string;          // portrait (full body)
+  avatar?: string;       // closeup / headshot — preferred for thumbnails
   hint?: string;
   size?: 'sm' | 'md' | 'lg';
 }
-const { name, src, hint, size = 'md' } = Astro.props;
+const { name, src, avatar, hint, size = 'md' } = Astro.props;
+const imageSrc = avatar ?? src;
 const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const sizeClasses = {
   sm: 'w-12 h-12 text-base',
@@ -14,9 +16,9 @@ const sizeClasses = {
 }[size];
 ---
 <div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden flex-shrink-0`} title={name}>
-  {src ? (
+  {imageSrc ? (
     <>
-      <img src={src} alt={name} loading="lazy" class="w-full h-full object-cover object-top" data-portrait-img />
+      <img src={imageSrc} alt={name} loading="lazy" class="w-full h-full object-cover object-top" data-portrait-img />
       <div class="portrait-fallback absolute inset-0 flex items-center justify-center opacity-0" data-portrait-fallback>
         <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
         <span class="relative text-primary tracking-wider">{initials}</span>

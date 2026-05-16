@@ -1,4 +1,5 @@
 import { gsap } from './scrollytelling';
+import { showPreview, movePreview, hidePreview } from './mapHoverPreview';
 
 // ---------------------------------------------------------------------------
 // Tooltip helpers (shared across all map interactive elements)
@@ -90,6 +91,7 @@ export interface CharacterPin {
   id: string;
   name: string;
   portrait?: string | null;
+  avatar?: string | null;
   role?: string;
   meaning?: string | null;
   significance?: string | null;
@@ -167,10 +169,11 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       fo.setAttribute('width', `${size}`);
       fo.setAttribute('height', `${size}`);
 
-      const safePortrait = char.portrait ? char.portrait.replace(/"/g, '&quot;') : '';
+      const imgSrc = char.avatar ?? char.portrait ?? '';
+      const safePortrait = imgSrc ? imgSrc.replace(/"/g, '&quot;') : '';
       const safeInitials = initials.replace(/'/g, "\\'");
       fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--era-primary);font-family:var(--era-display,'Cinzel',serif);">${
-        char.portrait
+        imgSrc
           ? `<img src="${safePortrait}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.display='none';this.parentNode.textContent='${safeInitials}'" />`
           : initials
       }</div>`;
@@ -196,13 +199,13 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       pinWrap.style.pointerEvents = 'auto';
 
       const showCharTip = (e: MouseEvent) => {
-        showMapTooltip(e, {
+        showPreview(e, {
+          kind: 'character',
           title: char.name,
-          subtitle: char.meaning ? `"${char.meaning}"` : undefined,
-          role: char.role,
-          body: char.significance
-            ? char.significance.slice(0, 160) + (char.significance.length > 160 ? '…' : '')
-            : undefined,
+          imageSrc: char.avatar ?? char.portrait ?? null,
+          subtitle: char.meaning ?? null,
+          role: char.role ?? null,
+          body: char.significance ?? null,
         });
         // Scale up the pin
         pinWrap.style.transition = 'transform 200ms ease';
@@ -210,9 +213,9 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         pinWrap.setAttribute('data-base-transform', base);
         pinWrap.setAttribute('transform', `${base} scale(1.4)`);
       };
-      const moveCharTip = (e: MouseEvent) => moveMapTooltip(e);
+      const moveCharTip = (e: MouseEvent) => movePreview(e);
       const hideCharTip = () => {
-        hideMapTooltip();
+        hidePreview();
         const base = pinWrap.getAttribute('data-base-transform');
         if (base) pinWrap.setAttribute('transform', base);
       };
@@ -250,12 +253,13 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     locGroup.style.pointerEvents = 'auto';
 
     const showLocTip = (e: MouseEvent) => {
-      showMapTooltip(e, {
+      showPreview(e, {
+        kind: 'location',
         title: marker.locationName ?? '',
-        subtitle: marker.locationModernName ?? undefined,
-        body: marker.locationDescription
-          ? marker.locationDescription.slice(0, 200) + (marker.locationDescription.length > 200 ? '…' : '')
-          : undefined,
+        imageSrc: marker.locationPortrait ?? null,
+        subtitle: marker.locationModernName ?? null,
+        role: null,
+        body: marker.locationDescription ?? null,
       });
       // Scale up the location portrait inside locGroup
       const innerFo = locGroup.querySelector('foreignObject');
@@ -265,9 +269,9 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         (innerFo as SVGElement).style.transform = 'scale(1.18)';
       }
     };
-    const moveLocTip = (e: MouseEvent) => moveMapTooltip(e);
+    const moveLocTip = (e: MouseEvent) => movePreview(e);
     const hideLocTip = () => {
-      hideMapTooltip();
+      hidePreview();
       const innerFo = locGroup.querySelector('foreignObject');
       if (innerFo) (innerFo as SVGElement).style.transform = 'scale(1)';
     };
