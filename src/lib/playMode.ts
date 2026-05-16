@@ -3,6 +3,8 @@ import { speak, cancel as cancelTTS, onEnd } from './tts';
 let playing = false;
 let currentIndex = 0;
 let scenes: HTMLElement[] = [];
+let jumpRequested = false;
+let onIndexChange: ((i: number, total: number) => void) | null = null;
 
 function scrollTo(el: HTMLElement) {
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -18,7 +20,8 @@ function getNarrationText(scene: HTMLElement): string {
 
 async function playOne(scene: HTMLElement): Promise<void> {
   scrollTo(scene);
-  await new Promise((r) => setTimeout(r, 1500)); // wait for scroll
+  await new Promise((r) => setTimeout(r, 1500));
+  if (!playing) return;
   const text = getNarrationText(scene);
   if (!text) return;
   return new Promise((resolve) => {
@@ -27,28 +30,85 @@ async function playOne(scene: HTMLElement): Promise<void> {
   });
 }
 
+function refreshScenes() {
+  scenes = Array.from(document.querySelectorAll<HTMLElement>('[data-event-scene]'));
+}
+
 export async function startPlay(updateUI?: (i: number, total: number) => void) {
   if (playing) return;
-  scenes = Array.from(document.querySelectorAll<HTMLElement>('[data-event-scene]'));
+  refreshScenes();
   if (scenes.length === 0) return;
   playing = true;
+  onIndexChange = updateUI ?? null;
   currentIndex = findClosestSceneIndex();
   while (playing && currentIndex < scenes.length) {
-    if (updateUI) updateUI(currentIndex + 1, scenes.length);
+    if (onIndexChange) onIndexChange(currentIndex + 1, scenes.length);
     await playOne(scenes[currentIndex]);
     if (!playing) break;
-    await new Promise((r) => setTimeout(r, 1500)); // pause between events
+
+    if (jumpRequested) {
+      // currentIndex was set by jumpToEventId; don't increment, just loop
+      jumpRequested = false;
+      continue;
+    }
+
+    await new Promise((r) => setTimeout(r, 1500));
+    if (!playing) break;
+    if (jumpRequested) {
+      jumpRequested = false;
+      continue;
+    }
     currentIndex++;
   }
   playing = false;
+  onIndexChange = null;
 }
 
 export function stopPlay() {
   playing = false;
+  jumpRequested = false;
   cancelTTS();
 }
 
 export function isPlaying(): boolean { return playing; }
+
+/**
+ * Jump play head to a specific event id.
+ * - If play mode is active: cancels current TTS, scrolls + reads that event.
+ * - If not playing: starts play mode from that event.
+ */
+export function jumpToEventId(eventId: string, updateUI?: (i: number, total: number) => void) {
+  refreshScenes();
+  const idx = scenes.findIndex((s) => s.dataset.eventId === eventId);
+  if (idx === -1) return;
+
+  if (playing) {
+    currentIndex = idx;
+    jumpRequested = true;
+    if (onIndexChange) onIndexChange(currentIndex + 1, scenes.length);
+    cancelTTS();
+    return;
+  }
+
+  // Not playing — start from this event
+  playing = true;
+  currentIndex = idx;
+  onIndexChange = updateUI ?? null;
+  (async () => {
+    while (playing && currentIndex < scenes.length) {
+      if (onIndexChange) onIndexChange(currentIndex + 1, scenes.length);
+      await playOne(scenes[currentIndex]);
+      if (!playing) break;
+      if (jumpRequested) { jumpRequested = false; continue; }
+      await new Promise((r) => setTimeout(r, 1500));
+      if (!playing) break;
+      if (jumpRequested) { jumpRequested = false; continue; }
+      currentIndex++;
+    }
+    playing = false;
+    onIndexChange = null;
+  })();
+}
 
 function findClosestSceneIndex(): number {
   const viewportTop = window.scrollY + 100;

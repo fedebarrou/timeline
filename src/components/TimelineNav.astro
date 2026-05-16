@@ -12,6 +12,19 @@ const minYear = Math.min(...events.map((e) => e.data.biblicalYear));
 const maxYear = Math.max(...events.map((e) => e.data.biblicalYear));
 const span = (maxYear - minYear) || 1;
 function pct(y: number) { return ((y - minYear) / span) * 100; }
+const MIN_GAP_PCT = 3;
+const sortedEventsByYear = [...events].sort((a, b) => a.data.biblicalYear - b.data.biblicalYear);
+const eventPositions = new Map<string, number>();
+let lastPct = -Infinity;
+for (const e of sortedEventsByYear) {
+  let p = pct(e.data.biblicalYear);
+  if (p - lastPct < MIN_GAP_PCT) {
+    p = lastPct + MIN_GAP_PCT;
+  }
+  eventPositions.set(e.data.id, Math.min(p, 100));
+  lastPct = p;
+}
+
 const sortedEras = eras.sort((a, b) => a.data.order - b.data.order);
 
 const sortedAllEras = [...allEras].sort((a, b) => a.data.order - b.data.order);
@@ -56,19 +69,22 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         );
       })}
 
-      {events.map((e) => (
-        <a
-          href={`#event-${e.data.id}`}
-          class="timeline-dot absolute top-1/2 -translate-x-1/2 -translate-y-1/2 group"
-          style={`left: ${pct(e.data.biblicalYear)}%`}
-          data-timeline-marker={e.data.id}
-        >
-          <div class="w-2.5 h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
-          <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-bg border border-border rounded px-2 py-1 z-10">
-            {e.data.title} <span class="opacity-50">· año {e.data.biblicalYear}</span>
-          </div>
-        </a>
-      ))}
+      {events.map((e) => {
+        const left = eventPositions.get(e.data.id) ?? pct(e.data.biblicalYear);
+        return (
+          <a
+            href={`#event-${e.data.id}`}
+            class="timeline-dot absolute top-1/2 -translate-x-1/2 -translate-y-1/2 group"
+            style={`left: ${left}%`}
+            data-timeline-marker={e.data.id}
+          >
+            <div class="w-2.5 h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
+            <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-bg border border-border rounded px-2 py-1 z-10">
+              {e.data.title} <span class="opacity-50">· año {e.data.biblicalYear}</span>
+            </div>
+          </a>
+        );
+      })}
 
       <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
     </div>
@@ -89,6 +105,8 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 </div>
 
 <script>
+  import { isPlaying, jumpToEventId } from '../lib/playMode';
+
   function updateActive(eventId: string) {
     const marker = document.querySelector(`[data-timeline-marker="${eventId}"]`);
     const active = document.querySelector<HTMLElement>('[data-timeline-active]');
@@ -108,4 +126,21 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
 
   scenes.forEach((s) => observer.observe(s));
+
+  // When in play mode, clicking a timeline dot jumps the narration to that event
+  document.querySelectorAll<HTMLAnchorElement>('[data-timeline-marker]').forEach((dot) => {
+    dot.addEventListener('click', (ev) => {
+      const id = dot.getAttribute('data-timeline-marker');
+      if (!id) return;
+      if (isPlaying()) {
+        ev.preventDefault();
+        const playBtn = document.querySelector<HTMLElement>('[data-play-mode]');
+        const progress = playBtn?.querySelector<HTMLElement>('[data-play-progress]');
+        jumpToEventId(id, (i, total) => {
+          if (progress) progress.textContent = `${i}/${total}`;
+        });
+      }
+      // Otherwise let the anchor's default scroll behavior happen.
+    });
+  });
 </script>
