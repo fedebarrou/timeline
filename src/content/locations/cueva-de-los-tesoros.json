@@ -1,6 +1,7 @@
 {
   "id": "cueva-de-los-tesoros",
   "ancientName": "Cueva de los Tesoros",
+  "portrait": "/images/locations/cueva-de-los-tesoros.jpg",
   "region": "levante",
   "disputed": true,
   "proposedLocations": [

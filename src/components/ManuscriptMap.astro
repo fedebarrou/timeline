@@ -5,6 +5,33 @@ import { geoJsonToPath, MAP_VIEWBOX } from '../lib/mapManuscript';
 const raw = await fs.readFile('public/maps/ancient-world.geojson', 'utf-8');
 const geojson = JSON.parse(raw);
 const paths = geoJsonToPath(geojson);
+
+const STATIC_LABELS = [
+  // Countries (uppercase, large)
+  { name: 'MESOPOTAMIA',    x: 620, y: 290, size: 11, weight: 'country' },
+  { name: 'ANATOLIA',       x: 540, y: 200, size: 11, weight: 'country' },
+  { name: 'EGIPTO',         x: 470, y: 410, size: 11, weight: 'country' },
+  { name: 'LEVANTE',        x: 565, y: 340, size: 10, weight: 'country' },
+  { name: 'ARABIA',         x: 610, y: 430, size: 11, weight: 'country' },
+  { name: 'PERSIA',         x: 720, y: 320, size: 10, weight: 'country' },
+  { name: 'GRECIA',         x: 440, y: 270, size: 9,  weight: 'country' },
+  { name: 'ROMA',           x: 380, y: 270, size: 9,  weight: 'country' },
+  // Cities (smaller, italic)
+  { name: 'Ur',             x: 660, y: 340, size: 7,  weight: 'city' },
+  { name: 'Babilonia',      x: 650, y: 320, size: 7,  weight: 'city' },
+  { name: 'Harán',          x: 580, y: 245, size: 7,  weight: 'city' },
+  { name: 'Jerusalén',      x: 560, y: 355, size: 7,  weight: 'city' },
+  { name: 'Damasco',        x: 575, y: 320, size: 7,  weight: 'city' },
+  { name: 'La Meca',        x: 605, y: 440, size: 7,  weight: 'city' },
+  { name: 'Medina',         x: 600, y: 420, size: 7,  weight: 'city' },
+  { name: 'Alejandría',     x: 490, y: 380, size: 7,  weight: 'city' },
+  // Bodies of water
+  { name: 'Mar Mediterráneo', x: 470, y: 320, size: 8, weight: 'water' },
+  { name: 'Mar Rojo',         x: 555, y: 425, size: 8, weight: 'water' },
+  { name: 'Golfo Pérsico',    x: 700, y: 380, size: 7, weight: 'water' },
+  { name: 'Tigris',           x: 645, y: 280, size: 6, weight: 'water' },
+  { name: 'Éufrates',         x: 620, y: 295, size: 6, weight: 'water' },
+];
 ---
 <svg
   class="manuscript-map w-full h-full"
@@ -33,6 +60,25 @@ const paths = geoJsonToPath(geojson);
     ))}
   </g>
 
+  <g class="static-labels" data-layer="static-labels">
+    {STATIC_LABELS.map((l) => (
+      <text
+        x={l.x}
+        y={l.y}
+        text-anchor="middle"
+        font-family="'Cinzel', serif"
+        font-size={l.size}
+        fill={l.weight === 'water' ? 'var(--era-secondary)' : 'var(--era-primary)'}
+        opacity={l.weight === 'country' ? '0.7' : l.weight === 'city' ? '0.5' : '0.4'}
+        font-style={l.weight === 'water' || l.weight === 'city' ? 'italic' : 'normal'}
+        letter-spacing={l.weight === 'country' ? '2' : '0'}
+      >
+        {l.name}
+      </text>
+    ))}
+  </g>
+
+  <g class="scene-objects" data-layer="scene-objects"></g>
   <g class="markers" data-layer="markers"></g>
   <g class="routes" data-layer="routes"></g>
   <g class="labels" data-layer="labels"></g>

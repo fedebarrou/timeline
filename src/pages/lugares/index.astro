@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import { getCollection } from 'astro:content';
 
 const locations = await getCollection('locations');
@@ -12,24 +11,42 @@ locations.forEach((l) => {
 });
 ---
 <BaseLayout title="Lugares">
-  <section class="px-6 py-16 max-w-5xl mx-auto">
+  <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Lugares</h1>
     <p class="opacity-70 mb-10">Geografía sagrada: el escenario de los relatos.</p>
     {[...byRegion.entries()].map(([region, items]) => (
-      <div class="mb-10">
-        <h2 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-4">{region}</h2>
-        <ul class="grid md:grid-cols-2 gap-4">
+      <div class="mb-12">
+        <h2 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-5">{region}</h2>
+        <ul class="grid md:grid-cols-2 gap-6">
           {items.map((l) => (
-            <li class="border border-border rounded-lg p-4">
-              <div class="flex items-center gap-3 mb-2">
-                <PortraitPlaceholder name={l.data.ancientName} size="sm" />
-                <div>
-                  <h3 class="font-display text-xl">{l.data.ancientName}</h3>
-                  {l.data.modernName && <p class="text-xs opacity-60">{l.data.modernName}</p>}
+            <li class="border border-border rounded-lg overflow-hidden bg-surface/30 hover:border-accent transition-colors">
+              {l.data.portrait ? (
+                <div class="aspect-[16/9] overflow-hidden">
+                  <img
+                    src={l.data.portrait}
+                    alt={l.data.ancientName}
+                    loading="lazy"
+                    class="w-full h-full object-cover"
+                  />
                 </div>
+              ) : (
+                <div class="aspect-[16/9] bg-bg flex items-center justify-center">
+                  <span class="font-display text-4xl text-primary/60">{l.data.ancientName.charAt(0)}</span>
+                </div>
+              )}
+              <div class="p-5">
+                <h3 class="font-display text-xl">{l.data.ancientName}</h3>
+                {l.data.modernName && <p class="text-xs opacity-60 mt-1">{l.data.modernName}</p>}
+                {l.data.disputed && <span class="inline-block mt-2 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
+                <p class="text-sm opacity-80 mt-3 leading-relaxed">{l.data.description}</p>
+                {l.data.events && l.data.events.length > 0 && (
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    {l.data.events.map((evId: string) => (
+                      <a href={`/era/primordial#event-${evId}`} class="text-[10px] tracking-wider uppercase opacity-60 hover:opacity-100 hover:text-accent border border-border px-2 py-0.5 rounded">→ {evId.replace(/-/g, ' ')}</a>
+                    ))}
+                  </div>
+                )}
               </div>
-              {l.data.disputed && <span class="inline-block mt-1 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
-              <p class="text-sm opacity-80 mt-2">{l.data.description}</p>
             </li>
           ))}
         </ul>

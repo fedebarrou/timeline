@@ -1,10 +1,20 @@
 import { gsap } from './scrollytelling';
 
+export interface CharacterPin {
+  id: string;
+  name: string;
+  portrait?: string | null;
+}
+
 export interface MarkerSpec {
   id: string;
   svgPosition: [number, number];
   label: string;
+  characters?: CharacterPin[];
+  /** @deprecated use characters instead */
   characterIds?: string[];
+  locationPortrait?: string | null;
+  locationName?: string;
 }
 
 export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
@@ -38,60 +48,75 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   dot.classList.add('marker-dot');
   g.appendChild(dot);
 
-  // Label text + background
-  const labelBg = document.createElementNS(ns, 'rect');
-  labelBg.setAttribute('x', '12');
-  labelBg.setAttribute('y', '-14');
-  const labelText = document.createElementNS(ns, 'text');
-  labelText.setAttribute('x', '18');
-  labelText.setAttribute('y', '-2');
-  labelText.setAttribute('fill', 'var(--era-text)');
-  labelText.setAttribute('font-size', '8');
-  labelText.setAttribute('font-family', "var(--era-display, 'Cinzel', serif)");
-  labelText.setAttribute('opacity', '0');
-  labelText.setAttribute('data-marker-label', '');
-  labelText.textContent = marker.label;
+  // Determine character list: prefer new `characters` field, fall back to legacy `characterIds`
+  const charPins: CharacterPin[] = marker.characters
+    ? marker.characters
+    : (marker.characterIds ?? []).map((id) => ({ id, name: id, portrait: null }));
 
-  const approxWidth = Math.max(40, marker.label.length * 4.5);
-  labelBg.setAttribute('width', `${approxWidth + 8}`);
-  labelBg.setAttribute('height', '14');
-  labelBg.setAttribute('rx', '2');
-  labelBg.setAttribute('fill', 'var(--era-surface)');
-  labelBg.setAttribute('stroke', 'var(--era-border)');
-  labelBg.setAttribute('stroke-width', '0.5');
-  labelBg.setAttribute('opacity', '0');
-  labelBg.setAttribute('data-marker-label-bg', '');
-
-  g.appendChild(labelBg);
-  g.appendChild(labelText);
-
-  // Character token group
-  if (marker.characterIds && marker.characterIds.length > 0) {
+  // Character token group with real portraits
+  if (charPins.length > 0) {
     const charGroup = document.createElementNS(ns, 'g');
     charGroup.setAttribute('data-marker-chars', '');
     charGroup.setAttribute('opacity', '0');
-    marker.characterIds.slice(0, 4).forEach((charId, idx) => {
-      const cx = 22 + idx * 14;
-      const cy = 10;
-      const circle = document.createElementNS(ns, 'circle');
-      circle.setAttribute('cx', `${cx}`);
-      circle.setAttribute('cy', `${cy}`);
-      circle.setAttribute('r', '6');
-      circle.setAttribute('fill', 'var(--era-surface)');
-      circle.setAttribute('stroke', 'var(--era-primary)');
-      circle.setAttribute('stroke-width', '0.8');
-      const text = document.createElementNS(ns, 'text');
-      text.setAttribute('x', `${cx}`);
-      text.setAttribute('y', `${cy + 2}`);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('font-size', '6');
-      text.setAttribute('font-family', "var(--era-display, 'Cinzel', serif)");
-      text.setAttribute('fill', 'var(--era-primary)');
-      text.textContent = charId.slice(0, 2).toUpperCase();
-      charGroup.appendChild(circle);
-      charGroup.appendChild(text);
+    charPins.slice(0, 5).forEach((char, idx) => {
+      const cx = 18 + idx * 22;
+      const cy = 14;
+      const size = 16;
+      const initials = char.name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+
+      const fo = document.createElementNS(ns, 'foreignObject');
+      fo.setAttribute('x', `${-size / 2}`);
+      fo.setAttribute('y', `${-size / 2}`);
+      fo.setAttribute('width', `${size}`);
+      fo.setAttribute('height', `${size}`);
+
+      const safePortrait = char.portrait ? char.portrait.replace(/"/g, '&quot;') : '';
+      const safeInitials = initials.replace(/'/g, "\\'");
+      fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--era-primary);font-family:var(--era-display,'Cinzel',serif);">${
+        char.portrait
+          ? `<img src="${safePortrait}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentNode.textContent='${safeInitials}'" />`
+          : initials
+      }</div>`;
+
+      // tiny name below the thumbnail
+      const nameText = document.createElementNS(ns, 'text');
+      nameText.setAttribute('x', `0`);
+      nameText.setAttribute('y', `${size / 2 + 5}`);
+      nameText.setAttribute('text-anchor', 'middle');
+      nameText.setAttribute('font-size', '4');
+      nameText.setAttribute('font-family', "var(--era-display, 'Cinzel', serif)");
+      nameText.setAttribute('fill', 'var(--era-text)');
+      nameText.textContent = char.name;
+
+      const pinWrap = document.createElementNS(ns, 'g');
+      pinWrap.setAttribute('data-char-pin-wrap', '');
+      pinWrap.setAttribute('transform', `translate(${cx}, ${cy})`);
+      pinWrap.appendChild(fo);
+      pinWrap.appendChild(nameText);
+      charGroup.appendChild(pinWrap);
     });
     g.appendChild(charGroup);
+  }
+
+  // Rectangular location thumbnail
+  if (marker.locationPortrait) {
+    const locGroup = document.createElementNS(ns, 'g');
+    locGroup.setAttribute('data-marker-location-portrait', '');
+    locGroup.setAttribute('opacity', '0');
+
+    const W = 64, H = 40;
+    const offsetX = 12;
+    const offsetY = -28 - H; // sit above the marker dot
+
+    const fo = document.createElementNS(ns, 'foreignObject');
+    fo.setAttribute('x', `${offsetX}`);
+    fo.setAttribute('y', `${offsetY}`);
+    fo.setAttribute('width', `${W}`);
+    fo.setAttribute('height', `${H + 10}`); // extra room for caption
+    fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:2px;align-items:center;font-family:var(--era-display,'Cinzel',serif);"><div style="width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);box-shadow:0 2px 6px rgba(0,0,0,0.4);"><img src="${marker.locationPortrait.replace(/"/g, '&quot;')}" alt="${(marker.locationName ?? '').replace(/"/g, '&quot;')}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none'" /></div>${marker.locationName ? `<div style="font-size:5px;color:var(--era-text);text-align:center;letter-spacing:0.5px;text-transform:uppercase;opacity:0.8;">${marker.locationName.replace(/</g, '&lt;')}</div>` : ''}</div>`;
+
+    locGroup.appendChild(fo);
+    g.appendChild(locGroup);
   }
 
   group.appendChild(g);
@@ -104,14 +129,16 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
     m.classList.remove('active');
     gsap.killTweensOf(m);
     gsap.to(m, { opacity: 0, duration: 0.3, pointerEvents: 'none' });
-    const lbl = m.querySelector('[data-marker-label]');
-    const lblBg = m.querySelector('[data-marker-label-bg]');
     const chars = m.querySelector('[data-marker-chars]');
-    if (lbl) (lbl as SVGElement).setAttribute('opacity', '0');
-    if (lblBg) (lblBg as SVGElement).setAttribute('opacity', '0');
     if (chars) (chars as SVGElement).setAttribute('opacity', '0');
+    const loc = m.querySelector('[data-marker-location-portrait]');
+    if (loc) (loc as SVGElement).setAttribute('opacity', '0');
     const halo = m.querySelector('[data-halo]');
     if (halo) gsap.killTweensOf(halo);
+    const pinWraps = m.querySelectorAll<SVGGElement>('[data-char-pin-wrap]');
+    pinWraps.forEach((pin) => {
+      pin.dataset.motionStarted = '';
+    });
   });
 
   const target = svgRoot.querySelector<SVGGElement>(`[data-marker="${id}"]`);
@@ -128,76 +155,64 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
     );
   }
 
-  const labelText = target.querySelector('[data-marker-label]');
-  const labelBg = target.querySelector('[data-marker-label-bg]');
-  if (labelText) {
-    gsap.fromTo(labelText, { opacity: 0, x: -4 }, { opacity: 1, x: 0, duration: 0.6, ease: 'power1.out' });
-  }
-  if (labelBg) {
-    gsap.fromTo(labelBg, { opacity: 0, x: -4 }, { opacity: 0.85, x: 0, duration: 0.6, ease: 'power1.out' });
-  }
-
   const chars = target.querySelector('[data-marker-chars]');
   if (chars) {
     gsap.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 0.2 });
   }
+
+  const locPortrait = target.querySelector('[data-marker-location-portrait]');
+  if (locPortrait) {
+    gsap.fromTo(locPortrait, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.3 });
+  }
 }
 
-// Transient toast inside the map area, showing the modern country name.
-// Fades in, holds, fades out automatically. Replaces any prior toast.
-export function showLocationToast(text: string) {
+// Prominent event-title badge shown at the top center of the map for ~5 seconds.
+export function showEventTitleToast(title: string) {
   const svg = document.querySelector<SVGSVGElement>('[data-map-root]');
   if (!svg) return;
   const wrapper = svg.parentElement;
   if (!wrapper) return;
 
-  let toast = wrapper.querySelector<HTMLElement>('[data-location-toast]');
+  let toast = wrapper.querySelector<HTMLElement>('[data-event-title-toast]');
   if (!toast) {
     toast = document.createElement('div');
-    toast.setAttribute('data-location-toast', '');
+    toast.setAttribute('data-event-title-toast', '');
     toast.style.position = 'absolute';
-    toast.style.top = '16px';
+    toast.style.top = '46px';
     toast.style.left = '50%';
     toast.style.transform = 'translateX(-50%)';
-    toast.style.padding = '6px 14px';
+    toast.style.padding = '8px 18px';
     toast.style.borderRadius = '999px';
     toast.style.fontFamily = "var(--era-display, 'Cinzel', serif)";
-    toast.style.fontSize = '11px';
-    toast.style.letterSpacing = '0.18em';
-    toast.style.textTransform = 'uppercase';
-    toast.style.color = 'var(--era-text)';
-    toast.style.background = 'var(--era-surface)';
+    toast.style.fontSize = '14px';
+    toast.style.letterSpacing = '0.12em';
+    toast.style.color = 'var(--era-primary)';
+    toast.style.background = 'rgba(0,0,0,0.55)';
+    toast.style.backdropFilter = 'blur(8px)';
     toast.style.border = '1px solid var(--era-border)';
-    toast.style.boxShadow = '0 4px 14px rgba(0,0,0,0.4)';
+    toast.style.boxShadow = '0 6px 18px rgba(0,0,0,0.45)';
     toast.style.opacity = '0';
     toast.style.pointerEvents = 'none';
-    toast.style.zIndex = '20';
+    toast.style.zIndex = '21';
     toast.style.whiteSpace = 'nowrap';
+    toast.style.maxWidth = '90%';
     if (getComputedStyle(wrapper).position === 'static') {
       wrapper.style.position = 'relative';
     }
     wrapper.appendChild(toast);
   }
 
-  toast.textContent = text;
+  toast.textContent = title;
   gsap.killTweensOf(toast);
   gsap.fromTo(
     toast,
-    { opacity: 0, y: -8 },
+    { opacity: 0, y: -10 },
     {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: 'power1.out',
+      opacity: 1, y: 0, duration: 0.6, ease: 'power1.out',
       onComplete: () => {
-        gsap.to(toast, {
-          opacity: 0,
-          y: -8,
-          duration: 0.8,
-          delay: 3.5,
-          ease: 'power1.in',
-        });
+        gsap.to(toast, { opacity: 0, y: -10, duration: 0.8, delay: 4.5, ease: 'power1.in' });
       },
     }
   );
 }
+

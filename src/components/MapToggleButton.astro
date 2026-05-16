@@ -1,16 +1,29 @@
 <button
   type="button"
-  class="map-toggle-btn fixed top-4 right-4 z-50 px-3 py-2 rounded-full text-xs tracking-wider uppercase border bg-surface/80 hover:bg-surface text-text border-border backdrop-blur"
+  class="map-toggle-btn fixed top-[7.5rem] md:top-auto md:bottom-6 right-6 z-40 px-4 py-2 rounded-full border-2 border-primary bg-bg text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-xs tracking-wider uppercase shadow-xl"
   data-map-toggle
+  aria-label="Cambiar entre mapa antiguo y mapa actual"
+  title="Cambiar mapa"
 >
-  Ver en mapa actual
+  <span class="icon" data-state="manuscript">▣</span>
+  <span class="label">Mapa actual</span>
 </button>
 
 <script>
   import { toggleMap } from '../lib/mapToggle';
-  const btn = document.querySelector('[data-map-toggle]');
-  btn?.addEventListener('click', toggleMap);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'm' || e.key === 'M') toggleMap();
-  });
+  const btn = document.querySelector<HTMLButtonElement>('[data-map-toggle]');
+  const icon = btn?.querySelector<HTMLElement>('.icon');
+  const label = btn?.querySelector<HTMLElement>('.label');
+  if (btn && icon && label) {
+    btn.addEventListener('click', () => {
+      toggleMap();
+      const isModern = icon.dataset.state === 'manuscript';
+      icon.dataset.state = isModern ? 'modern' : 'manuscript';
+      icon.textContent = isModern ? '⌘' : '▣';
+      label.textContent = isModern ? 'Mapa antiguo' : 'Mapa actual';
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'm' || e.key === 'M') btn.click();
+    });
+  }
 </script>

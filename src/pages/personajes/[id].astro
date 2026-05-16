@@ -27,7 +27,7 @@ const mentionsCount =
 <BaseLayout title={data.name}>
   <article class="px-6 py-16 max-w-4xl mx-auto">
     <header class="mb-10 flex items-start gap-8">
-      <PortraitPlaceholder name={data.name} size="lg" />
+      <PortraitPlaceholder name={data.name} src={data.portrait} size="lg" />
       <div>
         <h1 class="font-display text-5xl">{data.name}</h1>
         {(data.alternateNames.hebrew || data.alternateNames.arabic) && (

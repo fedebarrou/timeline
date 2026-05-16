@@ -1,0 +1,11 @@
+{
+  "id": "rios-del-eden",
+  "ancientName": "Cuatro ríos del Edén",
+  "modernName": "Tigris y Éufrates (los otros dos, Pisón y Gihón, son desconocidos)",
+  "region": "mesopotamia",
+  "coords": [33.0, 44.0],
+  "svgPosition": [625, 285],
+  "disputed": false,
+  "description": "Génesis 2:10-14 describe un río que salía del Edén y se dividía en cuatro brazos: Pisón, Gihón, Hidekel (Tigris) y Éufrates. Solo los dos últimos son identificables hoy; los primeros dos siguen siendo objeto de debate académico.",
+  "events": ["nacimiento-adan-eva"]
+}

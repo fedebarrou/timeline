@@ -1,0 +1,11 @@
+{
+  "id": "babilonia-antigua",
+  "ancientName": "Babilonia (Babel)",
+  "modernName": "Hilla, Irak (ruinas a ~85km al sur de Bagdad)",
+  "region": "mesopotamia",
+  "coords": [32.54, 44.42],
+  "svgPosition": [635, 315],
+  "disputed": false,
+  "description": "Antigua ciudad de Mesopotamia, una de las más importantes del mundo antiguo. Sitio del épico relato sumerio del diluvio (Gilgamesh) y referencia constante en los relatos de Génesis. La Torre de Babel se asocia tradicionalmente con su zigurat.",
+  "events": []
+}

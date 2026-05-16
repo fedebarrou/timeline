@@ -15,7 +15,7 @@ const chars = (await getCollection('characters')).sort((a, b) =>
         <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
           <a href={`/personajes/${c.data.id}`}>
             <div class="flex items-start gap-4">
-              <PortraitPlaceholder name={c.data.name} size="md" />
+              <PortraitPlaceholder name={c.data.name} src={c.data.portrait} size="md" />
               <div>
                 <h2 class="font-display text-2xl">{c.data.name}</h2>
                 {c.data.alternateNames.meaning && (

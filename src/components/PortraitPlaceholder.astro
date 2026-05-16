@@ -1,10 +1,11 @@
 ---
 interface Props {
   name: string;
+  src?: string;
   hint?: string;
   size?: 'sm' | 'md' | 'lg';
 }
-const { name, hint, size = 'md' } = Astro.props;
+const { name, src, hint, size = 'md' } = Astro.props;
 const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const sizeClasses = {
   sm: 'w-12 h-12 text-base',
@@ -12,8 +13,33 @@ const sizeClasses = {
   lg: 'w-40 h-40 text-4xl',
 }[size];
 ---
-<div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden`} title={name}>
-  <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
-  <span class="relative text-primary tracking-wider">{initials}</span>
+<div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden flex-shrink-0`} title={name}>
+  {src ? (
+    <>
+      <img src={src} alt={name} loading="lazy" class="w-full h-full object-cover" data-portrait-img />
+      <div class="portrait-fallback absolute inset-0 flex items-center justify-center opacity-0" data-portrait-fallback>
+        <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
+        <span class="relative text-primary tracking-wider">{initials}</span>
+      </div>
+    </>
+  ) : (
+    <>
+      <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
+      <span class="relative text-primary tracking-wider">{initials}</span>
+    </>
+  )}
   {hint && <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] opacity-60 whitespace-nowrap">{hint}</div>}
 </div>
+
+<script>
+  // If image fails to load, show the initials fallback
+  document.querySelectorAll<HTMLImageElement>('[data-portrait-img]').forEach((img) => {
+    img.addEventListener('error', () => {
+      const fallback = img.parentElement?.querySelector<HTMLElement>('[data-portrait-fallback]');
+      if (fallback) {
+        img.style.display = 'none';
+        fallback.style.opacity = '1';
+      }
+    });
+  });
+</script>

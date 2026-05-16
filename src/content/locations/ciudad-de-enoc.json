@@ -1,0 +1,15 @@
+{
+  "id": "ciudad-de-enoc",
+  "ancientName": "Ciudad de Enoc",
+  "modernName": "Localización desconocida (al oriente del Edén, en la tierra de Nod)",
+  "region": "mesopotamia",
+  "coords": [33.5, 45.0],
+  "svgPosition": [610, 275],
+  "disputed": true,
+  "proposedLocations": [
+    { "name": "Sur de Mesopotamia (cerca de Eridu / Uruk antiguas)", "coords": [31.0, 46.0], "svgPosition": [625, 305], "support": "Algunos académicos sugieren paralelos con las ciudades sumerias más antiguas" },
+    { "name": "Llanura iraní (tradición rabínica)", "coords": [34.0, 50.0], "svgPosition": [640, 270], "support": "Tradición rabínica medieval" }
+  ],
+  "description": "Primera ciudad construida por la humanidad según Génesis 4:17. Caín la fundó tras su exilio y la nombró en honor a su hijo Enoc (no confundir con el Enoc descendiente de Set, que caminó con Dios).",
+  "events": ["cain-mata-abel"]
+}

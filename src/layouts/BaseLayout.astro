@@ -4,12 +4,15 @@ import SiteNav from '../components/SiteNav.astro';
 interface Props {
   title: string;
   description?: string;
-  navTitle?: string;
+  navTitle?: string;        // legacy, no longer used (keep for now to not break callers)
+  currentEraId?: string;
+  currentEraName?: string;
 }
 const {
   title,
   description = 'Línea de tiempo bíblica: Adán a Mahoma',
-  navTitle,
+  currentEraId,
+  currentEraName,
 } = Astro.props;
 ---
 <!doctype html>
@@ -24,7 +27,7 @@ const {
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body data-era="primordial">
-    <SiteNav navTitle={navTitle} />
+    <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
   </body>

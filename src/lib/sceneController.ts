@@ -1,12 +1,15 @@
 import { gsap, ScrollTrigger, setEra } from './scrollytelling';
-import { activateMarker, showLocationToast } from './mapMarkers';
+import { activateMarker, showEventTitleToast } from './mapMarkers';
 import { panTo, fitBounds } from './mapCamera';
 import { flyModern } from './mapToggle';
 import { drawJourney, clearJourneys } from './mapJourneys';
+import { renderSceneObjects, clearSceneObjects } from './mapSceneObjects';
+import { runChoreography, stopChoreography } from './characterChoreography';
 
 export interface SceneConfig {
   eventId: string;
   eraId: string;
+  title?: string;
   svgPosition: [number, number];
   coords?: [number, number];
   modernName?: string;
@@ -43,6 +46,10 @@ export function initScrollytelling(scenes: SceneConfig[]) {
 function activate(scene: SceneConfig, svg: SVGSVGElement) {
   setEra(scene.eraId);
   activateMarker(svg, scene.eventId);
+  stopChoreography();
+  runChoreography(svg, scene.eventId);
+  clearSceneObjects(svg);
+  renderSceneObjects(svg, scene.eventId, scene.svgPosition);
   clearJourneys(svg);
 
   if (scene.journeys && scene.journeys.length > 0) {
@@ -52,7 +59,7 @@ function activate(scene: SceneConfig, svg: SVGSVGElement) {
       allPts.push(j.from);
       allPts.push(j.to);
     });
-    fitBounds(svg, allPts, 0.4, 1.6);
+    fitBounds(svg, allPts, 0.55, 1.6);
     // Draw each journey
     scene.journeys.forEach((j) => {
       drawJourney(svg, {
@@ -63,13 +70,11 @@ function activate(scene: SceneConfig, svg: SVGSVGElement) {
       });
     });
   } else {
-    panTo(svg, { cx: scene.svgPosition[0], cy: scene.svgPosition[1], zoom: 5.0 }, 1.6);
+    panTo(svg, { cx: scene.svgPosition[0], cy: scene.svgPosition[1], zoom: 2.4 }, 1.6);
   }
 
-  if (scene.coords) flyModern(scene.coords, 8);
+  if (scene.coords) flyModern(scene.coords, 6);
 
-  // Transient modern-country toast
-  if (scene.modernName) {
-    showLocationToast(scene.modernName);
-  }
+  // Event title toast (prominent)
+  if (scene.title) showEventTitleToast(scene.title);
 }

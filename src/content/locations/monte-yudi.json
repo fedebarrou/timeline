@@ -1,0 +1,11 @@
+{
+  "id": "monte-yudi",
+  "ancientName": "Monte Yudi (Al-Judi)",
+  "modernName": "Cudi Dağı, Sureste de Turquía (provincia de Şırnak)",
+  "region": "anatolia",
+  "coords": [37.38, 42.46],
+  "svgPosition": [590, 200],
+  "disputed": false,
+  "description": "Cima donde reposó el arca según la tradición islámica (Sura Hud 11:44). Distinto del Monte Ararat que mencionan la Torá y la Biblia. Se ubica en el sureste de Turquía actual, cerca de la frontera con Irak.",
+  "events": ["diluvio"]
+}

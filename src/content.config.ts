@@ -73,6 +73,7 @@ const locations = defineCollection({
     id: z.string(),
     ancientName: z.string(),
     modernName: z.string().optional(),
+    portrait: z.string().optional(),
     coords: z.tuple([z.number(), z.number()]).optional(),
     svgPosition: z.tuple([z.number(), z.number()]).optional(),
     region: z.string(),
@@ -200,6 +201,7 @@ const characters = defineCollection({
   schema: z.object({
     id: z.string(),
     name: z.string(),
+    portrait: z.string().optional(),
     alternateNames: z.object({
       hebrew: z.string().optional(),
       arabic: z.string().optional(),

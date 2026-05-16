@@ -9,6 +9,7 @@ import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
 import PlayButton from '../../components/PlayButton.astro';
 import VoiceSettings from '../../components/VoiceSettings.astro';
+import EventNavArrows from '../../components/EventNavArrows.astro';
 
 export async function getStaticPaths() {
   const eras = await getCollection('eras');
@@ -25,6 +26,31 @@ const events = allEvents
   .sort((a, b) => a.data.order - b.data.order);
 const eras = [era];
 const allEras = await getCollection('eras');
+
+// Fetch characters and locations for richer marker data
+const charactersCollection = await getCollection('characters');
+const charByIdMap = new Map(charactersCollection.map((c) => [c.data.id, c.data]));
+
+const locationsCollection = await getCollection('locations');
+const locByIdMap = new Map(locationsCollection.map((l) => [l.data.id, l.data]));
+
+// Region → modern country fallback for modernName
+const REGION_TO_COUNTRY: Record<string, string> = {
+  mesopotamia: 'Irak — Mesopotamia',
+  anatolia: 'Turquía — Anatolia',
+  levante: 'Israel / Palestina / Líbano — Levante',
+  arabia: 'Arabia Saudí — Arabia',
+  egipto: 'Egipto',
+};
+
+function resolveModernName(eventLoc: any): string | undefined {
+  if (!eventLoc) return undefined;
+  if (eventLoc.modernName) return eventLoc.modernName;
+  const fullLoc = locByIdMap.get(eventLoc.id);
+  if (fullLoc?.modernName) return fullLoc.modernName;
+  if (fullLoc?.region && REGION_TO_COUNTRY[fullLoc.region]) return REGION_TO_COUNTRY[fullLoc.region];
+  return eventLoc.ancientName;
+}
 
 // Compute jittered svgPositions so overlapping markers are visually distinct
 const seenPositions = new Map<string, number>();
@@ -57,9 +83,10 @@ const sceneConfigs = events.map((e) => {
   return {
     eventId: e.data.id,
     eraId: e.data.era,
+    title: e.data.title,
     svgPosition: jitteredPositions.get(e.data.id) ?? primaryLoc?.svgPosition ?? [500, 300],
     coords: primaryLoc?.coords,
-    modernName: primaryLoc?.modernName ?? primaryLoc?.ancientName,
+    modernName: resolveModernName(primaryLoc),
     journeys,
   };
 });
@@ -67,22 +94,38 @@ const sceneConfigs = events.map((e) => {
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
   if (!loc) return null;
+  const charPins = (e.data.characters ?? []).map((c: { id: string }) => {
+    const cd = charByIdMap.get(c.id);
+    return {
+      id: c.id,
+      name: cd?.name ?? c.id,
+      portrait: cd?.portrait ?? null,
+    };
+  });
+  const fullLoc = locByIdMap.get(loc.id);
   return {
     id: e.data.id,
     svgPosition: jitteredPositions.get(e.data.id) ?? loc.svgPosition,
     label: e.data.title + (loc.ancientName ? ` (${loc.ancientName})` : ''),
     coords: loc.coords,
-    characterIds: (e.data.characters ?? []).map((c: { id: string }) => c.id),
+    characters: charPins,
+    locationPortrait: fullLoc?.portrait ?? null,
+    locationName: loc.ancientName,
   };
 }).filter(Boolean);
 ---
-<BaseLayout title={`${era.data.name} · Línea de tiempo`} navTitle={`Era · ${era.data.name}`}>
+<BaseLayout
+  title={`${era.data.name} · Línea de tiempo`}
+  currentEraId={era.data.id}
+  currentEraName={era.data.name}
+>
   <style>main { padding-top: 7rem !important; }</style>
   <EraTheme era={era} />
   <TimelineNav events={events} eras={eras} allEras={allEras} currentEraId={era.data.id} />
 
   <div class="relative">
-    <div class="map-sticky hidden md:block fixed top-[7rem] right-0 w-[55%] md:w-[50%] lg:w-[60%] h-[calc(100vh-7rem)]">
+    <!-- Single map instance: fixed right on desktop, sticky top on mobile -->
+    <div class="map-container md:fixed md:top-[7rem] md:right-0 md:w-[55%] lg:md:w-[60%] md:h-[calc(100vh-7rem)] sticky top-[6rem] z-20 h-[40vh] w-full bg-bg border-b md:border-b-0 border-border">
       <ManuscriptMap />
       <ModernMapLayer />
       <MapToggleButton />
@@ -122,4 +165,5 @@ const allMarkers = events.map((e) => {
 
   <PlayButton />
   <VoiceSettings />
+  <EventNavArrows />
 </BaseLayout>

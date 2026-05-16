@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { render } from 'astro:content';
+import { render, getEntry } from 'astro:content';
 import ComparativeBlock from './ComparativeBlock.astro';
 import SourceBadge from './SourceBadge.astro';
 import DeepDive from './DeepDive.astro';
@@ -8,6 +8,7 @@ import MediaHero from './MediaHero.astro';
 import MediaGallery from './MediaGallery.astro';
 import VideoEmbed from './VideoEmbed.astro';
 import NarratorButton from './NarratorButton.astro';
+import PortraitPlaceholder from './PortraitPlaceholder.astro';
 
 interface Props { event: CollectionEntry<'events'>; }
 const { event } = Astro.props;
@@ -27,6 +28,23 @@ const narrationParts = [
   data.comparative.divergent && data.comparative.coran ? `Según el Corán: ${data.comparative.coran.summary}` : '',
 ];
 const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
+
+const charactersInEvent = await Promise.all(
+  (data.characters ?? []).map(async (c: { id: string; role: string }) => {
+    const ch = await getEntry('characters', c.id);
+    if (!ch) return null;
+    return {
+      id: c.id,
+      role: c.role,
+      name: ch.data.name,
+      portrait: ch.data.portrait,
+      meaning: ch.data.alternateNames?.meaning,
+      birthYear: ch.data.birthYear,
+      deathYear: ch.data.deathYear,
+      significance: ch.data.significance,
+    };
+  })
+).then((arr) => arr.filter(Boolean) as Array<NonNullable<typeof arr[0]>>);
 ---
 <section
   id={`event-${data.id}`}
@@ -53,6 +71,39 @@ const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, 
 
       <VideoEmbed video={data.media?.video} />
       <MediaGallery items={data.media?.gallery ?? []} />
+
+      {charactersInEvent.length > 0 && (
+        <div class="characters-in-event mt-8">
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-4">Personajes en este momento</h3>
+          <div class="flex flex-wrap gap-3">
+            {charactersInEvent.map((c) => (
+              <a
+                href={`/personajes/${c.id}`}
+                class="char-pin group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-surface/40 hover:border-accent transition-colors"
+                title={`Ver perfil de ${c.name}`}
+              >
+                <PortraitPlaceholder name={c.name} src={c.portrait ?? undefined} size="sm" />
+                <span class="text-sm font-display">{c.name}</span>
+                <span class="text-[10px] tracking-wider uppercase opacity-60">{c.role.replace(/-/g, ' ')}</span>
+
+                <div class="tooltip absolute left-0 top-full mt-2 z-30 w-72 p-4 rounded-lg border border-border bg-bg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none transition-all duration-200">
+                  <div class="font-display text-lg">{c.name}</div>
+                  {c.meaning && <div class="text-xs italic opacity-70 mt-1">"{c.meaning}"</div>}
+                  {(c.birthYear !== undefined || c.deathYear !== undefined) && (
+                    <div class="text-xs opacity-70 mt-1">
+                      {c.birthYear !== undefined && `Año ${c.birthYear}`}{c.deathYear !== undefined && ` — ${c.deathYear}`}
+                    </div>
+                  )}
+                  <div class="text-xs tracking-wider uppercase opacity-60 mt-2">Rol: {c.role.replace(/-/g, ' ')}</div>
+                  {c.significance && (
+                    <p class="text-xs opacity-80 mt-3 leading-snug" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">{c.significance.slice(0, 200)}{c.significance.length > 200 ? '…' : ''}</p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {data.comparative.divergent && (
         <ComparativeBlock comparative={data.comparative} />

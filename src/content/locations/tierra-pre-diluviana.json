@@ -1,0 +1,11 @@
+{
+  "id": "tierra-pre-diluviana",
+  "ancientName": "Tierra antediluviana",
+  "modernName": "Región del Creciente Fértil — Mesopotamia",
+  "region": "mesopotamia",
+  "coords": [33.0, 44.0],
+  "svgPosition": [620, 320],
+  "disputed": false,
+  "description": "La región donde vivió la humanidad descendiente de Set y Caín antes del Diluvio. Las tradiciones sitúan a la mayoría de los patriarcas antediluvianos en torno al Creciente Fértil mesopotámico.",
+  "events": ["nacimiento-enoc", "asuncion-enoc", "nacimiento-noe", "orden-construir-arca", "diluvio"]
+}
