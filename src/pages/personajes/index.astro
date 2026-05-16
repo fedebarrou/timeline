@@ -19,13 +19,28 @@ const chars = (await getCollection('characters')).sort((a, b) =>
               <div>
                 <h2 class="font-display text-2xl">{c.data.name}</h2>
                 {c.data.alternateNames.meaning && (
-                  <p class="text-xs italic opacity-60 mt-1">"{c.data.alternateNames.meaning}"</p>
+                  <p class="text-sm md:text-base italic opacity-70 mt-2 font-display">"{c.data.alternateNames.meaning}"</p>
                 )}
-                <p class="text-sm opacity-70 mt-3">
-                  {c.data.birthYear !== undefined && `Año ${c.data.birthYear}`}
-                  {c.data.deathYear !== undefined && ` — ${c.data.deathYear}`}
-                  {c.data.ageAtDeath && ` (vivió ${c.data.ageAtDeath} años)`}
-                </p>
+                <div class="lifespan-stats mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                  {c.data.birthYear !== undefined && (
+                    <span class="inline-flex items-baseline gap-1 opacity-80">
+                      <span class="opacity-60 tracking-wider uppercase text-[10px]">★ Nació</span>
+                      <span class="font-display text-sm">año {c.data.birthYear}</span>
+                    </span>
+                  )}
+                  {c.data.deathYear !== undefined && (
+                    <span class="inline-flex items-baseline gap-1 opacity-80">
+                      <span class="opacity-60 tracking-wider uppercase text-[10px]">† Murió</span>
+                      <span class="font-display text-sm">año {c.data.deathYear}</span>
+                    </span>
+                  )}
+                  {c.data.ageAtDeath && (
+                    <span class="inline-flex items-baseline gap-1 px-2 py-1 rounded-full border border-primary/40">
+                      <span class="font-display text-base text-primary">{c.data.ageAtDeath}</span>
+                      <span class="opacity-70 text-[10px] tracking-wider uppercase">años vividos</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </a>
