@@ -1,0 +1,10 @@
+{
+  "id": "tierra-de-nod",
+  "ancientName": "Tierra de Nod",
+  "region": "mesopotamia",
+  "coords": [33.5, 44.0],
+  "svgPosition": [600, 270],
+  "disputed": false,
+  "description": "'Tierra del exilio' al oriente del Edén, a donde huyó Caín tras matar a Abel. Allí fundó la ciudad de Enoc en honor a su hijo.",
+  "events": ["cain-mata-abel"]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "monte-ararat",
+  "ancientName": "Ararat",
+  "modernName": "Monte Ararat, Turquía oriental",
+  "region": "anatolia",
+  "coords": [39.7, 44.3],
+  "svgPosition": [555, 195],
+  "disputed": false,
+  "description": "Cima donde reposó el arca de Noé tras el Diluvio según las tres tradiciones. Hoy es el pico más alto de Turquía.",
+  "events": ["diluvio", "alianza-arcoiris"]
+}

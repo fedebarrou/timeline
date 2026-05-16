@@ -1,0 +1,12 @@
+{
+  "id": "cueva-de-los-tesoros",
+  "ancientName": "Cueva de los Tesoros",
+  "region": "levante",
+  "disputed": true,
+  "proposedLocations": [
+    { "name": "La Meca (tradición islámica)", "coords": [21.4, 39.8], "svgPosition": [610, 410], "support": "Tradición islámica" },
+    { "name": "Jerusalén (tradición cristiana)", "coords": [31.78, 35.22], "svgPosition": [600, 370], "support": "Tradición cristiana siríaca (Libro de la Cueva de los Tesoros)" }
+  ],
+  "description": "Lugar de sepultura tradicional de Adán y Eva según fuentes apócrifas y tradiciones diversas.",
+  "events": ["muerte-adan", "muerte-eva"]
+}

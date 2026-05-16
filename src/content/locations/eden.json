@@ -1,0 +1,22 @@
+{
+  "id": "eden",
+  "ancientName": "Edén",
+  "region": "mesopotamia",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Mesopotamia meridional (Tigris-Éufrates)",
+      "coords": [31.0, 47.5],
+      "svgPosition": [620, 320],
+      "support": "El texto bíblico menciona el Tigris y el Éufrates como ríos que salen del Edén; la confluencia se encuentra en el sur de Mesopotamia (actual Irak)."
+    },
+    {
+      "name": "Meseta de Armenia",
+      "coords": [40.0, 44.0],
+      "svgPosition": [560, 200],
+      "support": "Tradición rabínica y algunos comentaristas patrísticos sitúan el Edén en las fuentes de los grandes ríos."
+    }
+  ],
+  "description": "Jardín primordial donde fueron creados Adán y Eva. Los textos bíblicos mencionan cuatro ríos: Pisón, Gihón, Tigris (Hidekel) y Éufrates.",
+  "events": ["nacimiento-adan-eva", "expulsion-eden"]
+}
