@@ -1,0 +1,53 @@
+---
+import type { CollectionEntry } from 'astro:content';
+// TODO: enable after Tasks 22-26
+// import ComparativeBlock from './ComparativeBlock.astro';
+// import SourceBadge from './SourceBadge.astro';
+// import DeepDive from './DeepDive.astro';
+
+interface Props { event: CollectionEntry<'events'>; }
+const { event } = Astro.props;
+const data = event.data;
+const { Content } = await event.render();
+const primaryLocation = data.locations[0];
+---
+<section
+  class="event-scene grid grid-cols-1 lg:grid-cols-[40fr_60fr] min-h-[120vh]"
+  data-event-scene
+  data-event-id={data.id}
+  data-era={data.era}
+  data-svg-x={primaryLocation?.svgPosition[0]}
+  data-svg-y={primaryLocation?.svgPosition[1]}
+>
+  <div class="narrative px-6 lg:px-10 py-24 flex flex-col justify-center">
+    <p class="text-xs tracking-[0.4em] opacity-60 mb-3">— AÑO {data.biblicalYear} —</p>
+    <h2 class="font-display text-4xl lg:text-5xl mb-2">{data.title}</h2>
+    {data.subtitle && <p class="font-display italic opacity-70 text-lg mb-8">{data.subtitle}</p>}
+
+    <div class="prose prose-invert max-w-none text-text">
+      <Content />
+    </div>
+
+    {/* TODO: Comparative block enabled after Tasks 22-26
+    {data.comparative.divergent && (
+      <ComparativeBlock comparative={data.comparative} />
+    )}
+    */}
+
+    {data.sources.length > 0 && (
+      <div class="mt-8">
+        <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
+        <ul class="space-y-2">
+          {/* TODO: SourceBadge enabled after Tasks 22-26 */}
+          {data.sources.map((s) => <li>{s.title}</li>)}
+        </ul>
+      </div>
+    )}
+
+    {/* TODO: DeepDive enabled after Tasks 22-26
+    <DeepDive deepDive={data.deepDive} />
+    */}
+  </div>
+
+  <div class="map-spacer hidden lg:block"></div>
+</section>
