@@ -196,7 +196,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
 
       // --- Hover interaction: scale up + tooltip ---
       pinWrap.style.cursor = 'pointer';
-      pinWrap.style.pointerEvents = 'auto';
+      pinWrap.style.pointerEvents = 'none';  // default off — enabled only when marker is active
 
       const showCharTip = (e: MouseEvent) => {
         showPreview(e, {
@@ -250,7 +250,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
 
     // --- Hover interaction: scale up + tooltip ---
     locGroup.style.cursor = 'pointer';
-    locGroup.style.pointerEvents = 'auto';
+    locGroup.style.pointerEvents = 'none';
 
     const showLocTip = (e: MouseEvent) => {
       showPreview(e, {
@@ -303,6 +303,10 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
     pinWraps.forEach((pin) => {
       pin.dataset.motionStarted = '';
     });
+    // Disable pointer-events on this marker's pin/location children
+    m.querySelectorAll<SVGElement>('[data-char-pin-wrap], [data-marker-location-portrait]').forEach((el) => {
+      el.style.pointerEvents = 'none';
+    });
   });
 
   const target = svgRoot.querySelector<SVGGElement>(`[data-marker="${id}"]`);
@@ -310,6 +314,11 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
   target.classList.add('active');
   target.style.pointerEvents = 'auto';
   gsap.to(target, { opacity: 1, duration: 0.4 });
+
+  // Enable hover on the active marker's children (pins, location portrait)
+  target.querySelectorAll<SVGElement>('[data-char-pin-wrap], [data-marker-location-portrait]').forEach((el) => {
+    el.style.pointerEvents = 'auto';
+  });
 
   const halo = target.querySelector('[data-halo]');
   if (halo) {
