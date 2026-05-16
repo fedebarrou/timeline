@@ -1,0 +1,55 @@
+{
+  "id": "patriarcal",
+  "order": 2,
+  "name": "Patriarcal",
+  "tagline": "El nacimiento de un linaje",
+  "yearRange": { "from": 1657, "to": 2300 },
+  "gregorianRange": { "from": -2103, "to": -1500 },
+  "palette": {
+    "bg": "#2a1f15",
+    "bgGradient": "linear-gradient(180deg,#2a1f15 0%,#3a2a1a 100%)",
+    "surface": "#3a2a1a",
+    "primary": "#e8c89a",
+    "secondary": "#a07850",
+    "accent": "#f0d9a8",
+    "text": "#e8d5b7",
+    "muted": "rgba(232,213,183,.55)",
+    "border": "rgba(232,200,154,.2)"
+  },
+  "typography": {
+    "display": "'Trajan Pro 3', 'Cinzel', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 400,
+    "letterSpacing": "0.08em"
+  },
+  "texture": {
+    "type": "papyrus",
+    "url": "/textures/patriarcal.png",
+    "blendMode": "multiply",
+    "opacity": 0.10
+  },
+  "motifs": {
+    "ornaments": [],
+    "dividers": "/svg/motifs/patriarcal-divider.svg",
+    "iconStyle": "cuneiform"
+  },
+  "map": {
+    "paperColor": "#3a2a1a",
+    "landStroke": "#e8c89a",
+    "landFill": "transparent",
+    "waterStyle": "parallel-lines",
+    "routeStyle": "dashed-gold",
+    "labelFont": "'Cinzel', serif",
+    "labelColor": "#e8c89a"
+  },
+  "ambience": {
+    "particles": "dust",
+    "sound": null,
+    "scrollFeel": "medium"
+  },
+  "transition": {
+    "intoNext": "sunrise-egypt",
+    "duration": 2000
+  }
+}

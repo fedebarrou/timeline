@@ -1,0 +1,55 @@
+{
+  "id": "reinos-y-exilio",
+  "order": 4,
+  "name": "Reinos y Exilio",
+  "tagline": "Oro, gloria y caída",
+  "yearRange": { "from": 2900, "to": 3500 },
+  "gregorianRange": { "from": -860, "to": -260 },
+  "palette": {
+    "bg": "#3a1a1a",
+    "bgGradient": "linear-gradient(180deg,#3a1a1a 0%,#5a2a2a 100%)",
+    "surface": "#5a2a2a",
+    "primary": "#f5d590",
+    "secondary": "#a05060",
+    "accent": "#f0d9b0",
+    "text": "#f0d9b0",
+    "muted": "rgba(240,217,176,.55)",
+    "border": "rgba(245,213,144,.2)"
+  },
+  "typography": {
+    "display": "'Trajan Pro 3', 'Cinzel', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 600,
+    "letterSpacing": "0.10em"
+  },
+  "texture": {
+    "type": "gold-leaf",
+    "url": "/textures/reinos.png",
+    "blendMode": "screen",
+    "opacity": 0.08
+  },
+  "motifs": {
+    "ornaments": [],
+    "dividers": "/svg/motifs/reinos-divider.svg",
+    "iconStyle": "royal"
+  },
+  "map": {
+    "paperColor": "#3a1a1a",
+    "landStroke": "#f5d590",
+    "landFill": "transparent",
+    "waterStyle": "calm-blue",
+    "routeStyle": "gold-thick",
+    "labelFont": "'Cinzel', serif",
+    "labelColor": "#f5d590"
+  },
+  "ambience": {
+    "particles": "incense",
+    "sound": null,
+    "scrollFeel": "majestic"
+  },
+  "transition": {
+    "intoNext": "olive-dawn",
+    "duration": 2000
+  }
+}

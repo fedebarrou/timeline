@@ -2,54 +2,59 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
+const eras = (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order);
 const events = await getCollection('events');
-const eras = await getCollection('eras');
-const byEra = new Map<string, typeof events>();
-events
-  .sort((a, b) => a.data.order - b.data.order)
-  .forEach((e) => {
-    const list = byEra.get(e.data.era) ?? [];
-    list.push(e);
-    byEra.set(e.data.era, list);
-  });
-const sortedEras = eras.sort((a, b) => a.data.order - b.data.order);
+const eventsByEra = new Map<string, number>();
+events.forEach((e) => {
+  eventsByEra.set(e.data.era, (eventsByEra.get(e.data.era) ?? 0) + 1);
+});
 ---
 <BaseLayout title="Línea de Tiempo · Adán → Mahoma">
-  <section class="hero min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
+  <section class="hero min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
     <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-6">Línea de tiempo</p>
     <h1 class="font-display text-5xl md:text-7xl mb-4">Adán → Mahoma</h1>
     <p class="max-w-2xl text-lg opacity-80 leading-relaxed">
       Un viaje visual por los relatos de la Torá, la Biblia y el Corán —
       comparando, contrastando y mapeando 4.500 años de historia sagrada.
     </p>
-    <a href="/timeline" class="inline-block mt-12 px-8 py-3 border border-primary text-primary hover:bg-primary hover:text-bg transition-colors tracking-widest uppercase text-sm">
-      Comenzar el viaje ↓
-    </a>
-    <p class="mt-12 text-xs opacity-60 tracking-wider">
-      80 eventos · 3 tradiciones · 6 eras · 4.500 años
+    <p class="mt-8 text-xs opacity-60 tracking-wider">
+      6 eras · 3 tradiciones · 4.500 años · Elegí desde dónde empezar
     </p>
   </section>
 
-  <section class="indice py-16 px-6 max-w-6xl mx-auto">
-    <h2 class="font-display text-2xl mb-8 opacity-80">Índice por era</h2>
-    <div class="grid md:grid-cols-2 gap-8">
-      {sortedEras.map((era) => (
-        <div>
-          <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">
-            Era {era.data.order} · {era.data.name}
-          </h3>
-          <ul class="space-y-1 text-sm">
-            {(byEra.get(era.data.id) ?? []).map((ev) => (
-              <li>
-                <a href={`/timeline#${ev.data.id}`} class="hover:text-accent">
-                  {ev.data.title}
-                </a>
-                <span class="opacity-50 ml-2">— año {ev.data.biblicalYear}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+  <section class="eras-grid py-16 px-6 max-w-7xl mx-auto">
+    <h2 class="font-display text-2xl mb-10 opacity-80 text-center">Eras</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {eras.map((era) => {
+        const count = eventsByEra.get(era.data.id) ?? 0;
+        const available = count > 0;
+        const Tag = available ? 'a' : 'div';
+        return (
+          <Tag
+            href={available ? `/era/${era.data.id}` : undefined}
+            class={`era-card relative block rounded-lg overflow-hidden border ${available ? 'border-border hover:border-accent cursor-pointer' : 'border-border/40 opacity-60'} transition-all`}
+            style={`background: ${era.data.palette.bgGradient}; color: ${era.data.palette.text};`}
+          >
+            <div class="p-6 min-h-[220px] flex flex-col justify-between">
+              <div>
+                <p class="text-[10px] tracking-[0.3em] uppercase opacity-60 mb-3" style={`color: ${era.data.palette.primary}`}>Era {era.data.order}</p>
+                <h3 class="font-display text-3xl mb-1" style={`font-family: ${era.data.typography.display}; color: ${era.data.palette.primary}`}>{era.data.name}</h3>
+                <p class="italic opacity-70 text-sm" style={`color: ${era.data.palette.text}`}>{era.data.tagline}</p>
+              </div>
+              <div class="flex items-end justify-between mt-6">
+                <p class="text-xs opacity-60">
+                  Año {era.data.yearRange.from}–{era.data.yearRange.to}
+                </p>
+                {available ? (
+                  <span class="text-xs tracking-wider uppercase" style={`color: ${era.data.palette.accent}`}>{count} eventos →</span>
+                ) : (
+                  <span class="text-[10px] tracking-wider uppercase px-2 py-1 border border-current opacity-60 rounded">Próximamente</span>
+                )}
+              </div>
+            </div>
+          </Tag>
+        );
+      })}
     </div>
   </section>
 </BaseLayout>

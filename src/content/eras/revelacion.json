@@ -1,0 +1,55 @@
+{
+  "id": "revelacion",
+  "order": 6,
+  "name": "Revelación",
+  "tagline": "El Profeta y el desierto",
+  "yearRange": { "from": 4330, "to": 4392 },
+  "gregorianRange": { "from": 570, "to": 632 },
+  "palette": {
+    "bg": "#152a3a",
+    "bgGradient": "linear-gradient(180deg,#0a1a2a 0%,#152a3a 100%)",
+    "surface": "#152a3a",
+    "primary": "#d4a574",
+    "secondary": "#3a8090",
+    "accent": "#f0d9a8",
+    "text": "#d8e0e8",
+    "muted": "rgba(216,224,232,.55)",
+    "border": "rgba(212,165,116,.2)"
+  },
+  "typography": {
+    "display": "'Cinzel', 'EB Garamond', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 400,
+    "letterSpacing": "0.10em"
+  },
+  "texture": {
+    "type": "arabesque",
+    "url": "/textures/revelacion.png",
+    "blendMode": "multiply",
+    "opacity": 0.10
+  },
+  "motifs": {
+    "ornaments": [],
+    "dividers": "/svg/motifs/revelacion-divider.svg",
+    "iconStyle": "geometric-star"
+  },
+  "map": {
+    "paperColor": "#152a3a",
+    "landStroke": "#d4a574",
+    "landFill": "transparent",
+    "waterStyle": "geometric-waves",
+    "routeStyle": "dotted-gold",
+    "labelFont": "'Cinzel', serif",
+    "labelColor": "#d4a574"
+  },
+  "ambience": {
+    "particles": "desert-stars",
+    "sound": null,
+    "scrollFeel": "monumental"
+  },
+  "transition": {
+    "intoNext": "fade-to-light",
+    "duration": 2000
+  }
+}

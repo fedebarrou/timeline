@@ -1,0 +1,55 @@
+{
+  "id": "exodo",
+  "order": 3,
+  "name": "Éxodo",
+  "tagline": "Egipto y la liberación",
+  "yearRange": { "from": 2400, "to": 2600 },
+  "gregorianRange": { "from": -1360, "to": -1160 },
+  "palette": {
+    "bg": "#0f1a30",
+    "bgGradient": "linear-gradient(180deg,#0f1a30 0%,#1a2840 100%)",
+    "surface": "#1a2840",
+    "primary": "#4a90d4",
+    "secondary": "#2a5080",
+    "accent": "#e8c050",
+    "text": "#c8d4e8",
+    "muted": "rgba(200,212,232,.55)",
+    "border": "rgba(74,144,212,.2)"
+  },
+  "typography": {
+    "display": "'Cinzel', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 600,
+    "letterSpacing": "0.12em"
+  },
+  "texture": {
+    "type": "papyrus-hieroglyph",
+    "url": "/textures/exodo.png",
+    "blendMode": "multiply",
+    "opacity": 0.10
+  },
+  "motifs": {
+    "ornaments": [],
+    "dividers": "/svg/motifs/exodo-divider.svg",
+    "iconStyle": "hieroglyph"
+  },
+  "map": {
+    "paperColor": "#1a2840",
+    "landStroke": "#e8c050",
+    "landFill": "transparent",
+    "waterStyle": "nile-waves",
+    "routeStyle": "double-line",
+    "labelFont": "'Cinzel', serif",
+    "labelColor": "#e8c050"
+  },
+  "ambience": {
+    "particles": "mist",
+    "sound": null,
+    "scrollFeel": "monumental"
+  },
+  "transition": {
+    "intoNext": "royal-purple-rise",
+    "duration": 2000
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "evangelio",
+  "order": 5,
+  "name": "Evangelio",
+  "tagline": "Una luz nueva",
+  "yearRange": { "from": 3756, "to": 3793 },
+  "gregorianRange": { "from": -4, "to": 33 },
+  "palette": {
+    "bg": "#1a2820",
+    "bgGradient": "linear-gradient(180deg,#0f1a1a 0%,#1a2820 100%)",
+    "surface": "#1a2820",
+    "primary": "#d0d8a8",
+    "secondary": "#5a7060",
+    "accent": "#f0e5c0",
+    "text": "#e0e8d8",
+    "muted": "rgba(224,232,216,.55)",
+    "border": "rgba(208,216,168,.2)"
+  },
+  "typography": {
+    "display": "'Cormorant Garamond', 'EB Garamond', serif",
+    "body": "'EB Garamond', Georgia, serif",
+    "ui": "'Inter', system-ui",
+    "displayWeight": 400,
+    "letterSpacing": "0.06em"
+  },
+  "texture": {
+    "type": "mosaic",
+    "url": "/textures/evangelio.png",
+    "blendMode": "multiply",
+    "opacity": 0.12
+  },
+  "motifs": {
+    "ornaments": [],
+    "dividers": "/svg/motifs/evangelio-divider.svg",
+    "iconStyle": "byzantine"
+  },
+  "map": {
+    "paperColor": "#1a2820",
+    "landStroke": "#d0d8a8",
+    "landFill": "transparent",
+    "waterStyle": "tessellated",
+    "routeStyle": "thin-cross",
+    "labelFont": "'Cormorant Garamond', serif",
+    "labelColor": "#d0d8a8"
+  },
+  "ambience": {
+    "particles": "soft-light",
+    "sound": null,
+    "scrollFeel": "serene"
+  },
+  "transition": {
+    "intoNext": "geometric-blue",
+    "duration": 2000
+  }
+}
