@@ -1,0 +1,28 @@
+---
+interface Props {
+  media?: {
+    src: string;
+    credit: string;
+    license: string;
+    source?: string;
+    caption?: string;
+  };
+}
+const { media } = Astro.props;
+---
+{media && (
+  <figure class="media-hero mb-8">
+    <img
+      src={media.src}
+      alt={media.caption ?? ''}
+      loading="lazy"
+      class="w-full rounded-lg shadow-lg"
+    />
+    <figcaption class="mt-2 text-xs opacity-60 flex gap-3">
+      <span>{media.credit}</span>
+      <span class="opacity-60">·</span>
+      <span class="opacity-60">{media.license}</span>
+      {media.source && <><span class="opacity-60">·</span><span>{media.source}</span></>}
+    </figcaption>
+  </figure>
+)}

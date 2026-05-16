@@ -1,0 +1,17 @@
+---
+interface Item {
+  src: string; caption?: string; credit: string; license: string;
+}
+interface Props { items: Item[]; }
+const { items } = Astro.props;
+---
+{items.length > 0 && (
+  <div class="media-gallery grid grid-cols-2 md:grid-cols-3 gap-3 my-6">
+    {items.map((item) => (
+      <figure class="rounded overflow-hidden border border-border">
+        <img src={item.src} alt={item.caption ?? ''} loading="lazy" class="w-full aspect-square object-cover" />
+        {item.caption && <figcaption class="px-2 py-1 text-[10px] opacity-70">{item.caption}</figcaption>}
+      </figure>
+    ))}
+  </div>
+)}
