@@ -1,0 +1,73 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  events: CollectionEntry<'events'>[];
+  eras: CollectionEntry<'eras'>[];
+}
+const { events, eras } = Astro.props;
+const minYear = Math.min(...events.map((e) => e.data.biblicalYear));
+const maxYear = Math.max(...events.map((e) => e.data.biblicalYear));
+const span = (maxYear - minYear) || 1;
+function pct(y: number) { return ((y - minYear) / span) * 100; }
+const sortedEras = eras.sort((a, b) => a.data.order - b.data.order);
+---
+<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg/80 backdrop-blur border-b border-border" data-timeline-nav>
+  <div class="relative h-8 max-w-7xl mx-auto">
+    <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
+
+    {sortedEras.map((era) => {
+      const eraEvents = events.filter((e) => e.data.era === era.data.id);
+      if (eraEvents.length === 0) return null;
+      const eraMin = Math.min(...eraEvents.map((e) => e.data.biblicalYear));
+      const eraMax = Math.max(...eraEvents.map((e) => e.data.biblicalYear));
+      const leftPct = pct(eraMin);
+      const widthPct = Math.max(pct(eraMax) - pct(eraMin), 2);
+      return (
+        <div
+          class="absolute top-1/2 -translate-y-1/2 h-1 rounded"
+          style={`left: ${leftPct}%; width: ${widthPct}%; background: ${era.data.palette.primary}; opacity: 0.4`}
+          title={era.data.name}
+        />
+      );
+    })}
+
+    {events.map((e) => (
+      <a
+        href={`#event-${e.data.id}`}
+        class="timeline-dot absolute top-1/2 -translate-x-1/2 -translate-y-1/2 group"
+        style={`left: ${pct(e.data.biblicalYear)}%`}
+        data-timeline-marker={e.data.id}
+      >
+        <div class="w-2.5 h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
+        <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-bg border border-border rounded px-2 py-1">
+          {e.data.title} <span class="opacity-50">· año {e.data.biblicalYear}</span>
+        </div>
+      </a>
+    ))}
+
+    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
+  </div>
+</div>
+
+<script>
+  function updateActive(eventId: string) {
+    const marker = document.querySelector(`[data-timeline-marker="${eventId}"]`);
+    const active = document.querySelector<HTMLElement>('[data-timeline-active]');
+    if (!marker || !active) return;
+    const left = (marker as HTMLElement).style.left;
+    active.style.left = left;
+  }
+
+  const scenes = document.querySelectorAll<HTMLElement>('[data-event-scene]');
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('data-event-id');
+        if (id) updateActive(id);
+      }
+    }
+  }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
+
+  scenes.forEach((s) => observer.observe(s));
+</script>

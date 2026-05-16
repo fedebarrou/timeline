@@ -7,6 +7,7 @@ import ManuscriptMap from '../components/ManuscriptMap.astro';
 import ModernMapLayer from '../components/ModernMapLayer.astro';
 import MapToggleButton from '../components/MapToggleButton.astro';
 import EraTheme from '../components/EraTheme.astro';
+import TimelineNav from '../components/TimelineNav.astro';
 
 const events = (await getCollection('events')).sort((a, b) => a.data.order - b.data.order);
 const eras = (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order);
@@ -46,7 +47,9 @@ const allMarkers = events.map((e) => {
 }).filter(Boolean);
 ---
 <BaseLayout title="Línea de tiempo · Adán → Mahoma">
+  <style>main { padding-top: 7rem !important; }</style>
   {eras.map((era) => <EraTheme era={era} />)}
+  <TimelineNav events={events} eras={eras} />
 
   <div class="relative">
     <div class="map-sticky hidden lg:block fixed top-16 right-0 w-[60%] h-[calc(100vh-4rem)]">
