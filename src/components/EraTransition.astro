@@ -1,0 +1,29 @@
+---
+import type { Era } from '../lib/eras';
+interface Props {
+  from: Era;
+  to: Era;
+}
+const { from, to } = Astro.props;
+---
+<section
+  class="era-transition relative min-h-screen flex items-center justify-center text-center px-8"
+  data-era-transition
+  data-from-era={from.data.id}
+  data-to-era={to.data.id}
+>
+  <div class="max-w-2xl">
+    <p class="text-sm tracking-[0.4em] opacity-50 mb-4">— {from.data.name} —</p>
+    <h2 class="font-display text-4xl italic mb-8">Y así terminó la era de {from.data.name.toLowerCase()}</h2>
+    <p class="text-sm tracking-[0.4em] opacity-50 mt-12">— {to.data.name} —</p>
+    <p class="font-display text-xl italic mt-2 opacity-70">{to.data.tagline}</p>
+  </div>
+</section>
+
+<script>
+  import { initEraTransition } from '../lib/scrollytelling';
+  document.querySelectorAll<HTMLElement>('[data-era-transition]').forEach((el) => {
+    const target = el.dataset.toEra;
+    if (target) initEraTransition(el, target);
+  });
+</script>
