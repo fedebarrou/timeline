@@ -30,44 +30,48 @@ const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, 
 ---
 <section
   id={`event-${data.id}`}
-  class="event-scene grid grid-cols-1 lg:grid-cols-[40fr_60fr] min-h-[120vh]"
+  class="event-scene min-h-[120vh]"
   data-event-scene
   data-event-id={data.id}
   data-era={data.era}
   data-svg-x={primaryLocation?.svgPosition[0]}
   data-svg-y={primaryLocation?.svgPosition[1]}
 >
-  <div class="narrative px-6 lg:px-10 py-24 flex flex-col justify-center">
-    <p class="text-xs tracking-[0.4em] opacity-60 mb-3">— AÑO {data.biblicalYear} —</p>
-    <h2 class="font-display text-4xl lg:text-5xl mb-2">{data.title}</h2>
-    {data.subtitle && <p class="font-display italic opacity-70 text-lg mb-4">{data.subtitle}</p>}
+  <div class="grid grid-cols-1 md:grid-cols-[40fr_60fr]">
+    <div class="narrative px-6 lg:px-10 py-24 flex flex-col justify-center">
+      <p class="text-xs tracking-[0.4em] opacity-60 mb-3">— AÑO {data.biblicalYear} —</p>
+      <h2 class="font-display text-4xl lg:text-5xl mb-2">{data.title}</h2>
+      {data.subtitle && <p class="font-display italic opacity-70 text-lg mb-4">{data.subtitle}</p>}
 
-    <NarratorButton eventId={data.id} narrationText={narrationText} />
+      <NarratorButton eventId={data.id} narrationText={narrationText} />
 
-    <MediaHero media={data.media?.hero} />
+      <MediaHero media={data.media?.hero} />
 
-    <div class="prose prose-invert max-w-none text-text">
-      <Content />
+      <div class="prose prose-invert max-w-none text-text">
+        <Content />
+      </div>
+
+      <VideoEmbed video={data.media?.video} />
+      <MediaGallery items={data.media?.gallery ?? []} />
+
+      {data.sources.length > 0 && (
+        <div class="mt-8">
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
+          <ul class="space-y-2">
+            {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
+          </ul>
+        </div>
+      )}
+
+      <DeepDive deepDive={data.deepDive} />
     </div>
 
-    <VideoEmbed video={data.media?.video} />
-    <MediaGallery items={data.media?.gallery ?? []} />
-
-    {data.comparative.divergent && (
-      <ComparativeBlock comparative={data.comparative} />
-    )}
-
-    {data.sources.length > 0 && (
-      <div class="mt-8">
-        <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
-        <ul class="space-y-2">
-          {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
-        </ul>
-      </div>
-    )}
-
-    <DeepDive deepDive={data.deepDive} />
+    <div class="map-spacer hidden md:block"></div>
   </div>
 
-  <div class="map-spacer hidden lg:block"></div>
+  {data.comparative.divergent && (
+    <div class="comparative-fullwidth px-6 lg:px-10 pb-16">
+      <ComparativeBlock comparative={data.comparative} />
+    </div>
+  )}
 </section>
