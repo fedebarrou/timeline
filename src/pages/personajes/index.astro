@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const chars = (await getCollection('characters')).sort((a, b) =>
+  (a.data.birthYear ?? 0) - (b.data.birthYear ?? 0));
+---
+<BaseLayout title="Personajes">
+  <section class="px-6 py-16 max-w-5xl mx-auto">
+    <h1 class="font-display text-4xl mb-2">Personajes</h1>
+    <p class="opacity-70 mb-10">Vidas y menciones en las tres tradiciones.</p>
+    <ul class="grid md:grid-cols-2 gap-6">
+      {chars.map((c) => (
+        <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
+          <a href={`/personajes/${c.data.id}`}>
+            <h2 class="font-display text-2xl">{c.data.name}</h2>
+            {c.data.alternateNames.meaning && (
+              <p class="text-xs italic opacity-60 mt-1">"{c.data.alternateNames.meaning}"</p>
+            )}
+            <p class="text-sm opacity-70 mt-3">
+              {c.data.birthYear !== undefined && `Año ${c.data.birthYear}`}
+              {c.data.deathYear !== undefined && ` — ${c.data.deathYear}`}
+              {c.data.ageAtDeath && ` (vivió ${c.data.ageAtDeath} años)`}
+            </p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>

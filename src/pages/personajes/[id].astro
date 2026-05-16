@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CharacterTimeline from '../../components/CharacterTimeline.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const chars = await getCollection('characters');
+  return chars.map((c) => ({ params: { id: c.data.id }, props: { char: c } }));
+}
+
+const { char } = Astro.props;
+const data = char.data;
+const { Content } = await render(char);
+
+const eventEntries = await Promise.all(
+  data.events.map(async (id) => {
+    const e = await getEntry('events', id);
+    return e ? { id: e.data.id, year: e.data.biblicalYear, label: e.data.title } : null;
+  })
+);
+const events = eventEntries.filter(Boolean) as { id: string; year: number; label: string }[];
+
+const mentionsCount =
+  data.mentions.tora.length + data.mentions.biblia.length + data.mentions.coran.length;
+---
+<BaseLayout title={data.name}>
+  <article class="px-6 py-16 max-w-4xl mx-auto">
+    <header class="mb-10">
+      <h1 class="font-display text-5xl">{data.name}</h1>
+      {(data.alternateNames.hebrew || data.alternateNames.arabic) && (
+        <p class="text-lg opacity-70 mt-2">
+          {data.alternateNames.hebrew} {data.alternateNames.hebrew && data.alternateNames.arabic && '·'} {data.alternateNames.arabic}
+        </p>
+      )}
+      {data.alternateNames.meaning && (
+        <p class="italic opacity-60 mt-2">"{data.alternateNames.meaning}"</p>
+      )}
+      <p class="text-sm opacity-70 mt-4">
+        {data.birthYear !== undefined && `Año ${data.birthYear}`}
+        {data.deathYear !== undefined && ` — ${data.deathYear}`}
+        {data.ageAtDeath && ` (vivió ${data.ageAtDeath} años)`}
+      </p>
+    </header>
+
+    {events.length > 0 && <CharacterTimeline birthYear={data.birthYear} deathYear={data.deathYear} events={events} />}
+
+    {data.significance && (
+      <section class="prose prose-invert max-w-none mb-10">
+        <Content />
+      </section>
+    )}
+
+    <section class="mb-10">
+      <h2 class="font-display text-2xl mb-4">Menciones en las escrituras <span class="text-sm opacity-60">({mentionsCount} menciones)</span></h2>
+
+      {data.mentions.tora.length > 0 && (
+        <div class="mb-6">
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-70 mb-3">📜 Torá ({data.mentions.tora.length})</h3>
+          <ul class="space-y-3">
+            {data.mentions.tora.map((m) => (
+              <li class="border-l-2 border-primary/40 pl-4">
+                <p class="font-semibold">{m.book} {m.reference}</p>
+                <p class="text-sm opacity-80">{m.summary}</p>
+                {m.fullText && <details class="text-xs opacity-70 mt-1"><summary class="cursor-pointer">+ cita</summary><blockquote class="italic mt-2">{m.fullText}</blockquote></details>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.mentions.biblia.length > 0 && (
+        <div class="mb-6">
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-70 mb-3">✝ Biblia ({data.mentions.biblia.length})</h3>
+          <ul class="space-y-3">
+            {data.mentions.biblia.map((m) => (
+              <li class="border-l-2 border-primary/40 pl-4">
+                <p class="font-semibold">{m.book} {m.reference}</p>
+                <p class="text-sm opacity-80">{m.summary}</p>
+                {m.fullText && <details class="text-xs opacity-70 mt-1"><summary class="cursor-pointer">+ cita</summary><blockquote class="italic mt-2">{m.fullText}</blockquote></details>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.mentions.coran.length > 0 && (
+        <div class="mb-6">
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-70 mb-3">☪ Corán ({data.mentions.coran.length})</h3>
+          <ul class="space-y-3">
+            {data.mentions.coran.map((m) => (
+              <li class="border-l-2 border-primary/40 pl-4">
+                <p class="font-semibold">Sura {m.sura} ({m.number}) v.{m.verses}</p>
+                <p class="text-sm opacity-80">{m.summary}</p>
+                {m.fullText && <details class="text-xs opacity-70 mt-1"><summary class="cursor-pointer">+ cita</summary><blockquote class="italic mt-2">{m.fullText}</blockquote></details>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+
+    {data.extraBiblical.length > 0 && (
+      <section class="mb-10">
+        <h2 class="font-display text-2xl mb-4">Tradiciones complementarias</h2>
+        <ul class="space-y-2 text-sm">
+          {data.extraBiblical.map((e) => (
+            <li>🟡 <strong>{e.source}</strong> — {e.summary}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
+</BaseLayout>

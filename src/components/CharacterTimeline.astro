@@ -1,0 +1,25 @@
+---
+interface Props { birthYear?: number; deathYear?: number; events: { id: string; year: number; label: string }[]; }
+const { birthYear, deathYear, events } = Astro.props;
+const min = birthYear ?? Math.min(...events.map((e) => e.year));
+const max = deathYear ?? Math.max(...events.map((e) => e.year));
+const span = max - min || 1;
+function pct(y: number) { return ((y - min) / span) * 100; }
+---
+<div class="character-timeline relative h-12 my-6">
+  <div class="absolute top-1/2 left-0 right-0 h-px bg-border"></div>
+  {events.map((e) => (
+    <div class="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 group" style={`left: ${pct(e.year)}%`}>
+      <div class="w-2 h-2 rounded-full bg-primary"></div>
+      <div class="absolute top-full mt-2 text-[10px] whitespace-nowrap opacity-60 group-hover:opacity-100">
+        {e.label} <span class="opacity-50">— {e.year}</span>
+      </div>
+    </div>
+  ))}
+  {birthYear !== undefined && (
+    <div class="absolute top-1/2 -translate-y-1/2 left-0 text-[10px] opacity-60">{birthYear}</div>
+  )}
+  {deathYear !== undefined && (
+    <div class="absolute top-1/2 -translate-y-1/2 right-0 text-[10px] opacity-60">{deathYear}</div>
+  )}
+</div>
