@@ -1,0 +1,25 @@
+---
+interface Props {
+  source: {
+    type: 'canonical' | 'apocryphal' | 'traditional' | 'archaeological';
+    title: string;
+    weight?: 'primary' | 'secondary';
+    note?: string;
+  };
+}
+const { source } = Astro.props;
+const map = {
+  canonical:      { color: 'bg-blue-500',   icon: '🔵', label: 'canónico' },
+  apocryphal:     { color: 'bg-yellow-500', icon: '🟡', label: 'apócrifo' },
+  traditional:    { color: 'bg-green-500',  icon: '🟢', label: 'tradición' },
+  archaeological: { color: 'bg-amber-800',  icon: '🟤', label: 'arqueología' },
+} as const;
+const cfg = map[source.type];
+---
+<span class="source-badge inline-flex items-baseline gap-2 text-sm">
+  <span class="badge text-[10px] tracking-wider uppercase px-1.5 py-0.5 rounded border border-current opacity-70">
+    {cfg.icon} {cfg.label}
+  </span>
+  <span class="title">{source.title}</span>
+  {source.note && <span class="note text-xs opacity-60">— {source.note}</span>}
+</span>
