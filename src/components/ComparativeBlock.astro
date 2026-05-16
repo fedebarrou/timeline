@@ -16,39 +16,55 @@ interface Props {
   };
 }
 const { comparative } = Astro.props;
-const cols = [
+const rows = [
   { key: 'tora',   label: 'TORÁ',   icon: '📜', data: comparative.tora,   accent: '#d4a574' },
   { key: 'biblia', label: 'BIBLIA', icon: '✝',  data: comparative.biblia, accent: '#e8b87a' },
   { key: 'coran',  label: 'CORÁN',  icon: '☪',  data: comparative.coran,  accent: '#8b9bc4' },
-].filter((c) => c.data);
+].filter((r) => r.data);
 ---
-<div class="comparative max-w-6xl mx-auto border border-border rounded-lg p-6 bg-surface/40" data-comparative>
-  <p class="text-xs tracking-[0.3em] uppercase opacity-60 mb-6 text-center">Las tradiciones difieren</p>
-  <div class="grid grid-cols-3 gap-4 md:gap-6">
-    {cols.map((col, i) => (
+<div class="comparative mt-10 border border-border rounded-lg bg-surface/40 overflow-hidden" data-comparative>
+  <div class="px-5 py-3 border-b border-border bg-bg/40">
+    <p class="text-xs tracking-[0.3em] uppercase opacity-70">Las tradiciones difieren</p>
+  </div>
+
+  <div class="tradition-rows divide-y divide-border">
+    {rows.map((row, i) => (
       <div
-        class="tradition-col flex flex-col gap-3 p-5 rounded-md bg-bg/30 border-t-2"
-        style={`border-top-color: ${col.accent}`}
+        class="tradition-row grid gap-4 px-5 py-4 items-start hover:bg-bg/20 transition-colors"
+        style="grid-template-columns: auto minmax(80px,140px) 1fr"
         data-stagger-index={i}
       >
-        <div class="flex items-center gap-2 mb-1">
-          <span class="inline-block w-2.5 h-2.5 rounded-full" style={`background: ${col.accent}`}></span>
-          <span class="text-[11px] tracking-[0.3em] opacity-80">{col.icon} {col.label}</span>
+        <div class="flex items-center gap-2 pt-0.5">
+          <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style={`background: ${row.accent}`}></span>
+          <span class="text-[11px] tracking-[0.25em] opacity-90 whitespace-nowrap">{row.icon} {row.label}</span>
         </div>
-        <div class="text-xs opacity-60">{col.data!.citation}</div>
-        <p class="text-sm leading-relaxed flex-1">{col.data!.summary}</p>
-        {col.data!.fullText && (
-          <details class="mt-2 text-xs opacity-80">
-            <summary class="cursor-pointer hover:opacity-100 select-none">+ ver cita textual</summary>
-            <blockquote class="mt-2 italic border-l-2 border-muted pl-3 text-xs leading-relaxed">{col.data!.fullText}</blockquote>
-          </details>
-        )}
-        {col.data!.keyDifferences.length > 0 && (
-          <ul class="mt-2 text-xs space-y-1">
-            {col.data!.keyDifferences.map((d) => <li class="opacity-70 leading-snug">• {d}</li>)}
-          </ul>
-        )}
+        <div class="text-xs opacity-70 leading-relaxed pt-0.5">
+          {row.data!.citation}
+        </div>
+        <div class="text-xs space-y-2">
+          <p class="text-sm leading-relaxed">{row.data!.summary}</p>
+          {row.data!.fullText && (
+            <details>
+              <summary class="cursor-pointer hover:opacity-100 select-none opacity-80 text-xs">+ ver cita textual</summary>
+              <blockquote class="mt-2 italic border-l-2 border-muted pl-3 text-xs leading-relaxed opacity-80">{row.data!.fullText}</blockquote>
+            </details>
+          )}
+          {row.data!.keyDifferences.length > 0 && (
+            <ul class="space-y-1">
+              {row.data!.keyDifferences.map((d) => <li class="text-xs opacity-70 leading-snug">• {d}</li>)}
+            </ul>
+          )}
+        </div>
       </div>
     ))}
   </div>
 </div>
+
+<style>
+  @media (max-width: 768px) {
+    .tradition-row {
+      grid-template-columns: 1fr !important;
+      gap: 0.5rem !important;
+    }
+  }
+</style>

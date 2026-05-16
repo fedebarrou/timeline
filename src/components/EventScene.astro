@@ -54,6 +54,10 @@ const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, 
       <VideoEmbed video={data.media?.video} />
       <MediaGallery items={data.media?.gallery ?? []} />
 
+      {data.comparative.divergent && (
+        <ComparativeBlock comparative={data.comparative} />
+      )}
+
       {data.sources.length > 0 && (
         <div class="mt-8">
           <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
@@ -68,10 +72,4 @@ const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, 
 
     <div class="map-spacer hidden md:block"></div>
   </div>
-
-  {data.comparative.divergent && (
-    <div class="comparative-fullwidth px-6 lg:px-10 pb-16">
-      <ComparativeBlock comparative={data.comparative} />
-    </div>
-  )}
 </section>
