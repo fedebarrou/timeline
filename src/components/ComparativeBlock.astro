@@ -1,0 +1,47 @@
+---
+interface TraditionMention {
+  summary: string;
+  citation: string;
+  fullText: string;
+  keyDifferences: string[];
+}
+
+interface Props {
+  comparative: {
+    unified: string;
+    divergent: boolean;
+    tora?: TraditionMention;
+    biblia?: TraditionMention;
+    coran?: TraditionMention;
+  };
+}
+const { comparative } = Astro.props;
+const cols = [
+  { key: 'tora',   label: 'TORÁ',   icon: '📜', data: comparative.tora },
+  { key: 'biblia', label: 'BIBLIA', icon: '✝',  data: comparative.biblia },
+  { key: 'coran',  label: 'CORÁN',  icon: '☪',  data: comparative.coran },
+].filter((c) => c.data);
+---
+<div class="comparative mt-10 border border-border rounded-lg p-5 bg-surface/40" data-comparative>
+  <p class="text-xs tracking-[0.3em] uppercase opacity-60 mb-4">Las tradiciones difieren</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    {cols.map((col, i) => (
+      <div class="tradition-col border-l-2 border-primary/60 pl-4" data-stagger-index={i}>
+        <div class="text-[10px] tracking-[0.3em] opacity-70 mb-1">{col.icon} {col.label}</div>
+        <div class="text-xs opacity-60 mb-2">{col.data!.citation}</div>
+        <p class="text-sm leading-relaxed">{col.data!.summary}</p>
+        {col.data!.fullText && (
+          <details class="mt-3 text-xs opacity-80">
+            <summary class="cursor-pointer hover:opacity-100">+ ver cita textual</summary>
+            <blockquote class="mt-2 italic border-l-2 border-muted pl-3">{col.data!.fullText}</blockquote>
+          </details>
+        )}
+        {col.data!.keyDifferences.length > 0 && (
+          <ul class="mt-3 text-xs space-y-1">
+            {col.data!.keyDifferences.map((d) => <li class="opacity-70">• {d}</li>)}
+          </ul>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
