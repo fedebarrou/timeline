@@ -12,18 +12,38 @@ const minYear = Math.min(...events.map((e) => e.data.biblicalYear));
 const maxYear = Math.max(...events.map((e) => e.data.biblicalYear));
 const span = (maxYear - minYear) || 1;
 function pct(y: number) { return ((y - minYear) / span) * 100; }
-const MIN_GAP_PCT = 3;
+// Distribute event dots so they never overlap. Uses proportional year placement
+// with a minimum visual gap, then a backward pass to keep everything inside [0,100].
+const MIN_GAP_PCT = 4;
 const sortedEventsByYear = [...events].sort((a, b) => a.data.biblicalYear - b.data.biblicalYear);
-const eventPositions = new Map<string, number>();
-let lastPct = -Infinity;
-for (const e of sortedEventsByYear) {
-  let p = pct(e.data.biblicalYear);
-  if (p - lastPct < MIN_GAP_PCT) {
-    p = lastPct + MIN_GAP_PCT;
+const N = sortedEventsByYear.length;
+const positions: number[] = sortedEventsByYear.map((e) => pct(e.data.biblicalYear));
+// Forward: each dot at least MIN_GAP_PCT ahead of previous
+for (let i = 1; i < N; i++) {
+  if (positions[i] - positions[i - 1] < MIN_GAP_PCT) {
+    positions[i] = positions[i - 1] + MIN_GAP_PCT;
   }
-  eventPositions.set(e.data.id, Math.min(p, 100));
-  lastPct = p;
 }
+// If last exceeded 100%, pull everyone back so it fits
+if (N > 0 && positions[N - 1] > 100) {
+  positions[N - 1] = 100;
+  for (let i = N - 2; i >= 0; i--) {
+    if (positions[i + 1] - positions[i] < MIN_GAP_PCT) {
+      positions[i] = positions[i + 1] - MIN_GAP_PCT;
+    }
+  }
+  // If the first one went below 0, also clamp & redistribute forward once
+  if (positions[0] < 0) {
+    positions[0] = 0;
+    for (let i = 1; i < N; i++) {
+      if (positions[i] - positions[i - 1] < MIN_GAP_PCT) {
+        positions[i] = positions[i - 1] + MIN_GAP_PCT;
+      }
+    }
+  }
+}
+const eventPositions = new Map<string, number>();
+sortedEventsByYear.forEach((e, i) => eventPositions.set(e.data.id, positions[i]));
 
 const sortedEras = eras.sort((a, b) => a.data.order - b.data.order);
 
