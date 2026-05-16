@@ -59,6 +59,7 @@ const sceneConfigs = events.map((e) => {
     eraId: e.data.era,
     svgPosition: jitteredPositions.get(e.data.id) ?? primaryLoc?.svgPosition ?? [500, 300],
     coords: primaryLoc?.coords,
+    modernName: primaryLoc?.modernName ?? primaryLoc?.ancientName,
     journeys,
   };
 });

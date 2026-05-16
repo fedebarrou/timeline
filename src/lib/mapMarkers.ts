@@ -16,15 +16,9 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   const g = document.createElementNS(ns, 'g');
   g.setAttribute('data-marker', marker.id);
   g.setAttribute('transform', `translate(${marker.svgPosition[0]}, ${marker.svgPosition[1]})`);
-
-  // Always-on passive pulse halo (CSS-animated)
-  const passivePulse = document.createElementNS(ns, 'circle');
-  passivePulse.setAttribute('r', '7');
-  passivePulse.setAttribute('fill', 'var(--era-accent)');
-  passivePulse.setAttribute('opacity', '0.3');
-  passivePulse.setAttribute('data-passive-pulse', '');
-  passivePulse.classList.add('marker-passive-pulse');
-  g.appendChild(passivePulse);
+  // Hidden by default — only revealed when activated
+  g.setAttribute('opacity', '0');
+  g.style.pointerEvents = 'none';
 
   // Active halo (GSAP-animated when marker activates)
   const halo = document.createElementNS(ns, 'circle');
@@ -34,7 +28,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   halo.setAttribute('data-halo', '');
   g.appendChild(halo);
 
-  // Main dot — larger and more visible
+  // Main dot
   const dot = document.createElementNS(ns, 'circle');
   dot.setAttribute('r', '7');
   dot.setAttribute('fill', 'var(--era-accent)');
@@ -44,11 +38,12 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   dot.classList.add('marker-dot');
   g.appendChild(dot);
 
+  // Label text + background
   const labelBg = document.createElementNS(ns, 'rect');
-  labelBg.setAttribute('x', '8');
+  labelBg.setAttribute('x', '12');
   labelBg.setAttribute('y', '-14');
   const labelText = document.createElementNS(ns, 'text');
-  labelText.setAttribute('x', '14');
+  labelText.setAttribute('x', '18');
   labelText.setAttribute('y', '-2');
   labelText.setAttribute('fill', 'var(--era-text)');
   labelText.setAttribute('font-size', '8');
@@ -57,7 +52,6 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   labelText.setAttribute('data-marker-label', '');
   labelText.textContent = marker.label;
 
-  // Background rect sized roughly to text
   const approxWidth = Math.max(40, marker.label.length * 4.5);
   labelBg.setAttribute('width', `${approxWidth + 8}`);
   labelBg.setAttribute('height', '14');
@@ -71,13 +65,13 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   g.appendChild(labelBg);
   g.appendChild(labelText);
 
-  // Character token group (initials of associated characters)
+  // Character token group
   if (marker.characterIds && marker.characterIds.length > 0) {
     const charGroup = document.createElementNS(ns, 'g');
     charGroup.setAttribute('data-marker-chars', '');
     charGroup.setAttribute('opacity', '0');
     marker.characterIds.slice(0, 4).forEach((charId, idx) => {
-      const cx = 18 + idx * 14;
+      const cx = 22 + idx * 14;
       const cy = 10;
       const circle = document.createElementNS(ns, 'circle');
       circle.setAttribute('cx', `${cx}`);
@@ -93,7 +87,6 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       text.setAttribute('font-size', '6');
       text.setAttribute('font-family', "var(--era-display, 'Cinzel', serif)");
       text.setAttribute('fill', 'var(--era-primary)');
-      // 2-letter id, capitalized
       text.textContent = charId.slice(0, 2).toUpperCase();
       charGroup.appendChild(circle);
       charGroup.appendChild(text);
@@ -105,32 +98,36 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
 }
 
 export function activateMarker(svgRoot: SVGSVGElement, id: string) {
-  // Reset all markers and labels
-  const all = svgRoot.querySelectorAll('[data-marker]');
+  // Hide all markers
+  const all = svgRoot.querySelectorAll<SVGGElement>('[data-marker]');
   all.forEach((m) => {
     m.classList.remove('active');
+    gsap.killTweensOf(m);
+    gsap.to(m, { opacity: 0, duration: 0.3, pointerEvents: 'none' });
     const lbl = m.querySelector('[data-marker-label]');
     const lblBg = m.querySelector('[data-marker-label-bg]');
     const chars = m.querySelector('[data-marker-chars]');
     if (lbl) (lbl as SVGElement).setAttribute('opacity', '0');
     if (lblBg) (lblBg as SVGElement).setAttribute('opacity', '0');
     if (chars) (chars as SVGElement).setAttribute('opacity', '0');
+    const halo = m.querySelector('[data-halo]');
+    if (halo) gsap.killTweensOf(halo);
   });
 
-  const target = svgRoot.querySelector(`[data-marker="${id}"]`);
+  const target = svgRoot.querySelector<SVGGElement>(`[data-marker="${id}"]`);
   if (!target) return;
   target.classList.add('active');
+  target.style.pointerEvents = 'auto';
+  gsap.to(target, { opacity: 1, duration: 0.4 });
 
   const halo = target.querySelector('[data-halo]');
   if (halo) {
-    gsap.killTweensOf(halo);
     gsap.fromTo(halo,
       { opacity: 0.6, r: 6 },
       { opacity: 0, r: 22, duration: 1.6, repeat: -1, ease: 'sine.out' }
     );
   }
 
-  // Fade in label
   const labelText = target.querySelector('[data-marker-label]');
   const labelBg = target.querySelector('[data-marker-label-bg]');
   if (labelText) {
@@ -140,9 +137,67 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
     gsap.fromTo(labelBg, { opacity: 0, x: -4 }, { opacity: 0.85, x: 0, duration: 0.6, ease: 'power1.out' });
   }
 
-  // Fade in character tokens
   const chars = target.querySelector('[data-marker-chars]');
   if (chars) {
     gsap.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 0.2 });
   }
+}
+
+// Transient toast inside the map area, showing the modern country name.
+// Fades in, holds, fades out automatically. Replaces any prior toast.
+export function showLocationToast(text: string) {
+  const svg = document.querySelector<SVGSVGElement>('[data-map-root]');
+  if (!svg) return;
+  const wrapper = svg.parentElement;
+  if (!wrapper) return;
+
+  let toast = wrapper.querySelector<HTMLElement>('[data-location-toast]');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.setAttribute('data-location-toast', '');
+    toast.style.position = 'absolute';
+    toast.style.top = '16px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.padding = '6px 14px';
+    toast.style.borderRadius = '999px';
+    toast.style.fontFamily = "var(--era-display, 'Cinzel', serif)";
+    toast.style.fontSize = '11px';
+    toast.style.letterSpacing = '0.18em';
+    toast.style.textTransform = 'uppercase';
+    toast.style.color = 'var(--era-text)';
+    toast.style.background = 'var(--era-surface)';
+    toast.style.border = '1px solid var(--era-border)';
+    toast.style.boxShadow = '0 4px 14px rgba(0,0,0,0.4)';
+    toast.style.opacity = '0';
+    toast.style.pointerEvents = 'none';
+    toast.style.zIndex = '20';
+    toast.style.whiteSpace = 'nowrap';
+    if (getComputedStyle(wrapper).position === 'static') {
+      wrapper.style.position = 'relative';
+    }
+    wrapper.appendChild(toast);
+  }
+
+  toast.textContent = text;
+  gsap.killTweensOf(toast);
+  gsap.fromTo(
+    toast,
+    { opacity: 0, y: -8 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: 'power1.out',
+      onComplete: () => {
+        gsap.to(toast, {
+          opacity: 0,
+          y: -8,
+          duration: 0.8,
+          delay: 3.5,
+          ease: 'power1.in',
+        });
+      },
+    }
+  );
 }

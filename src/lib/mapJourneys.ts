@@ -14,13 +14,6 @@ const STYLE_DASH: Record<JourneySpec['style'], string> = {
   exile: '8 4',
 };
 
-const STYLE_ICON: Record<JourneySpec['style'], string> = {
-  boat: '&#x26F5;',
-  walking: '&#x1F6B6;',
-  caravan: '&#x1F42B;',
-  exile: '&#x26D3;',
-};
-
 function ensureArrowDef(svgRoot: SVGSVGElement) {
   let defs = svgRoot.querySelector('defs');
   if (!defs) {
@@ -55,6 +48,7 @@ export function drawJourney(svgRoot: SVGSVGElement, journey: JourneySpec) {
   const cx = (x1 + x2) / 2;
   const cy = (y1 + y2) / 2 - Math.abs(x2 - x1) * 0.15;
 
+  // The path being drawn
   const path = document.createElementNS(ns, 'path');
   path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
   path.setAttribute('fill', 'none');
@@ -78,29 +72,43 @@ export function drawJourney(svgRoot: SVGSVGElement, journey: JourneySpec) {
     },
   });
 
-  // Add a moving icon along the path using a text element
-  const movingText = document.createElementNS(ns, 'text');
-  movingText.setAttribute('text-anchor', 'middle');
-  movingText.setAttribute('dominant-baseline', 'middle');
-  movingText.setAttribute('font-size', '10');
-  movingText.innerHTML = STYLE_ICON[journey.style];
-  movingText.setAttribute('data-journey-icon', journey.id);
-  group.appendChild(movingText);
+  // Moving SVG arrow (triangle) that travels along the path,
+  // rotating to match the path direction.
+  const arrowG = document.createElementNS(ns, 'g');
+  arrowG.setAttribute('data-journey-arrow', journey.id);
+  const arrow = document.createElementNS(ns, 'path');
+  // small triangle pointing in +x direction; centered at (0,0)
+  arrow.setAttribute('d', 'M -4 -3 L 5 0 L -4 3 Z');
+  arrow.setAttribute('fill', 'var(--era-accent)');
+  arrow.setAttribute('stroke', 'var(--era-primary)');
+  arrow.setAttribute('stroke-width', '0.4');
+  arrow.setAttribute('filter', 'drop-shadow(0 0 3px var(--era-accent))');
+  arrowG.appendChild(arrow);
+  group.appendChild(arrowG);
 
-  // Animate the icon along the path by interpolating point position
-  const totalLength = path.getTotalLength();
-  const startPt = path.getPointAtLength(0);
-  movingText.setAttribute('x', `${startPt.x}`);
-  movingText.setAttribute('y', `${startPt.y}`);
+  // Animate position + rotation along path
+  const initialPt = path.getPointAtLength(0);
+  arrowG.setAttribute('transform', `translate(${initialPt.x}, ${initialPt.y}) rotate(0)`);
 
-  gsap.to({ progress: 0 }, {
+  const ahead = 1; // small lookahead distance to estimate tangent
+  const obj = { progress: 0 };
+  gsap.to(obj, {
     progress: 1,
     duration: 2.5,
     ease: 'power1.inOut',
-    onUpdate: function () {
-      const pt = path.getPointAtLength(this.targets()[0].progress * totalLength);
-      movingText.setAttribute('x', `${pt.x}`);
-      movingText.setAttribute('y', `${pt.y}`);
+    onUpdate: () => {
+      const d = obj.progress * length;
+      const pt = path.getPointAtLength(d);
+      const ptNext = path.getPointAtLength(Math.min(length, d + ahead));
+      const angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * 180 / Math.PI;
+      arrowG.setAttribute('transform', `translate(${pt.x}, ${pt.y}) rotate(${angle})`);
+    },
+    onComplete: () => {
+      // After arrival, park at endpoint
+      const endPt = path.getPointAtLength(length);
+      const before = path.getPointAtLength(Math.max(0, length - 1));
+      const angle = Math.atan2(endPt.y - before.y, endPt.x - before.x) * 180 / Math.PI;
+      arrowG.setAttribute('transform', `translate(${endPt.x}, ${endPt.y}) rotate(${angle})`);
     },
   });
 }
