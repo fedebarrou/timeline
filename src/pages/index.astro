@@ -1,17 +1,55 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
 
+const events = await getCollection('events');
+const eras = await getCollection('eras');
+const byEra = new Map<string, typeof events>();
+events
+  .sort((a, b) => a.data.order - b.data.order)
+  .forEach((e) => {
+    const list = byEra.get(e.data.era) ?? [];
+    list.push(e);
+    byEra.set(e.data.era, list);
+  });
+const sortedEras = eras.sort((a, b) => a.data.order - b.data.order);
 ---
+<BaseLayout title="Línea de Tiempo · Adán → Mahoma">
+  <section class="hero min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
+    <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-6">Línea de tiempo</p>
+    <h1 class="font-display text-5xl md:text-7xl mb-4">Adán → Mahoma</h1>
+    <p class="max-w-2xl text-lg opacity-80 leading-relaxed">
+      Un viaje visual por los relatos de la Torá, la Biblia y el Corán —
+      comparando, contrastando y mapeando 4.500 años de historia sagrada.
+    </p>
+    <a href="/timeline" class="inline-block mt-12 px-8 py-3 border border-primary text-primary hover:bg-primary hover:text-bg transition-colors tracking-widest uppercase text-sm">
+      Comenzar el viaje ↓
+    </a>
+    <p class="mt-12 text-xs opacity-60 tracking-wider">
+      80 eventos · 3 tradiciones · 6 eras · 4.500 años
+    </p>
+  </section>
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+  <section class="indice py-16 px-6 max-w-6xl mx-auto">
+    <h2 class="font-display text-2xl mb-8 opacity-80">Índice por era</h2>
+    <div class="grid md:grid-cols-2 gap-8">
+      {sortedEras.map((era) => (
+        <div>
+          <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">
+            Era {era.data.order} · {era.data.name}
+          </h3>
+          <ul class="space-y-1 text-sm">
+            {(byEra.get(era.data.id) ?? []).map((ev) => (
+              <li>
+                <a href={`/timeline#${ev.data.id}`} class="hover:text-accent">
+                  {ev.data.title}
+                </a>
+                <span class="opacity-50 ml-2">— año {ev.data.biblicalYear}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
