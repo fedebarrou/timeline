@@ -24,6 +24,7 @@ const events = allEvents
   .filter((e) => e.data.era === era.data.id)
   .sort((a, b) => a.data.order - b.data.order);
 const eras = [era];
+const allEras = await getCollection('eras');
 
 const sceneConfigs = events.map((e) => {
   const primaryLoc = e.data.locations[0];
@@ -58,7 +59,7 @@ const allMarkers = events.map((e) => {
 <BaseLayout title={`${era.data.name} · Línea de tiempo`}>
   <style>main { padding-top: 7rem !important; }</style>
   <EraTheme era={era} />
-  <TimelineNav events={events} eras={eras} />
+  <TimelineNav events={events} eras={eras} allEras={allEras} currentEraId={era.data.id} />
 
   <div class="back-nav fixed top-[3.5rem] left-0 z-30 px-4 py-2">
     <a href="/" class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity">
