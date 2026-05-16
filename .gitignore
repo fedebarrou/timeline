@@ -29,3 +29,6 @@ pnpm-debug.log*
 
 # deployment
 .vercel
+
+# machine-specific Claude Code settings
+.claude/settings.local.json
