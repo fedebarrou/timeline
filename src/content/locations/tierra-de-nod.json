@@ -1,7 +1,7 @@
 {
   "id": "tierra-de-nod",
   "ancientName": "Tierra de Nod",
-  "portrait": "/images/locations/tierra-de-nod.jpg",
+  "portrait": "/images/locations/tierra-de-nod.png",
   "region": "mesopotamia",
   "coords": [33.5, 44.0],
   "svgPosition": [600, 270],

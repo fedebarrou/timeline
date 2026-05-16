@@ -1,7 +1,7 @@
 {
   "id": "eden",
   "ancientName": "Edén",
-  "portrait": "/images/locations/eden.jpg",
+  "portrait": "/images/locations/eden.png",
   "region": "mesopotamia",
   "disputed": true,
   "proposedLocations": [
