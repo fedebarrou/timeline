@@ -42,8 +42,8 @@ export function initScrollytelling(scenes: SceneConfig[]) {
 function activate(scene: SceneConfig, svg: SVGSVGElement) {
   setEra(scene.eraId);
   activateMarker(svg, scene.eventId);
-  panTo(svg, { cx: scene.svgPosition[0], cy: scene.svgPosition[1], zoom: 3.0 }, 1.4);
-  if (scene.coords) flyModern(scene.coords, 7);
+  panTo(svg, { cx: scene.svgPosition[0], cy: scene.svgPosition[1], zoom: 5.0 }, 1.6);
+  if (scene.coords) flyModern(scene.coords, 8);
   clearJourneys(svg);
   if (scene.journeys && scene.journeys.length > 0) {
     scene.journeys.forEach((j) => {
