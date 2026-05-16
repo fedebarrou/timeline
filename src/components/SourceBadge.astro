@@ -9,16 +9,17 @@ interface Props {
 }
 const { source } = Astro.props;
 const map = {
-  canonical:      { color: 'bg-blue-500',   icon: '🔵', label: 'canónico' },
-  apocryphal:     { color: 'bg-yellow-500', icon: '🟡', label: 'apócrifo' },
-  traditional:    { color: 'bg-green-500',  icon: '🟢', label: 'tradición' },
-  archaeological: { color: 'bg-amber-800',  icon: '🟤', label: 'arqueología' },
+  canonical:      { color: '#3b82f6', label: 'canónico'    },
+  apocryphal:     { color: '#eab308', label: 'apócrifo'    },
+  traditional:    { color: '#22c55e', label: 'tradición'   },
+  archaeological: { color: '#92400e', label: 'arqueología' },
 } as const;
 const cfg = map[source.type];
 ---
-<span class="source-badge inline-flex items-baseline gap-2 text-sm">
-  <span class="badge text-[10px] tracking-wider uppercase px-1.5 py-0.5 rounded border border-current opacity-70">
-    {cfg.icon} {cfg.label}
+<span class="source-badge inline-flex items-center gap-2 text-sm align-middle">
+  <span class="badge inline-flex items-center gap-1.5 text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-full border whitespace-nowrap" style={`border-color: ${cfg.color}66; color: ${cfg.color}`}>
+    <span class="inline-block w-2 h-2 rounded-full" style={`background: ${cfg.color}`}></span>
+    {cfg.label}
   </span>
   <span class="title">{source.title}</span>
   {source.note && <span class="note text-xs opacity-60">— {source.note}</span>}
