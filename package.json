@@ -7,9 +7,13 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "verify": "tsx scripts/verify-citations.ts && tsx scripts/verify-licenses.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.6",
