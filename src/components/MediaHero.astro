@@ -17,7 +17,7 @@ const { media } = Astro.props;
         src={media.src}
         alt={media.caption ?? ''}
         loading="lazy"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover ken-burns"
         data-img
       />
       <div class="placeholder absolute inset-0 flex items-center justify-center text-center px-6 opacity-0" data-placeholder>
@@ -47,3 +47,17 @@ const { media } = Astro.props;
     });
   });
 </script>
+
+<style>
+  .ken-burns {
+    animation: ken-burns 20s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+  @keyframes ken-burns {
+    from { transform: scale(1) translate(0, 0); }
+    to { transform: scale(1.1) translate(-2%, -2%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ken-burns { animation: none; }
+  }
+</style>
