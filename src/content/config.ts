@@ -59,4 +59,30 @@ const eras = defineCollection({
   }),
 });
 
-export const collections = { eras };
+const proposedLocationSchema = z.object({
+  name: z.string(),
+  coords: z.tuple([z.number(), z.number()]),
+  svgPosition: z.tuple([z.number(), z.number()]),
+  support: z.string(),
+});
+
+const locations = defineCollection({
+  type: 'data',
+  schema: z.object({
+    id: z.string(),
+    ancientName: z.string(),
+    modernName: z.string().optional(),
+    coords: z.tuple([z.number(), z.number()]).optional(),
+    svgPosition: z.tuple([z.number(), z.number()]).optional(),
+    region: z.string(),
+    disputed: z.boolean().default(false),
+    proposedLocations: z.array(proposedLocationSchema).optional(),
+    description: z.string(),
+    events: z.array(z.string()).default([]),
+  }).refine(
+    (data) => data.disputed ? !!data.proposedLocations : !!data.coords,
+    { message: 'Disputed locations need proposedLocations; non-disputed need coords' }
+  ),
+});
+
+export const collections = { eras, locations };
