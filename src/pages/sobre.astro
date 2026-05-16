@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Sobre el proyecto">
+  <article class="px-6 py-16 max-w-3xl mx-auto prose prose-invert">
+    <h1 class="font-display text-4xl mb-2">Sobre el proyecto</h1>
+    <p class="opacity-80">
+      Este sitio es una línea de tiempo unificada de los relatos compartidos por la Torá, la Biblia y el Corán,
+      desde el nacimiento de Adán hasta la muerte de Mahoma — abarcando 4.500 años de historia sagrada.
+    </p>
+    <h2>Metodología</h2>
+    <p>
+      Para cada evento partimos del texto canónico de cada tradición y lo verificamos contra fuentes académicas.
+      Cuando incluimos material apócrifo, tradicional (midrashim, hadices) o paralelos arqueológicos,
+      lo señalamos explícitamente con badges de color: 🔵 canónico, 🟡 apócrifo, 🟢 tradición, 🟤 arqueología.
+    </p>
+    <h2>Tradiciones consultadas</h2>
+    <ul>
+      <li><strong>Torá</strong>: texto masorético hebreo, vía Sefaria.org.</li>
+      <li><strong>Biblia cristiana</strong>: Reina-Valera 1960 y NVI; NT cuando aporta interpretación.</li>
+      <li><strong>Corán</strong>: traducción Cortés y Asad; vía Quran.com.</li>
+    </ul>
+    <h2>Localizaciones disputadas</h2>
+    <p>
+      Cuando una ubicación es académicamente disputada (ej. el Edén, el Monte Sinaí),
+      la marcamos como tal y presentamos las propuestas alternativas con sus argumentos.
+    </p>
+  </article>
+</BaseLayout>

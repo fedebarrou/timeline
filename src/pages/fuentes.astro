@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const events = await getCollection('events');
+type SourceWithEvent = (typeof events)[number]['data']['sources'][number] & { eventId: string; eventTitle: string };
+const all: SourceWithEvent[] = events.flatMap((e) => e.data.sources.map((s) => ({ ...s, eventId: e.data.id, eventTitle: e.data.title })));
+const byType = new Map<string, SourceWithEvent[]>();
+all.forEach((s) => {
+  const list = byType.get(s.type) ?? [];
+  list.push(s);
+  byType.set(s.type, list);
+});
+const typeLabels: Record<string, string> = {
+  canonical: '🔵 Canónico', apocryphal: '🟡 Apócrifo',
+  traditional: '🟢 Tradición', archaeological: '🟤 Arqueología',
+};
+---
+<BaseLayout title="Fuentes">
+  <section class="px-6 py-16 max-w-5xl mx-auto">
+    <h1 class="font-display text-4xl mb-2">Fuentes</h1>
+    <p class="opacity-70 mb-10">Índice de todas las referencias consultadas.</p>
+    {[...byType.entries()].map(([type, items]) => (
+      <div class="mb-10">
+        <h2 class="text-sm tracking-[0.3em] uppercase opacity-70 mb-4">{typeLabels[type]}</h2>
+        <ul class="space-y-2 text-sm">
+          {items.map((s) => (
+            <li>
+              <strong>{s.title}</strong>
+              {s.note && <span class="opacity-60"> — {s.note}</span>}
+              <span class="opacity-50 ml-2">→ <a href={`/timeline#${s.eventId}`} class="hover:text-accent">{s.eventTitle}</a></span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+</BaseLayout>

@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const locations = await getCollection('locations');
+const byRegion = new Map<string, typeof locations>();
+locations.forEach((l) => {
+  const list = byRegion.get(l.data.region) ?? [];
+  list.push(l);
+  byRegion.set(l.data.region, list);
+});
+---
+<BaseLayout title="Lugares">
+  <section class="px-6 py-16 max-w-5xl mx-auto">
+    <h1 class="font-display text-4xl mb-2">Lugares</h1>
+    <p class="opacity-70 mb-10">Geografía sagrada: el escenario de los relatos.</p>
+    {[...byRegion.entries()].map(([region, items]) => (
+      <div class="mb-10">
+        <h2 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-4">{region}</h2>
+        <ul class="grid md:grid-cols-2 gap-4">
+          {items.map((l) => (
+            <li class="border border-border rounded-lg p-4">
+              <h3 class="font-display text-xl">{l.data.ancientName}</h3>
+              {l.data.modernName && <p class="text-xs opacity-60">{l.data.modernName}</p>}
+              {l.data.disputed && <span class="inline-block mt-2 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
+              <p class="text-sm opacity-80 mt-2">{l.data.description}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+</BaseLayout>

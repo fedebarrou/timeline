@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const events = (await getCollection('events'))
+  .filter((e) => e.data.comparative.divergent)
+  .sort((a, b) => a.data.order - b.data.order);
+---
+<BaseLayout title="Comparativa entre tradiciones">
+  <section class="px-6 py-16 max-w-6xl mx-auto">
+    <h1 class="font-display text-4xl mb-2">Comparativa</h1>
+    <p class="opacity-70 mb-10">Eventos donde la Torá, la Biblia y el Corán difieren.</p>
+    <table class="w-full text-sm">
+      <thead class="text-xs uppercase tracking-wider opacity-60">
+        <tr>
+          <th class="text-left p-3">Evento</th>
+          <th class="text-left p-3 w-1/4">📜 Torá</th>
+          <th class="text-left p-3 w-1/4">✝ Biblia</th>
+          <th class="text-left p-3 w-1/4">☪ Corán</th>
+        </tr>
+      </thead>
+      <tbody>
+        {events.map((e) => (
+          <tr class="border-t border-border">
+            <td class="p-3 align-top">
+              <a href={`/timeline#${e.data.id}`} class="font-display hover:text-accent">{e.data.title}</a>
+              <p class="text-xs opacity-60 mt-1">Año {e.data.biblicalYear}</p>
+            </td>
+            <td class="p-3 align-top opacity-90">{e.data.comparative.tora?.summary ?? '—'}</td>
+            <td class="p-3 align-top opacity-90">{e.data.comparative.biblia?.summary ?? '—'}</td>
+            <td class="p-3 align-top opacity-90">{e.data.comparative.coran?.summary ?? '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+</BaseLayout>
