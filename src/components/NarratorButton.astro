@@ -5,7 +5,7 @@ interface Props {
 }
 const { eventId, narrationText } = Astro.props;
 ---
-<div class="narrator-control flex items-center gap-2 mt-4" data-narrator data-event-id={eventId}>
+<div class="narrator-control flex items-center gap-2 mt-4 mb-6" data-narrator data-event-id={eventId}>
   <button
     type="button"
     class="narrator-play px-3 py-2 rounded-full border border-border bg-surface/60 hover:border-accent text-xs tracking-wider uppercase flex items-center gap-2 transition-colors"
