@@ -1,10 +1,9 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
-// TODO: enable after Tasks 22-26
-// import ComparativeBlock from './ComparativeBlock.astro';
-// import SourceBadge from './SourceBadge.astro';
-// import DeepDive from './DeepDive.astro';
+import ComparativeBlock from './ComparativeBlock.astro';
+import SourceBadge from './SourceBadge.astro';
+import DeepDive from './DeepDive.astro';
 
 interface Props { event: CollectionEntry<'events'>; }
 const { event } = Astro.props;
@@ -29,25 +28,20 @@ const primaryLocation = data.locations[0];
       <Content />
     </div>
 
-    {/* TODO: Comparative block enabled after Tasks 22-26
     {data.comparative.divergent && (
       <ComparativeBlock comparative={data.comparative} />
     )}
-    */}
 
     {data.sources.length > 0 && (
       <div class="mt-8">
         <h3 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
         <ul class="space-y-2">
-          {/* TODO: SourceBadge enabled after Tasks 22-26 */}
-          {data.sources.map((s) => <li>{s.title}</li>)}
+          {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
         </ul>
       </div>
     )}
 
-    {/* TODO: DeepDive enabled after Tasks 22-26
     <DeepDive deepDive={data.deepDive} />
-    */}
   </div>
 
   <div class="map-spacer hidden lg:block"></div>
