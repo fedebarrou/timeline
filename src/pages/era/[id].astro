@@ -94,12 +94,15 @@ const sceneConfigs = events.map((e) => {
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
   if (!loc) return null;
-  const charPins = (e.data.characters ?? []).map((c: { id: string }) => {
+  const charPins = (e.data.characters ?? []).map((c: { id: string; role: string }) => {
     const cd = charByIdMap.get(c.id);
     return {
       id: c.id,
       name: cd?.name ?? c.id,
       portrait: cd?.portrait ?? null,
+      role: c.role,                                  // per-event role
+      meaning: cd?.alternateNames?.meaning ?? null,  // name meaning
+      significance: cd?.significance ?? null,         // short bio
     };
   });
   const fullLoc = locByIdMap.get(loc.id);
@@ -111,6 +114,10 @@ const allMarkers = events.map((e) => {
     characters: charPins,
     locationPortrait: fullLoc?.portrait ?? null,
     locationName: loc.ancientName,
+    locationDescription: fullLoc?.description ?? null,
+    locationModernName: fullLoc?.modernName ?? null,
+    eventTitle: e.data.title,
+    eventSubtitle: e.data.subtitle ?? null,
   };
 }).filter(Boolean);
 ---

@@ -1,9 +1,98 @@
 import { gsap } from './scrollytelling';
 
+// ---------------------------------------------------------------------------
+// Tooltip helpers (shared across all map interactive elements)
+// ---------------------------------------------------------------------------
+
+type MapTooltipData = {
+  title: string;
+  subtitle?: string;
+  role?: string;
+  body?: string;
+};
+
+function ensureMapTooltip(): HTMLElement {
+  let tip = document.querySelector<HTMLElement>('[data-map-tooltip]');
+  if (tip) return tip;
+  tip = document.createElement('div');
+  tip.setAttribute('data-map-tooltip', '');
+  Object.assign(tip.style, {
+    position: 'fixed',
+    padding: '10px 14px',
+    background: 'var(--era-surface)',
+    border: '1px solid var(--era-primary)',
+    borderRadius: '8px',
+    fontFamily: "var(--era-body, 'EB Garamond', serif)",
+    color: 'var(--era-text)',
+    pointerEvents: 'none',
+    zIndex: '70',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.55)',
+    opacity: '0',
+    transition: 'opacity 150ms ease',
+    maxWidth: '280px',
+    fontSize: '12px',
+    lineHeight: '1.4',
+  });
+  document.body.appendChild(tip);
+  return tip;
+}
+
+export function showMapTooltip(e: MouseEvent, data: MapTooltipData) {
+  const tip = ensureMapTooltip();
+  const parts: string[] = [];
+  parts.push(`<div style="font-family:var(--era-display,'Cinzel',serif);font-size:14px;letter-spacing:0.08em;color:var(--era-primary);">${escapeHtml(data.title)}</div>`);
+  if (data.subtitle) {
+    parts.push(`<div style="font-style:italic;opacity:0.75;margin-top:2px;font-size:11px;">${escapeHtml(data.subtitle)}</div>`);
+  }
+  if (data.role) {
+    parts.push(`<div style="margin-top:6px;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;opacity:0.65;">Rol · ${escapeHtml(data.role)}</div>`);
+  }
+  if (data.body) {
+    parts.push(`<div style="margin-top:8px;opacity:0.9;">${escapeHtml(data.body)}</div>`);
+  }
+  tip.innerHTML = parts.join('');
+  tip.style.left = `${e.clientX + 14}px`;
+  tip.style.top = `${e.clientY + 14}px`;
+  tip.style.opacity = '1';
+}
+
+export function moveMapTooltip(e: MouseEvent) {
+  const tip = document.querySelector<HTMLElement>('[data-map-tooltip]');
+  if (!tip) return;
+  // Keep within viewport: flip horizontally if near right edge
+  const vw = window.innerWidth;
+  const offset = 14;
+  let x = e.clientX + offset;
+  if (x + 300 > vw) x = e.clientX - 300 - offset;
+  tip.style.left = `${x}px`;
+  tip.style.top = `${e.clientY + offset}px`;
+}
+
+export function hideMapTooltip() {
+  const tip = document.querySelector<HTMLElement>('[data-map-tooltip]');
+  if (!tip) return;
+  tip.style.opacity = '0';
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ---------------------------------------------------------------------------
+// Interfaces
+// ---------------------------------------------------------------------------
+
 export interface CharacterPin {
   id: string;
   name: string;
   portrait?: string | null;
+  role?: string;
+  meaning?: string | null;
+  significance?: string | null;
 }
 
 export interface MarkerSpec {
@@ -15,7 +104,15 @@ export interface MarkerSpec {
   characterIds?: string[];
   locationPortrait?: string | null;
   locationName?: string;
+  locationDescription?: string | null;
+  locationModernName?: string | null;
+  eventTitle?: string;
+  eventSubtitle?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// renderMarker
+// ---------------------------------------------------------------------------
 
 export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   const group = svgRoot.querySelector('[data-layer="markers"]');
@@ -93,6 +190,37 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       pinWrap.setAttribute('transform', `translate(${cx}, ${cy})`);
       pinWrap.appendChild(fo);
       pinWrap.appendChild(nameText);
+
+      // --- Hover interaction: scale up + tooltip ---
+      pinWrap.style.cursor = 'pointer';
+      pinWrap.style.pointerEvents = 'auto';
+
+      const showCharTip = (e: MouseEvent) => {
+        showMapTooltip(e, {
+          title: char.name,
+          subtitle: char.meaning ? `"${char.meaning}"` : undefined,
+          role: char.role,
+          body: char.significance
+            ? char.significance.slice(0, 160) + (char.significance.length > 160 ? '…' : '')
+            : undefined,
+        });
+        // Scale up the pin
+        pinWrap.style.transition = 'transform 200ms ease';
+        const base = pinWrap.getAttribute('data-base-transform') ?? pinWrap.getAttribute('transform') ?? 'translate(0,0)';
+        pinWrap.setAttribute('data-base-transform', base);
+        pinWrap.setAttribute('transform', `${base} scale(1.4)`);
+      };
+      const moveCharTip = (e: MouseEvent) => moveMapTooltip(e);
+      const hideCharTip = () => {
+        hideMapTooltip();
+        const base = pinWrap.getAttribute('data-base-transform');
+        if (base) pinWrap.setAttribute('transform', base);
+      };
+
+      pinWrap.addEventListener('mouseenter', showCharTip);
+      pinWrap.addEventListener('mousemove', moveCharTip);
+      pinWrap.addEventListener('mouseleave', hideCharTip);
+
       charGroup.appendChild(pinWrap);
     });
     g.appendChild(charGroup);
@@ -116,6 +244,38 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:2px;align-items:center;font-family:var(--era-display,'Cinzel',serif);"><div style="width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);box-shadow:0 2px 6px rgba(0,0,0,0.4);"><img src="${marker.locationPortrait.replace(/"/g, '&quot;')}" alt="${(marker.locationName ?? '').replace(/"/g, '&quot;')}" style="width:140%;height:140%;object-fit:cover;display:block;margin-left:-20%;margin-top:-20%;" onerror="this.style.display='none'" /></div>${marker.locationName ? `<div style="font-size:6px;color:var(--era-text);text-align:center;letter-spacing:0.3px;text-transform:uppercase;opacity:0.85;line-height:1.2;white-space:normal;word-wrap:break-word;max-width:${W}px;">${marker.locationName.replace(/</g, '&lt;')}</div>` : ''}</div>`;
 
     locGroup.appendChild(fo);
+
+    // --- Hover interaction: scale up + tooltip ---
+    locGroup.style.cursor = 'pointer';
+    locGroup.style.pointerEvents = 'auto';
+
+    const showLocTip = (e: MouseEvent) => {
+      showMapTooltip(e, {
+        title: marker.locationName ?? '',
+        subtitle: marker.locationModernName ?? undefined,
+        body: marker.locationDescription
+          ? marker.locationDescription.slice(0, 200) + (marker.locationDescription.length > 200 ? '…' : '')
+          : undefined,
+      });
+      // Scale up the location portrait inside locGroup
+      const innerFo = locGroup.querySelector('foreignObject');
+      if (innerFo) {
+        (innerFo as SVGElement).style.transition = 'transform 200ms ease';
+        (innerFo as SVGElement).style.transformOrigin = '50% 50%';
+        (innerFo as SVGElement).style.transform = 'scale(1.18)';
+      }
+    };
+    const moveLocTip = (e: MouseEvent) => moveMapTooltip(e);
+    const hideLocTip = () => {
+      hideMapTooltip();
+      const innerFo = locGroup.querySelector('foreignObject');
+      if (innerFo) (innerFo as SVGElement).style.transform = 'scale(1)';
+    };
+
+    locGroup.addEventListener('mouseenter', showLocTip);
+    locGroup.addEventListener('mousemove', moveLocTip);
+    locGroup.addEventListener('mouseleave', hideLocTip);
+
     g.appendChild(locGroup);
   }
 
@@ -215,4 +375,3 @@ export function showEventTitleToast(title: string) {
     }
   );
 }
-

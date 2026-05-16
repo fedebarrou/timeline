@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CharacterTimeline from '../../components/CharacterTimeline.astro';
 import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
+import TranslucentBackdrop from '../../components/TranslucentBackdrop.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -25,6 +26,8 @@ const mentionsCount =
   data.mentions.tora.length + data.mentions.biblia.length + data.mentions.coran.length;
 ---
 <BaseLayout title={data.name}>
+  <TranslucentBackdrop src={data.portrait} alt={data.name} />
+  <div class="relative z-10">
   <article class="px-6 py-16 max-w-4xl mx-auto">
     <header class="mb-10 flex items-start gap-8">
       <PortraitPlaceholder name={data.name} src={data.portrait} size="lg" />
@@ -114,4 +117,5 @@ const mentionsCount =
       </section>
     )}
   </article>
+  </div>
 </BaseLayout>

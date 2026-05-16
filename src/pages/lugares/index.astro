@@ -20,6 +20,7 @@ locations.forEach((l) => {
         <ul class="grid md:grid-cols-2 gap-6">
           {items.map((l) => (
             <li class="border border-border rounded-lg overflow-hidden bg-surface/30 hover:border-accent transition-colors">
+              <a href={`/lugares/${l.data.id}`} class="block">
               {l.data.portrait ? (
                 <div class="aspect-[16/9] overflow-hidden relative">
                   <img
@@ -43,11 +44,12 @@ locations.forEach((l) => {
                 {l.data.events && l.data.events.length > 0 && (
                   <div class="mt-4 flex flex-wrap gap-2">
                     {l.data.events.map((evId: string) => (
-                      <a href={`/era/primordial#event-${evId}`} class="text-[10px] tracking-wider uppercase opacity-60 hover:opacity-100 hover:text-accent border border-border px-2 py-0.5 rounded">→ {evId.replace(/-/g, ' ')}</a>
+                      <span class="text-[10px] tracking-wider uppercase opacity-60 border border-border px-2 py-0.5 rounded">→ {evId.replace(/-/g, ' ')}</span>
                     ))}
                   </div>
                 )}
               </div>
+              </a>
             </li>
           ))}
         </ul>

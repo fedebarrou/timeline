@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TranslucentBackdrop from '../../components/TranslucentBackdrop.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const locs = await getCollection('locations');
+  return locs.map((l) => ({ params: { id: l.data.id }, props: { loc: l } }));
+}
+
+const { loc } = Astro.props;
+const data = loc.data;
+
+// Look up events that happen at this location
+const events = await getCollection('events');
+const eventsHere = events.filter((e) => data.events?.includes(e.data.id));
+---
+<BaseLayout title={`${data.ancientName} · Lugar`}>
+  <TranslucentBackdrop src={data.portrait} alt={data.ancientName} />
+
+  <article class="relative z-10 px-6 py-16 max-w-4xl mx-auto">
+    <header class="mb-10">
+      <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-2">Lugar · {data.region}</p>
+      <h1 class="font-display text-5xl">{data.ancientName}</h1>
+      {data.modernName && (
+        <p class="text-base md:text-lg opacity-70 mt-2 italic font-display">{data.modernName}</p>
+      )}
+      {data.disputed && (
+        <span class="inline-block mt-4 text-[10px] px-2 py-1 border border-yellow-500/50 rounded">
+          Localización disputada
+        </span>
+      )}
+    </header>
+
+    <section class="mb-10">
+      <p class="text-base leading-relaxed opacity-90">{data.description}</p>
+    </section>
+
+    {data.proposedLocations && data.proposedLocations.length > 0 && (
+      <section class="mb-10">
+        <h2 class="font-display text-2xl mb-4">Localizaciones propuestas</h2>
+        <ul class="space-y-3">
+          {data.proposedLocations.map((p: any) => (
+            <li class="border border-border rounded-lg p-4">
+              <h3 class="font-display text-lg">{p.name}</h3>
+              <p class="text-sm opacity-70 mt-1">{p.support}</p>
+              <p class="text-xs opacity-50 mt-2">Coords: {p.coords.join(', ')}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {eventsHere.length > 0 && (
+      <section class="mb-10">
+        <h2 class="font-display text-2xl mb-4">Eventos en este lugar</h2>
+        <ul class="space-y-2">
+          {eventsHere.map((e) => (
+            <li>
+              <a href={`/era/${e.data.era}#event-${e.data.id}`} class="inline-flex items-center gap-2 text-sm hover:text-accent">
+                → <span class="font-display">{e.data.title}</span>
+                <span class="opacity-50 text-xs">· año {e.data.biblicalYear}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
+</BaseLayout>
