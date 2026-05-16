@@ -1,24 +1,81 @@
 ---
 interface Props {
-  navTitle?: string;
+  currentEraId?: string;
+  currentEraName?: string;
 }
-const { navTitle } = Astro.props;
-const titleText = navTitle ?? 'Adán → Mahoma';
+const { currentEraId, currentEraName } = Astro.props;
+// Default fallback (Primordial is the only era with content for now)
+const eraId   = currentEraId   ?? 'primordial';
+const eraName = currentEraName ?? 'Primordial';
 
 const links = [
-  { href: '/', label: 'Inicio' },
-  { href: '/personajes', label: 'Personajes' },
-  { href: '/lugares', label: 'Lugares' },
+  { href: '/personajes',  label: 'Personajes' },
+  { href: '/lugares',     label: 'Lugares' },
   { href: '/comparativa', label: 'Comparativa' },
-  { href: '/fuentes', label: 'Fuentes' },
-  { href: '/sobre', label: 'Sobre' },
+  { href: '/fuentes',     label: 'Fuentes' },
+  { href: '/sobre',       label: 'Sobre' },
 ];
 ---
 <nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg shadow-lg">
-  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase hover:text-accent" title="Volver al inicio">{titleText}</a>
-  <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70">
+  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase hover:text-accent" title="Ir al selector de eras">
+    Adán → Mahoma
+  </a>
+  <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70 items-center">
+    <li data-era-nav-item>
+      <a
+        href={`/era/${eraId}`}
+        class="hover:opacity-100 hover:text-accent text-accent"
+        data-era-link
+        data-era-id={eraId}
+      >
+        <span data-era-nav-label>Era · {eraName}</span>
+      </a>
+    </li>
     {links.map((l) => (
       <li><a href={l.href} class="hover:opacity-100 hover:text-accent">{l.label}</a></li>
     ))}
   </ul>
 </nav>
+
+<script>
+  // Persist the era across page navigations.
+  // Always visible; defaults to Primordial when nothing is stored.
+  const STORAGE_ID = 'biblia-last-era-id';
+  const STORAGE_NAME = 'biblia-last-era-name';
+  const DEFAULT_ID = 'primordial';
+  const DEFAULT_NAME = 'Primordial';
+
+  function sync() {
+    const path = window.location.pathname;
+    const onEra = path.startsWith('/era/');
+
+    const link = document.querySelector<HTMLAnchorElement>('[data-era-link]');
+    const label = document.querySelector<HTMLElement>('[data-era-nav-label]');
+    if (!link || !label) return;
+
+    // On era pages, the server-rendered values are authoritative — persist them
+    if (onEra) {
+      const serverId = link.getAttribute('data-era-id') || DEFAULT_ID;
+      const serverName = (label.textContent ?? '').replace(/^Era · /, '') || DEFAULT_NAME;
+      try {
+        localStorage.setItem(STORAGE_ID, serverId);
+        localStorage.setItem(STORAGE_NAME, serverName);
+      } catch {}
+      return;
+    }
+
+    // Other pages (incl. home): hydrate from localStorage if present, else keep default
+    try {
+      const id = localStorage.getItem(STORAGE_ID);
+      const name = localStorage.getItem(STORAGE_NAME);
+      if (id && name) {
+        link.setAttribute('href', `/era/${id}`);
+        link.setAttribute('data-era-id', id);
+        label.textContent = `Era · ${name}`;
+      }
+    } catch {}
+  }
+
+  sync();
+  document.addEventListener('DOMContentLoaded', sync);
+</script>
