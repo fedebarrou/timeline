@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('landing loads', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('h1')).toContainText('Adán → Mahoma');
+  await expect(page.locator('main h1').first()).toContainText('Adán → Mahoma');
 });
 
 test('timeline page renders with map', async ({ page }) => {
@@ -13,12 +13,12 @@ test('timeline page renders with map', async ({ page }) => {
 
 test('character page shows mentions', async ({ page }) => {
   await page.goto('/personajes/noe');
-  await expect(page.locator('h1')).toContainText('Noé');
+  await expect(page.locator('main h1').first()).toContainText('Noé');
   await expect(page.locator('text=Menciones en las escrituras')).toBeVisible();
 });
 
 test('comparative page lists divergent events', async ({ page }) => {
   await page.goto('/comparativa');
-  await expect(page.locator('h1')).toContainText('Comparativa');
+  await expect(page.locator('main h1').first()).toContainText('Comparativa');
   await expect(page.locator('table')).toBeVisible();
 });
