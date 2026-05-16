@@ -23,17 +23,23 @@ const nextHref = nextEra ? `/era/${nextEra.data.id}` : '/';
 const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 ---
 <div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg/80 backdrop-blur border-b border-border" data-timeline-nav>
-  <div class="relative h-8 max-w-7xl mx-auto flex items-center gap-4">
-    {prevEra && (
-      <a
-        href={prevHref}
-        class="hidden md:flex items-center gap-1 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase rounded-full border border-border hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
-        title={`Era anterior: ${prevEra.data.name}`}
-      >
-        ← {prevEra.data.name}
-      </a>
-    )}
-    <div class="relative h-8 flex-1">
+  <div class="relative h-8 max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+
+    {/* Left slot: prev era or empty */}
+    <div class="flex justify-start">
+      {prevEra ? (
+        <a
+          href={prevHref}
+          class="hidden md:inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
+          title={`Era anterior: ${prevEra.data.name}`}
+        >
+          ← {prevEra.data.name}
+        </a>
+      ) : null}
+    </div>
+
+    {/* Center: timeline bar */}
+    <div class="relative h-8 w-full md:w-[500px] lg:w-[700px]">
       <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
 
       {sortedEras.map((era) => {
@@ -68,15 +74,19 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 
       <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
     </div>
-    {nextEra && (
-      <a
-        href={nextHref}
-        class="flex items-center gap-1 px-3 py-1.5 text-[10px] tracking-[0.2em] uppercase rounded-full border border-primary text-primary hover:bg-primary hover:text-bg transition-colors whitespace-nowrap"
-        title={`Siguiente era: ${nextEra.data.name}`}
-      >
-        Siguiente era →
-      </a>
-    )}
+
+    {/* Right slot: next era or empty */}
+    <div class="flex justify-end">
+      {nextEra ? (
+        <a
+          href={nextHref}
+          class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
+          title={`Siguiente era: ${nextEra.data.name}`}
+        >
+          {nextEra.data.name} →
+        </a>
+      ) : null}
+    </div>
   </div>
 </div>
 
