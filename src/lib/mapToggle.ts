@@ -1,5 +1,5 @@
 import { createMap, addMarker, flyTo, type MarkerData } from './mapModern';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 
 type MLMap = maplibregl.Map;
 
