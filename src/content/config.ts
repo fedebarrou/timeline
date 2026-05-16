@@ -85,4 +85,103 @@ const locations = defineCollection({
   ),
 });
 
-export const collections = { eras, locations };
+const traditionMention = z.object({
+  summary: z.string(),
+  citation: z.string(),
+  fullText: z.string(),
+  keyDifferences: z.array(z.string()).default([]),
+});
+
+const sourceSchema = z.object({
+  type: z.enum(['canonical', 'apocryphal', 'traditional', 'archaeological']),
+  title: z.string(),
+  weight: z.enum(['primary', 'secondary']).optional(),
+  note: z.string().optional(),
+});
+
+const mediaItemSchema = z.object({
+  src: z.string(),
+  caption: z.string().optional(),
+  credit: z.string(),
+  license: z.enum(['public-domain', 'cc0', 'cc-by', 'cc-by-sa', 'open-access', 'fair-use', 'ai-generated']),
+  source: z.string().optional(),
+});
+
+const videoSchema = z.object({
+  provider: z.enum(['youtube', 'vimeo', 'internal']),
+  id: z.string(),
+  title: z.string().optional(),
+  creator: z.string(),
+  duration: z.string(),
+  language: z.string().default('es'),
+  label: z.string().optional(),
+});
+
+const deepDiveLinkSchema = z.object({
+  tradition: z.enum(['tora', 'biblia', 'coran']).optional(),
+  type: z.string().optional(),
+  url: z.string().url(),
+  label: z.string(),
+});
+
+const events = defineCollection({
+  type: 'content',
+  schema: z.object({
+    id: z.string(),
+    order: z.number().int(),
+    title: z.string(),
+    subtitle: z.string().optional(),
+    biblicalYear: z.number(),
+    gregorianYear: z.number(),
+    duration: z.string().optional(),
+    era: z.string(),
+    locations: z.array(z.object({
+      id: z.string(),
+      role: z.enum(['origen', 'destino', 'escenario']),
+      ancientName: z.string(),
+      modernName: z.string().optional(),
+      coords: z.tuple([z.number(), z.number()]).optional(),
+      svgPosition: z.tuple([z.number(), z.number()]),
+    })),
+    journey: z.array(z.object({
+      from: z.string(),
+      to: z.string(),
+      label: z.string(),
+      style: z.enum(['boat', 'walking', 'caravan', 'exile']),
+    })).default([]),
+    characters: z.array(z.object({
+      id: z.string(),
+      role: z.string(),
+    })).default([]),
+    tags: z.array(z.string()).default([]),
+    precededBy: z.array(z.string()).default([]),
+    followedBy: z.array(z.string()).default([]),
+    comparative: z.object({
+      unified: z.string(),
+      divergent: z.boolean().default(false),
+      tora: traditionMention.optional(),
+      biblia: traditionMention.optional(),
+      coran: traditionMention.optional(),
+    }),
+    sources: z.array(sourceSchema).default([]),
+    trivia: z.array(z.string()).default([]),
+    media: z.object({
+      hero: mediaItemSchema.optional(),
+      gallery: z.array(mediaItemSchema).default([]),
+      video: videoSchema.optional(),
+      illustration: z.object({
+        src: z.string(),
+        style: z.enum(['engraving', 'line', 'mosaic', 'geometry']),
+      }).optional(),
+      audio: z.string().nullable().default(null),
+    }).default({ gallery: [], audio: null }),
+    deepDive: z.object({
+      originalTexts: z.array(deepDiveLinkSchema).default([]),
+      academic: z.array(deepDiveLinkSchema).default([]),
+      videos: z.array(videoSchema).default([]),
+      archaeology: z.array(deepDiveLinkSchema).default([]),
+    }).default({ originalTexts: [], academic: [], videos: [], archaeology: [] }),
+  }),
+});
+
+export const collections = { eras, locations, events };
