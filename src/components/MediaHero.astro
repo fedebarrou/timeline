@@ -11,14 +11,23 @@ interface Props {
 const { media } = Astro.props;
 ---
 {media && (
-  <figure class="media-hero mb-8">
-    <img
-      src={media.src}
-      alt={media.caption ?? ''}
-      loading="lazy"
-      class="w-full rounded-lg shadow-lg"
-    />
-    <figcaption class="mt-2 text-xs opacity-60 flex gap-3">
+  <figure class="media-hero mb-8" data-media-hero>
+    <div class="relative w-full aspect-[3/2] rounded-lg overflow-hidden bg-surface border border-border">
+      <img
+        src={media.src}
+        alt={media.caption ?? ''}
+        loading="lazy"
+        class="w-full h-full object-cover"
+        data-img
+      />
+      <div class="placeholder absolute inset-0 flex items-center justify-center text-center px-6 opacity-0" data-placeholder>
+        <div>
+          <p class="font-display text-2xl italic opacity-70">{media.caption ?? ''}</p>
+          <p class="text-xs opacity-50 mt-3">{media.credit}</p>
+        </div>
+      </div>
+    </div>
+    <figcaption class="mt-2 text-xs opacity-60 flex flex-wrap gap-3">
       <span>{media.credit}</span>
       <span class="opacity-60">·</span>
       <span class="opacity-60">{media.license}</span>
@@ -26,3 +35,15 @@ const { media } = Astro.props;
     </figcaption>
   </figure>
 )}
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-media-hero]').forEach((fig) => {
+    const img = fig.querySelector<HTMLImageElement>('[data-img]');
+    const placeholder = fig.querySelector<HTMLElement>('[data-placeholder]');
+    if (!img || !placeholder) return;
+    img.addEventListener('error', () => {
+      img.style.display = 'none';
+      placeholder.style.opacity = '1';
+    });
+  });
+</script>
