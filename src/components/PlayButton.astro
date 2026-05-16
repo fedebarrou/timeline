@@ -1,0 +1,42 @@
+<button
+  type="button"
+  class="play-mode-btn fixed bottom-6 right-6 z-50 px-4 py-3 rounded-full border border-primary bg-bg/80 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-sm tracking-wider uppercase shadow-lg"
+  data-play-mode
+>
+  <span class="play-icon" data-state="paused">▶</span>
+  <span class="play-label">Reproducir era</span>
+  <span class="play-progress text-[10px] opacity-70 hidden" data-play-progress></span>
+</button>
+
+<script>
+  import { startPlay, stopPlay, isPlaying } from '../lib/playMode';
+  const btn = document.querySelector<HTMLButtonElement>('[data-play-mode]');
+  if (btn) {
+    const icon = btn.querySelector<HTMLElement>('.play-icon')!;
+    const label = btn.querySelector<HTMLElement>('.play-label')!;
+    const progress = btn.querySelector<HTMLElement>('[data-play-progress]')!;
+
+    btn.addEventListener('click', () => {
+      if (isPlaying()) {
+        stopPlay();
+        icon.textContent = '▶';
+        icon.dataset.state = 'paused';
+        label.textContent = 'Reproducir era';
+        progress.classList.add('hidden');
+        return;
+      }
+      progress.classList.remove('hidden');
+      icon.textContent = '■';
+      icon.dataset.state = 'playing';
+      label.textContent = 'Detener';
+      startPlay((i, total) => {
+        progress.textContent = `${i}/${total}`;
+      }).finally(() => {
+        icon.textContent = '▶';
+        icon.dataset.state = 'paused';
+        label.textContent = 'Reproducir era';
+        progress.classList.add('hidden');
+      });
+    });
+  }
+</script>
