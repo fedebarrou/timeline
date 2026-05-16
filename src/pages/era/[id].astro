@@ -26,6 +26,25 @@ const events = allEvents
 const eras = [era];
 const allEras = await getCollection('eras');
 
+// Compute jittered svgPositions so overlapping markers are visually distinct
+const seenPositions = new Map<string, number>();
+const jitteredPositions = new Map<string, [number, number]>();
+events.forEach((e) => {
+  const loc = e.data.locations[0];
+  if (!loc) return;
+  const original: [number, number] = loc.svgPosition;
+  const key = `${original[0]},${original[1]}`;
+  const count = seenPositions.get(key) ?? 0;
+  let pos: [number, number] = original;
+  if (count > 0) {
+    const angle = (count - 1) * (Math.PI / 4);
+    const radius = 8 + Math.floor((count - 1) / 8) * 8;
+    pos = [original[0] + Math.cos(angle) * radius, original[1] + Math.sin(angle) * radius];
+  }
+  jitteredPositions.set(e.data.id, pos);
+  seenPositions.set(key, count + 1);
+});
+
 const sceneConfigs = events.map((e) => {
   const primaryLoc = e.data.locations[0];
   const locById = new Map(e.data.locations.map((l: { id: string; svgPosition: [number, number] }) => [l.id, l.svgPosition]));
@@ -38,7 +57,7 @@ const sceneConfigs = events.map((e) => {
   return {
     eventId: e.data.id,
     eraId: e.data.era,
-    svgPosition: primaryLoc?.svgPosition ?? [500, 300],
+    svgPosition: jitteredPositions.get(e.data.id) ?? primaryLoc?.svgPosition ?? [500, 300],
     coords: primaryLoc?.coords,
     journeys,
   };
@@ -49,7 +68,7 @@ const allMarkers = events.map((e) => {
   if (!loc) return null;
   return {
     id: e.data.id,
-    svgPosition: loc.svgPosition,
+    svgPosition: jitteredPositions.get(e.data.id) ?? loc.svgPosition,
     label: e.data.title + (loc.ancientName ? ` (${loc.ancientName})` : ''),
     coords: loc.coords,
     characterIds: (e.data.characters ?? []).map((c: { id: string }) => c.id),
@@ -79,21 +98,25 @@ const allMarkers = events.map((e) => {
     </div>
   </div>
 
-  <script define:vars={{ sceneConfigs, allMarkers }}>
-    Promise.all([
-      import('../../lib/sceneController'),
-      import('../../lib/mapMarkers'),
-      import('../../lib/mapToggle'),
-    ]).then(([{ initScrollytelling }, { renderMarker }, { registerMarkers }]) => {
-      const svg = document.querySelector('[data-map-root]');
+  <script type="application/json" id="map-data" set:html={JSON.stringify({ sceneConfigs, allMarkers })}></script>
+
+  <script>
+    import { initScrollytelling } from '../../lib/sceneController';
+    import { renderMarker } from '../../lib/mapMarkers';
+    import { registerMarkers } from '../../lib/mapToggle';
+
+    const dataEl = document.getElementById('map-data');
+    if (dataEl) {
+      const { sceneConfigs, allMarkers } = JSON.parse(dataEl.textContent || '{}');
+      const svg = document.querySelector('[data-map-root]') as SVGSVGElement | null;
       if (svg) {
-        allMarkers.forEach((m) => renderMarker(svg, m));
+        allMarkers.forEach((m: any) => renderMarker(svg, m));
       }
-      registerMarkers(allMarkers.filter((m) => m.coords).map((m) => ({
+      registerMarkers(allMarkers.filter((m: any) => m.coords).map((m: any) => ({
         id: m.id, coords: m.coords, label: m.label,
       })));
       initScrollytelling(sceneConfigs);
-    });
+    }
   </script>
 
   <script>
