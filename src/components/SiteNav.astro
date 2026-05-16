@@ -1,0 +1,19 @@
+---
+const links = [
+  { href: '/', label: 'Inicio' },
+  { href: '/timeline', label: 'Línea de tiempo' },
+  { href: '/personajes', label: 'Personajes' },
+  { href: '/lugares', label: 'Lugares' },
+  { href: '/comparativa', label: 'Comparativa' },
+  { href: '/fuentes', label: 'Fuentes' },
+  { href: '/sobre', label: 'Sobre' },
+];
+---
+<nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg/70 backdrop-blur border-b border-border">
+  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase">Adán → Mahoma</a>
+  <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70">
+    {links.slice(1).map((l) => (
+      <li><a href={l.href} class="hover:opacity-100 hover:text-accent">{l.label}</a></li>
+    ))}
+  </ul>
+</nav>
