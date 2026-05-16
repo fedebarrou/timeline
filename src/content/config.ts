@@ -184,4 +184,51 @@ const events = defineCollection({
   }),
 });
 
-export const collections = { eras, locations, events };
+const traditionRefSchema = z.object({
+  book: z.string().optional(),
+  sura: z.string().optional(),
+  number: z.number().optional(),
+  reference: z.string().optional(),
+  verses: z.string().optional(),
+  summary: z.string(),
+  fullText: z.string().optional(),
+});
+
+const characters = defineCollection({
+  type: 'content',
+  schema: z.object({
+    id: z.string(),
+    name: z.string(),
+    alternateNames: z.object({
+      hebrew: z.string().optional(),
+      arabic: z.string().optional(),
+      greek: z.string().optional(),
+      meaning: z.string().optional(),
+    }).default({}),
+    birthYear: z.number().optional(),
+    deathYear: z.number().optional(),
+    ageAtDeath: z.number().optional(),
+    parents: z.array(z.string()).default([]),
+    spouse: z.string().optional(),
+    children: z.array(z.string()).default([]),
+    events: z.array(z.string()).default([]),
+    mentions: z.object({
+      tora: z.array(traditionRefSchema).default([]),
+      biblia: z.array(traditionRefSchema).default([]),
+      coran: z.array(traditionRefSchema).default([]),
+    }).default({ tora: [], biblia: [], coran: [] }),
+    extraBiblical: z.array(z.object({
+      source: z.string(),
+      summary: z.string(),
+    })).default([]),
+    roles: z.array(z.string()).default([]),
+    titles: z.array(z.object({
+      tradition: z.string(),
+      title: z.string(),
+    })).default([]),
+    significance: z.string().optional(),
+    trivia: z.array(z.string()).default([]),
+  }),
+});
+
+export const collections = { eras, locations, events, characters };
