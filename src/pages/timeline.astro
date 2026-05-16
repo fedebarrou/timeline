@@ -34,14 +34,16 @@ const sceneConfigs = events.map((e) => ({
   coords: e.data.locations[0]?.coords,
 }));
 
-const allMarkers = events.flatMap((e) =>
-  e.data.locations.map((l) => ({
-    id: `${e.data.id}-${l.id}`,
-    svgPosition: l.svgPosition,
-    label: l.ancientName,
-    coords: l.coords,
-  }))
-);
+const allMarkers = events.map((e) => {
+  const loc = e.data.locations[0];
+  if (!loc) return null;
+  return {
+    id: e.data.id,
+    svgPosition: loc.svgPosition,
+    label: e.data.title + (loc.ancientName ? ` (${loc.ancientName})` : ''),
+    coords: loc.coords,
+  };
+}).filter(Boolean);
 ---
 <BaseLayout title="Línea de tiempo · Adán → Mahoma">
   {eras.map((era) => <EraTheme era={era} />)}

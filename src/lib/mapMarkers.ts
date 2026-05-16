@@ -23,8 +23,11 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
   halo.setAttribute('data-halo', '');
 
   const dot = document.createElementNS(ns, 'circle');
-  dot.setAttribute('r', '3');
+  dot.setAttribute('r', '5');
   dot.setAttribute('fill', 'var(--era-primary)');
+  dot.setAttribute('stroke', 'var(--era-accent)');
+  dot.setAttribute('stroke-width', '1.5');
+  dot.setAttribute('filter', 'drop-shadow(0 0 4px var(--era-accent))');
 
   g.appendChild(halo);
   g.appendChild(dot);
