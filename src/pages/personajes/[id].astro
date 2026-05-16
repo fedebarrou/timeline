@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CharacterTimeline from '../../components/CharacterTimeline.astro';
+import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -25,21 +26,24 @@ const mentionsCount =
 ---
 <BaseLayout title={data.name}>
   <article class="px-6 py-16 max-w-4xl mx-auto">
-    <header class="mb-10">
-      <h1 class="font-display text-5xl">{data.name}</h1>
-      {(data.alternateNames.hebrew || data.alternateNames.arabic) && (
-        <p class="text-lg opacity-70 mt-2">
-          {data.alternateNames.hebrew} {data.alternateNames.hebrew && data.alternateNames.arabic && '·'} {data.alternateNames.arabic}
+    <header class="mb-10 flex items-start gap-8">
+      <PortraitPlaceholder name={data.name} size="lg" />
+      <div>
+        <h1 class="font-display text-5xl">{data.name}</h1>
+        {(data.alternateNames.hebrew || data.alternateNames.arabic) && (
+          <p class="text-lg opacity-70 mt-2">
+            {data.alternateNames.hebrew} {data.alternateNames.hebrew && data.alternateNames.arabic && '·'} {data.alternateNames.arabic}
+          </p>
+        )}
+        {data.alternateNames.meaning && (
+          <p class="italic opacity-60 mt-2">"{data.alternateNames.meaning}"</p>
+        )}
+        <p class="text-sm opacity-70 mt-4">
+          {data.birthYear !== undefined && `Año ${data.birthYear}`}
+          {data.deathYear !== undefined && ` — ${data.deathYear}`}
+          {data.ageAtDeath && ` (vivió ${data.ageAtDeath} años)`}
         </p>
-      )}
-      {data.alternateNames.meaning && (
-        <p class="italic opacity-60 mt-2">"{data.alternateNames.meaning}"</p>
-      )}
-      <p class="text-sm opacity-70 mt-4">
-        {data.birthYear !== undefined && `Año ${data.birthYear}`}
-        {data.deathYear !== undefined && ` — ${data.deathYear}`}
-        {data.ageAtDeath && ` (vivió ${data.ageAtDeath} años)`}
-      </p>
+      </div>
     </header>
 
     {events.length > 0 && <CharacterTimeline birthYear={data.birthYear} deathYear={data.deathYear} events={events} />}

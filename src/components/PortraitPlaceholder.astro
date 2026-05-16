@@ -1,0 +1,19 @@
+---
+interface Props {
+  name: string;
+  hint?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+const { name, hint, size = 'md' } = Astro.props;
+const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+const sizeClasses = {
+  sm: 'w-12 h-12 text-base',
+  md: 'w-24 h-24 text-2xl',
+  lg: 'w-40 h-40 text-4xl',
+}[size];
+---
+<div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden`} title={name}>
+  <div class="absolute inset-0 opacity-30" style="background: radial-gradient(circle at 30% 30%, var(--era-accent, #d4a574), transparent 70%);"></div>
+  <span class="relative text-primary tracking-wider">{initials}</span>
+  {hint && <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] opacity-60 whitespace-nowrap">{hint}</div>}
+</div>

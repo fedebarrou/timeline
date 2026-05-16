@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import { getCollection } from 'astro:content';
 
 const locations = await getCollection('locations');
@@ -20,9 +21,14 @@ locations.forEach((l) => {
         <ul class="grid md:grid-cols-2 gap-4">
           {items.map((l) => (
             <li class="border border-border rounded-lg p-4">
-              <h3 class="font-display text-xl">{l.data.ancientName}</h3>
-              {l.data.modernName && <p class="text-xs opacity-60">{l.data.modernName}</p>}
-              {l.data.disputed && <span class="inline-block mt-2 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
+              <div class="flex items-center gap-3 mb-2">
+                <PortraitPlaceholder name={l.data.ancientName} size="sm" />
+                <div>
+                  <h3 class="font-display text-xl">{l.data.ancientName}</h3>
+                  {l.data.modernName && <p class="text-xs opacity-60">{l.data.modernName}</p>}
+                </div>
+              </div>
+              {l.data.disputed && <span class="inline-block mt-1 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
               <p class="text-sm opacity-80 mt-2">{l.data.description}</p>
             </li>
           ))}
