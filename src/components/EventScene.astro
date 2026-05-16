@@ -16,16 +16,38 @@ const data = event.data;
 const { Content } = await render(event);
 const primaryLocation = data.locations[0];
 
-// Build narration text from body MDX + comparative
+// Build narration text from body MDX + comparative.
+// IMPORTANT: strip everything that reads badly out loud — parentheses, brackets,
+// scripture citations like "Gn 1:26-31" or "Sura 2:30".
+function cleanForTTS(s: string): string {
+  return s
+    // remove markdown control chars
+    .replace(/[#*_`>]/g, '')
+    // markdown links: keep label only
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // remove parenthetical content "(...)" — can be nested, run twice
+    .replace(/\([^()]*\)/g, '')
+    .replace(/\([^()]*\)/g, '')
+    // remove square-bracket content "[...]"
+    .replace(/\[[^\]]*\]/g, '')
+    // remove bare scripture citations like "Génesis 1:26-31", "Gn 1:26", "Sura 2:30-37"
+    .replace(/\b(?:Gn|Génesis|Ex|Éxodo|Lv|Levítico|Nm|Números|Dt|Deuteronomio|Mt|Mateo|Mc|Marcos|Lc|Lucas|Jn|Juan|Hch|Hechos|Ro|Romanos|Heb|Hebreos|Sura)\s*\d+:\d+(?:-\d+)?\b/g, '')
+    // collapse leftover dashes / commas / colons from removed citations
+    .replace(/[ \t]+([,.;:])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[ \t]*([,.;:])[ \t]*\1+/g, '$1')
+    .trim();
+}
+
 const bodyText = event.body ?? '';
 const narrationParts = [
   data.title,
   data.subtitle ?? '',
-  bodyText.replace(/[#*_`>]/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'),
-  data.comparative.unified,
-  data.comparative.divergent && data.comparative.tora ? `Según la Torá: ${data.comparative.tora.summary}` : '',
-  data.comparative.divergent && data.comparative.biblia ? `Según la Biblia: ${data.comparative.biblia.summary}` : '',
-  data.comparative.divergent && data.comparative.coran ? `Según el Corán: ${data.comparative.coran.summary}` : '',
+  cleanForTTS(bodyText),
+  cleanForTTS(data.comparative.unified ?? ''),
+  data.comparative.divergent && data.comparative.tora ? `Según la Torá: ${cleanForTTS(data.comparative.tora.summary)}` : '',
+  data.comparative.divergent && data.comparative.biblia ? `Según la Biblia: ${cleanForTTS(data.comparative.biblia.summary)}` : '',
+  data.comparative.divergent && data.comparative.coran ? `Según el Corán: ${cleanForTTS(data.comparative.coran.summary)}` : '',
 ];
 const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
 
