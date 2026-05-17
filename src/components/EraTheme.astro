@@ -6,4 +6,4 @@ interface Props { era: Era; }
 const { era } = Astro.props;
 const vars = eraToCssVars(era.data);
 ---
-<style set:html={`:root[data-era="${era.data.id}"] {\n  ${vars}\n}`}></style>
+<style set:html={`[data-era="${era.data.id}"] {\n  ${vars}\n}`}></style>

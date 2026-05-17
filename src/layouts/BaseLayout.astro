@@ -1,5 +1,7 @@
 ---
 import SiteNav from '../components/SiteNav.astro';
+import EraTheme from '../components/EraTheme.astro';
+import { getCollection } from 'astro:content';
 
 interface Props {
   title: string;
@@ -14,7 +16,8 @@ const {
   currentEraId,
   currentEraName,
 } = Astro.props;
-const bodyEra = currentEraId ?? 'primordial';  // server-rendered default
+const bodyEra = currentEraId ?? 'primordial';
+const allEras = await getCollection('eras');
 ---
 <!doctype html>
 <html lang="es">
@@ -28,6 +31,7 @@ const bodyEra = currentEraId ?? 'primordial';  // server-rendered default
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body data-era={bodyEra}>
+    {allEras.map((era) => <EraTheme era={era} />)}
     <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
