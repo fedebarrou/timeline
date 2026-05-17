@@ -6,15 +6,15 @@
   "yearRange": { "from": 3756, "to": 3793 },
   "gregorianRange": { "from": -4, "to": 33 },
   "palette": {
-    "bg": "#252510",
-    "bgGradient": "linear-gradient(180deg,#252510 0%,#3a3a18 100%)",
-    "surface": "#3a3a18",
-    "primary": "#d4d058",
-    "secondary": "#888030",
-    "accent": "#f5e0a0",
-    "text": "#e8e0b0",
-    "muted": "rgba(232,224,176,.55)",
-    "border": "rgba(212,208,88,.25)"
+    "bg": "#1f3625",
+    "bgGradient": "linear-gradient(180deg,#1f3625 0%,#2e4f37 100%)",
+    "surface": "#2e4f37",
+    "primary": "#a8d890",
+    "secondary": "#588060",
+    "accent": "#f0e8a8",
+    "text": "#d8e8c8",
+    "muted": "rgba(216,232,200,.55)",
+    "border": "rgba(168,216,144,.25)"
   },
   "typography": {
     "display": "'Cormorant Garamond', 'EB Garamond', serif",
@@ -35,13 +35,13 @@
     "iconStyle": "byzantine"
   },
   "map": {
-    "paperColor": "#252510",
-    "landStroke": "#d4d058",
+    "paperColor": "#1f3625",
+    "landStroke": "#a8d890",
     "landFill": "transparent",
     "waterStyle": "tessellated",
     "routeStyle": "thin-cross",
     "labelFont": "'Cormorant Garamond', serif",
-    "labelColor": "#d4d058"
+    "labelColor": "#a8d890"
   },
   "ambience": {
     "particles": "soft-light",

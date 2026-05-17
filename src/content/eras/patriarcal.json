@@ -6,15 +6,15 @@
   "yearRange": { "from": 1657, "to": 2300 },
   "gregorianRange": { "from": -2103, "to": -1500 },
   "palette": {
-    "bg": "#3a2010",
-    "bgGradient": "linear-gradient(180deg,#3a2010 0%,#52301a 100%)",
-    "surface": "#52301a",
-    "primary": "#ffd070",
-    "secondary": "#c87838",
-    "accent": "#ffb84a",
+    "bg": "#4d3520",
+    "bgGradient": "linear-gradient(180deg,#4d3520 0%,#6a4a2e 100%)",
+    "surface": "#6a4a2e",
+    "primary": "#ffd870",
+    "secondary": "#c89858",
+    "accent": "#ffe898",
     "text": "#fff0c8",
     "muted": "rgba(255,240,200,.55)",
-    "border": "rgba(255,208,112,.25)"
+    "border": "rgba(255,216,112,.25)"
   },
   "typography": {
     "display": "'Trajan Pro 3', 'Cinzel', serif",
@@ -35,13 +35,13 @@
     "iconStyle": "cuneiform"
   },
   "map": {
-    "paperColor": "#3a2010",
-    "landStroke": "#ffd070",
+    "paperColor": "#4d3520",
+    "landStroke": "#ffd870",
     "landFill": "transparent",
     "waterStyle": "parallel-lines",
     "routeStyle": "dashed-gold",
     "labelFont": "'Cinzel', serif",
-    "labelColor": "#ffd070"
+    "labelColor": "#ffd870"
   },
   "ambience": {
     "particles": "dust",

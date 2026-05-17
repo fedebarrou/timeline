@@ -136,6 +136,16 @@ const links = [
         }
       }
     } catch {}
+
+    // Update body data-era so CSS variables follow the user's current era context
+    try {
+      const storedId = localStorage.getItem(STORAGE_ID);
+      if (storedId) {
+        document.body.dataset.era = storedId;
+      } else {
+        document.body.dataset.era = 'primordial';
+      }
+    } catch {}
   }
 
   sync();
