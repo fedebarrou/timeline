@@ -3,6 +3,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const locations = await getCollection('locations');
+const allEvents = await getCollection('events');
+const eventEraById = new Map(allEvents.map((e) => [e.data.id, e.data.era]));
+
+function erasForLocation(loc: any): string[] {
+  const eras = new Set<string>();
+  (loc.data.events ?? []).forEach((evId: string) => {
+    const era = eventEraById.get(evId);
+    if (era) eras.add(era);
+  });
+  return Array.from(eras);
+}
+
 const byRegion = new Map<string, typeof locations>();
 locations.forEach((l) => {
   const list = byRegion.get(l.data.region) ?? [];
@@ -13,47 +25,122 @@ locations.forEach((l) => {
 <BaseLayout title="Lugares">
   <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Lugares</h1>
-    <p class="opacity-70 mb-10">Geografía sagrada: el escenario de los relatos.</p>
+    <p class="opacity-70 mb-6">Geografía sagrada: el escenario de los relatos.</p>
+
+    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
+      <p class="text-sm">
+        <span class="opacity-70">Mostrando solo</span>
+        <span class="font-display text-base mx-1">lugares</span>
+        <span class="opacity-70">de</span>
+        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
+      </p>
+      <button
+        type="button"
+        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        data-era-filter-clear
+      >
+        Ver todas las eras →
+      </button>
+    </div>
+
     {[...byRegion.entries()].map(([region, items]) => (
-      <div class="mb-12">
+      <div class="mb-12" data-group-section data-section-era="">
         <h2 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-5">{region}</h2>
         <ul class="grid md:grid-cols-2 gap-6">
-          {items.map((l) => (
-            <li class="border border-border rounded-lg overflow-hidden bg-surface/30 hover:border-accent transition-colors">
-              <a href={`/lugares/${l.data.id}`} class="block">
-              {l.data.portrait ? (
-                <div class="aspect-[16/9] overflow-hidden relative">
-                  <img
-                    src={l.data.portrait}
-                    alt={l.data.ancientName}
-                    loading="lazy"
-                    class="w-full h-full object-cover scale-125"
-                    style="object-position: center;"
-                  />
-                </div>
-              ) : (
-                <div class="aspect-[16/9] bg-bg flex items-center justify-center">
-                  <span class="font-display text-4xl text-primary/60">{l.data.ancientName.charAt(0)}</span>
-                </div>
-              )}
-              <div class="p-5">
-                <h3 class="font-display text-xl">{l.data.ancientName}</h3>
-                {l.data.modernName && <p class="text-xs opacity-60 mt-1">{l.data.modernName}</p>}
-                {l.data.disputed && <span class="inline-block mt-2 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
-                <p class="text-sm opacity-80 mt-3 leading-relaxed">{l.data.description}</p>
-                {l.data.events && l.data.events.length > 0 && (
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    {l.data.events.map((evId: string) => (
-                      <span class="text-[10px] tracking-wider uppercase opacity-60 border border-border px-2 py-0.5 rounded">→ {evId.replace(/-/g, ' ')}</span>
-                    ))}
+          {items.map((l) => {
+            const eras = erasForLocation(l);
+            return (
+              <li class="border border-border rounded-lg overflow-hidden bg-surface/30 hover:border-accent transition-colors" data-eras={eras.join(',')}>
+                <a href={`/lugares/${l.data.id}`} class="block">
+                {l.data.portrait ? (
+                  <div class="aspect-[16/9] overflow-hidden relative">
+                    <img
+                      src={l.data.portrait}
+                      alt={l.data.ancientName}
+                      loading="lazy"
+                      class="w-full h-full object-cover scale-125"
+                      style="object-position: center;"
+                    />
+                  </div>
+                ) : (
+                  <div class="aspect-[16/9] bg-bg flex items-center justify-center">
+                    <span class="font-display text-4xl text-primary/60">{l.data.ancientName.charAt(0)}</span>
                   </div>
                 )}
-              </div>
-              </a>
-            </li>
-          ))}
+                <div class="p-5">
+                  <h3 class="font-display text-xl">{l.data.ancientName}</h3>
+                  {l.data.modernName && <p class="text-xs opacity-60 mt-1">{l.data.modernName}</p>}
+                  {l.data.disputed && <span class="inline-block mt-2 text-[10px] px-2 py-0.5 border border-yellow-500/50 rounded">Localización disputada</span>}
+                  <p class="text-sm opacity-80 mt-3 leading-relaxed">{l.data.description}</p>
+                  {l.data.events && l.data.events.length > 0 && (
+                    <div class="mt-4 flex flex-wrap gap-2">
+                      {l.data.events.map((evId: string) => (
+                        <span class="text-[10px] tracking-wider uppercase opacity-60 border border-border px-2 py-0.5 rounded">→ {evId.replace(/-/g, ' ')}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     ))}
   </section>
 </BaseLayout>
+
+<script>
+  const STORAGE_ID = 'biblia-last-era-id';
+  const STORAGE_NAME = 'biblia-last-era-name';
+
+  function applyFilter() {
+    const eraId = localStorage.getItem(STORAGE_ID);
+    const eraName = localStorage.getItem(STORAGE_NAME);
+    const banner = document.querySelector<HTMLElement>('[data-era-filter-banner]');
+    const eraLabelEl = document.querySelector<HTMLElement>('[data-era-filter-label]');
+    const allItems = document.querySelectorAll<HTMLElement>('[data-era], [data-eras]');
+
+    if (!eraId) {
+      // Show everything
+      banner?.classList.add('hidden');
+      allItems.forEach((el) => el.classList.remove('hidden'));
+      document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((s) => s.classList.remove('hidden'));
+      return;
+    }
+
+    // Show banner
+    if (banner) banner.classList.remove('hidden');
+    if (eraLabelEl && eraName) eraLabelEl.textContent = eraName;
+
+    // Hide items not belonging to current era
+    allItems.forEach((el) => {
+      const itemEra = el.getAttribute('data-era');
+      const itemEras = el.getAttribute('data-eras');
+      let matches = false;
+      if (itemEra) matches = itemEra === eraId;
+      else if (itemEras) matches = itemEras.split(',').includes(eraId);
+      el.classList.toggle('hidden', !matches);
+    });
+
+    // Hide region sections that have no visible items
+    document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((section) => {
+      const visibleItems = section.querySelectorAll<HTMLElement>('[data-eras]:not(.hidden)');
+      if (visibleItems.length === 0) {
+        section.classList.add('hidden');
+      } else {
+        section.classList.remove('hidden');
+      }
+    });
+  }
+
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
+  clearBtn?.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_ID);
+    localStorage.removeItem(STORAGE_NAME);
+    applyFilter();
+  });
+
+  applyFilter();
+  document.addEventListener('DOMContentLoaded', applyFilter);
+</script>

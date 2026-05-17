@@ -58,16 +58,27 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 <div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg shadow-lg" data-timeline-nav>
   <div class="relative h-8 max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-8">
 
-    {/* Left slot: back to all eras */}
+    {/* Left slot: previous era */}
     <div class="flex justify-start">
-      <a
-        href="/"
-        class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
-        title="Volver a todas las eras"
-      >
-        <span>←</span>
-        <span class="hidden md:inline">Todas las eras</span>
-      </a>
+      {prevEra ? (
+        <a
+          href={prevHref}
+          class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
+          title={`Era anterior: ${prevEra.data.name}`}
+        >
+          <span>←</span>
+          <span class="hidden md:inline">{prevEra.data.name}</span>
+        </a>
+      ) : (
+        <span
+          class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-25 cursor-not-allowed whitespace-nowrap"
+          title="No hay era anterior"
+          aria-disabled="true"
+        >
+          <span>←</span>
+          <span class="hidden md:inline">Era anterior</span>
+        </span>
+      )}
     </div>
 
     {/* Center: timeline bar with prev/next step arrows on the extremes */}

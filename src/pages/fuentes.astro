@@ -3,8 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const events = await getCollection('events');
-type SourceWithEvent = (typeof events)[number]['data']['sources'][number] & { eventId: string; eventTitle: string };
-const all: SourceWithEvent[] = events.flatMap((e) => e.data.sources.map((s) => ({ ...s, eventId: e.data.id, eventTitle: e.data.title })));
+
+type SourceWithEvent = (typeof events)[number]['data']['sources'][number] & { eventId: string; eventTitle: string; eventEra: string };
+const all: SourceWithEvent[] = events.flatMap((e) => e.data.sources.map((s) => ({ ...s, eventId: e.data.id, eventTitle: e.data.title, eventEra: e.data.era })));
 const byType = new Map<string, SourceWithEvent[]>();
 all.forEach((s) => {
   const list = byType.get(s.type) ?? [];
@@ -19,13 +20,30 @@ const typeLabels: Record<string, string> = {
 <BaseLayout title="Fuentes">
   <section class="px-6 py-16 max-w-5xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Fuentes</h1>
-    <p class="opacity-70 mb-10">Índice de todas las referencias consultadas.</p>
+    <p class="opacity-70 mb-6">Índice de todas las referencias consultadas.</p>
+
+    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
+      <p class="text-sm">
+        <span class="opacity-70">Mostrando solo</span>
+        <span class="font-display text-base mx-1">fuentes</span>
+        <span class="opacity-70">de</span>
+        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
+      </p>
+      <button
+        type="button"
+        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        data-era-filter-clear
+      >
+        Ver todas las eras →
+      </button>
+    </div>
+
     {[...byType.entries()].map(([type, items]) => (
-      <div class="mb-10">
+      <div class="mb-10" data-group-section data-section-era="">
         <h2 class="text-sm tracking-[0.3em] uppercase opacity-70 mb-4">{typeLabels[type]}</h2>
         <ul class="space-y-2 text-sm">
           {items.map((s) => (
-            <li>
+            <li data-era={s.eventEra}>
               <strong>{s.title}</strong>
               {s.note && <span class="opacity-60"> — {s.note}</span>}
               <span class="opacity-50 ml-2">→ <a href={`/timeline#${s.eventId}`} class="hover:text-accent">{s.eventTitle}</a></span>
@@ -36,3 +54,58 @@ const typeLabels: Record<string, string> = {
     ))}
   </section>
 </BaseLayout>
+
+<script>
+  const STORAGE_ID = 'biblia-last-era-id';
+  const STORAGE_NAME = 'biblia-last-era-name';
+
+  function applyFilter() {
+    const eraId = localStorage.getItem(STORAGE_ID);
+    const eraName = localStorage.getItem(STORAGE_NAME);
+    const banner = document.querySelector<HTMLElement>('[data-era-filter-banner]');
+    const eraLabelEl = document.querySelector<HTMLElement>('[data-era-filter-label]');
+    const allItems = document.querySelectorAll<HTMLElement>('[data-era], [data-eras]');
+
+    if (!eraId) {
+      // Show everything
+      banner?.classList.add('hidden');
+      allItems.forEach((el) => el.classList.remove('hidden'));
+      document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((s) => s.classList.remove('hidden'));
+      return;
+    }
+
+    // Show banner
+    if (banner) banner.classList.remove('hidden');
+    if (eraLabelEl && eraName) eraLabelEl.textContent = eraName;
+
+    // Hide items not belonging to current era
+    allItems.forEach((el) => {
+      const itemEra = el.getAttribute('data-era');
+      const itemEras = el.getAttribute('data-eras');
+      let matches = false;
+      if (itemEra) matches = itemEra === eraId;
+      else if (itemEras) matches = itemEras.split(',').includes(eraId);
+      el.classList.toggle('hidden', !matches);
+    });
+
+    // Hide type sections that have no visible items
+    document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((section) => {
+      const visibleItems = section.querySelectorAll<HTMLElement>('[data-era]:not(.hidden)');
+      if (visibleItems.length === 0) {
+        section.classList.add('hidden');
+      } else {
+        section.classList.remove('hidden');
+      }
+    });
+  }
+
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
+  clearBtn?.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_ID);
+    localStorage.removeItem(STORAGE_NAME);
+    applyFilter();
+  });
+
+  applyFilter();
+  document.addEventListener('DOMContentLoaded', applyFilter);
+</script>

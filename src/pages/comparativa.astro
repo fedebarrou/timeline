@@ -9,7 +9,24 @@ const events = (await getCollection('events'))
 <BaseLayout title="Comparativa entre tradiciones">
   <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Comparativa</h1>
-    <p class="opacity-70 mb-10">Eventos donde la Torá, la Biblia y el Corán difieren.</p>
+    <p class="opacity-70 mb-6">Eventos donde la Torá, la Biblia y el Corán difieren.</p>
+
+    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
+      <p class="text-sm">
+        <span class="opacity-70">Mostrando solo</span>
+        <span class="font-display text-base mx-1">eventos divergentes</span>
+        <span class="opacity-70">de</span>
+        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
+      </p>
+      <button
+        type="button"
+        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        data-era-filter-clear
+      >
+        Ver todas las eras →
+      </button>
+    </div>
+
     <table class="w-full text-sm">
       <thead class="text-xs uppercase tracking-wider opacity-60">
         <tr>
@@ -21,7 +38,7 @@ const events = (await getCollection('events'))
       </thead>
       <tbody>
         {events.map((e) => (
-          <tr class="border-t border-border">
+          <tr class="border-t border-border" data-era={e.data.era}>
             <td class="p-3 align-top">
               <a href={`/timeline#${e.data.id}`} class="font-display hover:text-accent">{e.data.title}</a>
               <p class="text-xs opacity-60 mt-1">Año {e.data.biblicalYear}</p>
@@ -35,3 +52,58 @@ const events = (await getCollection('events'))
     </table>
   </section>
 </BaseLayout>
+
+<script>
+  const STORAGE_ID = 'biblia-last-era-id';
+  const STORAGE_NAME = 'biblia-last-era-name';
+
+  function applyFilter() {
+    const eraId = localStorage.getItem(STORAGE_ID);
+    const eraName = localStorage.getItem(STORAGE_NAME);
+    const banner = document.querySelector<HTMLElement>('[data-era-filter-banner]');
+    const eraLabelEl = document.querySelector<HTMLElement>('[data-era-filter-label]');
+    const allItems = document.querySelectorAll<HTMLElement>('[data-era], [data-eras]');
+
+    if (!eraId) {
+      // Show everything
+      banner?.classList.add('hidden');
+      allItems.forEach((el) => el.classList.remove('hidden'));
+      document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((s) => s.classList.remove('hidden'));
+      return;
+    }
+
+    // Show banner
+    if (banner) banner.classList.remove('hidden');
+    if (eraLabelEl && eraName) eraLabelEl.textContent = eraName;
+
+    // Hide items not belonging to current era
+    allItems.forEach((el) => {
+      const itemEra = el.getAttribute('data-era');
+      const itemEras = el.getAttribute('data-eras');
+      let matches = false;
+      if (itemEra) matches = itemEra === eraId;
+      else if (itemEras) matches = itemEras.split(',').includes(eraId);
+      el.classList.toggle('hidden', !matches);
+    });
+
+    // Hide group sections that have no visible items
+    document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((section) => {
+      const sectionEra = section.getAttribute('data-section-era');
+      if (sectionEra && sectionEra !== eraId) {
+        section.classList.add('hidden');
+      } else {
+        section.classList.remove('hidden');
+      }
+    });
+  }
+
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
+  clearBtn?.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_ID);
+    localStorage.removeItem(STORAGE_NAME);
+    applyFilter();
+  });
+
+  applyFilter();
+  document.addEventListener('DOMContentLoaded', applyFilter);
+</script>

@@ -4,6 +4,20 @@ import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import { getCollection } from 'astro:content';
 
 const allChars = await getCollection('characters');
+const erasCollection = await getCollection('eras');
+const erasById = new Map(erasCollection.map((e) => [e.data.id, e.data]));
+
+const GROUP_TO_ERA: Record<string, string> = {
+  'patriarcas': 'primordial',
+  'linaje-set': 'primordial',
+  'descendientes-cain': 'primordial',
+  'vigilantes': 'primordial',
+  'patriarcal': 'patriarcal',
+  'exodo': 'exodo',
+  'reinos-y-exilio': 'reinos-y-exilio',
+  'evangelio': 'evangelio',
+  'revelacion': 'revelacion',
+};
 
 const GROUPS = [
   // ── Era Primordial ──
@@ -35,20 +49,42 @@ const ungrouped = allChars.filter((c) => !c.data.group);
 <BaseLayout title="Personajes">
   <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Personajes</h1>
-    <p class="opacity-70 mb-12">Vidas y menciones en las tres tradiciones — agrupados por linaje.</p>
+    <p class="opacity-70 mb-6">Vidas y menciones en las tres tradiciones — agrupados por linaje.</p>
+
+    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
+      <p class="text-sm">
+        <span class="opacity-70">Mostrando solo</span>
+        <span class="font-display text-base mx-1">personajes</span>
+        <span class="opacity-70">de</span>
+        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
+      </p>
+      <button
+        type="button"
+        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        data-era-filter-clear
+      >
+        Ver todas las eras →
+      </button>
+    </div>
 
     {GROUPS.map((group) => {
       const chars = charsByGroup.get(group.id) ?? [];
       if (chars.length === 0) return null;
+      const eraId = GROUP_TO_ERA[group.id];
+      const era = eraId ? erasById.get(eraId) : null;
+      const accent = era?.palette.primary ?? 'var(--era-primary)';
       return (
-        <div class="character-group mb-16">
-          <header class="mb-6 border-b border-border pb-3">
-            <h2 class="font-display text-2xl">{group.label}</h2>
+        <div class="character-group mb-16" data-group-section data-section-era={eraId} style={`--group-accent: ${accent}`}>
+          <header class="mb-6 border-b pb-3" style={`border-color: ${accent}55`}>
+            <p class="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-1" style={`color: ${accent}`}>
+              {era ? `Era ${era.order} · ${era.name}` : 'Era'}
+            </p>
+            <h2 class="font-display text-2xl" style={`color: ${accent}`}>{group.label}</h2>
             <p class="text-sm opacity-70 mt-1">{group.description}</p>
           </header>
           <ul class="grid md:grid-cols-2 gap-6">
             {chars.map((c) => (
-              <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors">
+              <li class="border border-border rounded-lg p-5 hover:border-accent transition-colors" data-era={GROUP_TO_ERA[c.data.group ?? '']}>
                 <a href={`/personajes/${c.data.id}`}>
                   <div class="flex items-start gap-4">
                     <PortraitPlaceholder name={c.data.name} src={c.data.portrait ?? undefined} avatar={c.data.avatar ?? undefined} size="md" />
@@ -105,3 +141,59 @@ const ungrouped = allChars.filter((c) => !c.data.group);
     )}
   </section>
 </BaseLayout>
+
+<script>
+  const STORAGE_ID = 'biblia-last-era-id';
+  const STORAGE_NAME = 'biblia-last-era-name';
+
+  function applyFilter() {
+    const eraId = localStorage.getItem(STORAGE_ID);
+    const eraName = localStorage.getItem(STORAGE_NAME);
+    const banner = document.querySelector<HTMLElement>('[data-era-filter-banner]');
+    const eraLabelEl = document.querySelector<HTMLElement>('[data-era-filter-label]');
+    const allItems = document.querySelectorAll<HTMLElement>('[data-era], [data-eras]');
+
+    if (!eraId) {
+      // Show everything
+      banner?.classList.add('hidden');
+      allItems.forEach((el) => el.classList.remove('hidden'));
+      // Also un-hide section groups
+      document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((s) => s.classList.remove('hidden'));
+      return;
+    }
+
+    // Show banner
+    if (banner) banner.classList.remove('hidden');
+    if (eraLabelEl && eraName) eraLabelEl.textContent = eraName;
+
+    // Hide items not belonging to current era
+    allItems.forEach((el) => {
+      const itemEra = el.getAttribute('data-era');
+      const itemEras = el.getAttribute('data-eras');
+      let matches = false;
+      if (itemEra) matches = itemEra === eraId;
+      else if (itemEras) matches = itemEras.split(',').includes(eraId);
+      el.classList.toggle('hidden', !matches);
+    });
+
+    // Hide group sections that have no visible items
+    document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((section) => {
+      const sectionEra = section.getAttribute('data-section-era');
+      if (sectionEra && sectionEra !== eraId) {
+        section.classList.add('hidden');
+      } else {
+        section.classList.remove('hidden');
+      }
+    });
+  }
+
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
+  clearBtn?.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_ID);
+    localStorage.removeItem(STORAGE_NAME);
+    applyFilter();
+  });
+
+  applyFilter();
+  document.addEventListener('DOMContentLoaded', applyFilter);
+</script>

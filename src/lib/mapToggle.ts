@@ -13,24 +13,48 @@ export function registerMarkers(data: MarkerData[]) {
 
 function initModernMap() {
   const container = document.querySelector<HTMLElement>('[data-modern-map]');
-  if (!container || modernMap) return;
-  modernMap = createMap(container);
-  modernMap.on('load', () => {
-    markers.forEach((m) => addMarker(modernMap!, m));
-  });
-  initialized = true;
+  if (!container) {
+    console.warn('[mapToggle] no container found for modern map');
+    return;
+  }
+  if (modernMap) return;
+  console.log('[mapToggle] initializing modern map', { container, markers: markers.length });
+  try {
+    modernMap = createMap(container);
+    modernMap.on('load', () => {
+      console.log('[mapToggle] modern map loaded, adding markers');
+      markers.forEach((m) => addMarker(modernMap!, m));
+    });
+    initialized = true;
+  } catch (err) {
+    console.error('[mapToggle] createMap failed', err);
+  }
 }
 
 export function toggleMap() {
   const wrapper = document.querySelector<HTMLElement>('[data-modern-map-wrapper]');
   const manuscript = document.querySelector<HTMLElement>('[data-map-root]');
-  if (!wrapper || !manuscript) return;
+  if (!wrapper || !manuscript) {
+    console.warn('[mapToggle] missing wrapper or manuscript', { wrapper, manuscript });
+    return;
+  }
 
   const showModern = wrapper.classList.contains('hidden');
   if (showModern) {
     wrapper.classList.remove('hidden');
     manuscript.style.opacity = '0';
-    if (!initialized) initModernMap();
+    // Wait a frame so the container has dimensions, then init/resize
+    requestAnimationFrame(() => {
+      try {
+        if (!initialized) {
+          initModernMap();
+        } else if (modernMap) {
+          modernMap.resize();
+        }
+      } catch (err) {
+        console.error('[mapToggle] init/resize failed', err);
+      }
+    });
   } else {
     wrapper.classList.add('hidden');
     manuscript.style.opacity = '1';
