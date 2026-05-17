@@ -6,10 +6,21 @@ import { getCollection } from 'astro:content';
 const allChars = await getCollection('characters');
 
 const GROUPS = [
-  { id: 'patriarcas',         label: 'Patriarcas pre-diluvio',                description: 'La línea de Adán hasta Noé y sus hijos, según las genealogías canónicas.' },
-  { id: 'linaje-set',         label: 'Línea de Set',                          description: 'Genealogía completa entre Set y Noé que se menciona en Génesis 5.' },
-  { id: 'descendientes-cain', label: 'Descendientes de Caín',                 description: 'La rama paralela: los inventores de la civilización temprana — y su corrupción.' },
-  { id: 'vigilantes',         label: 'Vigilantes y figuras apócrifas',        description: 'Ángeles caídos, Nephilim y tradiciones extra-bíblicas (Libro de Enoc, Cábala).' },
+  // ── Era Primordial ──
+  { id: 'patriarcas',         label: 'Patriarcas pre-diluvio',                description: 'Era Primordial · La línea de Adán hasta Noé y sus hijos, según las genealogías canónicas.' },
+  { id: 'linaje-set',         label: 'Línea de Set',                          description: 'Era Primordial · Genealogía completa entre Set y Noé (Génesis 5).' },
+  { id: 'descendientes-cain', label: 'Descendientes de Caín',                 description: 'Era Primordial · La rama paralela: los inventores de la civilización temprana.' },
+  { id: 'vigilantes',         label: 'Vigilantes y figuras apócrifas',        description: 'Era Primordial · Ángeles caídos, Nephilim y tradiciones extra-bíblicas (Libro de Enoc, Cábala).' },
+  // ── Era Patriarcal ──
+  { id: 'patriarcal',         label: 'Patriarcas — Abraham y sus descendientes', description: 'Era Patriarcal · Abraham, Isaac, Jacob, José y las 12 tribus. Antepasados directos de las tres tradiciones.' },
+  // ── Era Éxodo ──
+  { id: 'exodo',              label: 'Éxodo de Egipto',                       description: 'Era Éxodo · Moisés, Aarón, Miriam y la generación del desierto. Los protagonistas de la liberación.' },
+  // ── Era Reinos y Exilio ──
+  { id: 'reinos-y-exilio',    label: 'Jueces, reyes y profetas',              description: 'Era Reinos y Exilio · De Josué a Daniel. Jueces, reyes (Saúl, David, Salomón), profetas mayores y el exilio babilónico.' },
+  // ── Era Evangelio ──
+  { id: 'evangelio',          label: 'Jesús, apóstoles y primeros cristianos', description: 'Era Evangelio · La familia de Jesús, los doce apóstoles, los protagonistas del Nuevo Testamento y la iglesia primitiva.' },
+  // ── Era Revelación ──
+  { id: 'revelacion',         label: 'Mahoma y los primeros musulmanes',      description: 'Era Revelación · El Profeta del islam, su familia, los Compañeros y los primeros conversos en La Meca y Medina.' },
 ] as const;
 
 function byBirth(a: any, b: any) {

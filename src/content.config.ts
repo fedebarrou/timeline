@@ -202,7 +202,23 @@ const characters = defineCollection({
   schema: z.object({
     id: z.string(),
     name: z.string(),
-    group: z.enum(['patriarcas', 'vigilantes', 'descendientes-cain', 'linaje-set']).optional(),
+    group: z.enum([
+      // Era Primordial
+      'patriarcas',
+      'vigilantes',
+      'descendientes-cain',
+      'linaje-set',
+      // Era Patriarcal
+      'patriarcal',
+      // Era Éxodo
+      'exodo',
+      // Era Reinos y Exilio
+      'reinos-y-exilio',
+      // Era Evangelio
+      'evangelio',
+      // Era Revelación
+      'revelacion',
+    ]).optional(),
     portrait: z.string().optional(),
     avatar: z.string().optional(),
     alternateNames: z.object({
