@@ -1,0 +1,11 @@
+{
+  "id": "canaan-siquem",
+  "ancientName": "Siquem",
+  "modernName": "Nablus, Cisjordania",
+  "region": "levante",
+  "coords": [32.21, 35.27],
+  "svgPosition": [580, 350],
+  "disputed": false,
+  "description": "Ciudad cananea entre los montes Ebal y Gerizim. Génesis 12:6-7 la identifica como la primera escala de Abraham en Canaán, donde construye un altar bajo la encina de Moré tras recibir la promesa de la tierra. Posteriormente Jacob comprará allí una parcela (Gn 33:18-20) y los huesos de José serán enterrados en ese mismo lugar (Jos 24:32).",
+  "events": ["llamado-de-abraham"]
+}

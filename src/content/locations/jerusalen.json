@@ -1,0 +1,10 @@
+{
+  "id": "jerusalen",
+  "ancientName": "Jerusalén / Salem",
+  "modernName": "Jerusalén, Israel/Palestina",
+  "region": "levante",
+  "coords": [31.78, 35.22],
+  "svgPosition": [582, 363],
+  "description": "Ciudad jebusea conquistada por David y convertida en capital del reino unificado de Israel. Sede del Templo construido por Salomón, lugar santo central para las tres tradiciones abrahámicas.",
+  "events": ["david-rey", "salomon-rey", "reina-de-saba", "exilio-babilonico"]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "haran",
+  "ancientName": "Harán",
+  "modernName": "Harran, Turquía",
+  "region": "anatolia",
+  "coords": [36.86, 39.03],
+  "svgPosition": [600, 245],
+  "disputed": false,
+  "description": "Ciudad de la alta Mesopotamia, situada en la actual frontera turco-siria. Importante centro caravanero y, como Ur, sede de un antiguo culto al dios lunar Sin. Génesis 11:31 sitúa allí la última escala del clan de Taré antes de la migración de Abraham hacia Canaán; Génesis 12:4 indica que Abraham parte de Harán a los setenta y cinco años.",
+  "events": ["llamado-de-abraham"]
+}

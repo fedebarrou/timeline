@@ -1,0 +1,10 @@
+{
+  "id": "rio-jordan-betania",
+  "ancientName": "Betania al otro lado del Jordán",
+  "modernName": "Al-Maghtas, Jordania",
+  "region": "levante",
+  "coords": [31.84, 35.55],
+  "svgPosition": [585, 362],
+  "description": "Vado del río Jordán al este, donde Juan el Bautista predicaba y bautizaba. Lugar donde Jesús es bautizado y comienza su ministerio público (Jn 1:28).",
+  "events": ["bautismo-de-jesus"]
+}

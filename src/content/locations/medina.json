@@ -1,0 +1,11 @@
+{
+  "id": "medina",
+  "ancientName": "Yathrib / Madīna",
+  "modernName": "Medina, Arabia Saudita",
+  "region": "arabia",
+  "coords": [24.47, 39.61],
+  "svgPosition": [620, 440],
+  "disputed": false,
+  "description": "Oasis y antigua ciudad de Yathrib en el Hiyaz noroccidental, refundada como al-Madīna al-Munawwara ('la ciudad iluminada') tras la Hégira del Profeta en 622 d.C. Allí Mahoma establece la primera comunidad política y religiosa del Islam (umma), redacta la llamada Constitución de Medina y libra desde su perímetro las batallas de Badr, Uḥud y el Foso. La ciudad acoge la Mezquita del Profeta (al-Masjid al-Nabawī), levantada por él mismo y sus compañeros, en cuya cámara — perteneciente a su esposa ʿĀʾisha — está enterrado el Profeta junto a los califas Abū Bakr y ʿUmar. Es la segunda ciudad más sagrada del Islam después de La Meca.",
+  "events": ["hegira-migracion-a-medina", "fundacion-comunidad-medina", "batalla-del-foso", "muerte-de-mahoma"]
+}

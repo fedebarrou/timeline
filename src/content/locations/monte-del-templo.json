@@ -1,0 +1,10 @@
+{
+  "id": "monte-del-templo",
+  "ancientName": "Monte Moriah / Templo",
+  "modernName": "Monte del Templo, Jerusalén",
+  "region": "levante",
+  "coords": [31.78, 35.24],
+  "svgPosition": [583, 363],
+  "description": "Colina sagrada de Jerusalén identificada tradicionalmente con el Monte Moriah donde Abraham ofreció a Isaac. Salomón construyó allí el Primer Templo y albergó el Arca del Pacto. Tras la destrucción, fue reconstruido por Zorobabel y luego por Herodes el Grande.",
+  "events": ["templo-de-salomon", "exilio-babilonico"]
+}

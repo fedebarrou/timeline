@@ -1,0 +1,11 @@
+{
+  "id": "monte-nebo",
+  "ancientName": "Monte Nebo / Pisga",
+  "modernName": "Jebel Nebo, Jordania",
+  "region": "levante",
+  "coords": [31.77, 35.73],
+  "svgPosition": [592, 365],
+  "disputed": false,
+  "description": "Montaña al este del Jordán, en Moab, frente a Jericó, desde donde Moisés contempló la tierra prometida antes de morir (Deuteronomio 34:1-6). Dios le mostró 'toda la tierra de Galaad hasta Dan, todo Neftalí, la tierra de Efraín y de Manasés, toda la tierra de Judá hasta el mar occidental, el Néguev y la llanura de la cuenca de Jericó'. Allí murió Moisés a los 120 años y 'lo enterró en el valle, en tierra de Moab, frente a Bet-peor; y ninguno conoce su sepultura hasta hoy' (Dt 34:6). El sitio actual es Jebel Nebo en Jordania, identificado desde tiempos bizantinos; allí se construyó una basílica conmemorativa (siglo IV-VI d.C.) cuyos mosaicos siguen siendo célebres y que fue restaurada por los franciscanos. Hoy es uno de los principales sitios de peregrinación de Jordania.",
+  "events": ["muerte-de-moises"]
+}

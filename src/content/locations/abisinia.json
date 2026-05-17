@@ -1,0 +1,11 @@
+{
+  "id": "abisinia",
+  "ancientName": "Reino de Aksum (al-Ḥabasha en árabe)",
+  "modernName": "Etiopía y Eritrea",
+  "region": "africa",
+  "coords": [14.13, 38.72],
+  "svgPosition": [600, 500],
+  "disputed": false,
+  "description": "El Reino de Aksum, en lo que hoy es el norte de Etiopía y Eritrea, era a comienzos del s. VII uno de los grandes reinos cristianos del mundo antiguo tardío, miembro del cristianismo monofisita en órbita teológica del patriarcado de Alejandría. Su rey, llamado Negus (nəguś en geʿez, 'rey'), era considerado en Arabia un soberano justo. Hacia 615 d.C., un primer grupo de musulmanes huidos de la persecución meccana cruzó el Mar Rojo y solicitó asilo en su corte; otro grupo mayor llegó después. El Negus los recibió, escuchó la exposición de la fe islámica por Jaʿfar ibn Abī Ṭālib — que recitó parte de la Sura Maryam —, y rechazó la petición de extradición de los Quraysh. La estancia en Abisinia duró más de una década para muchos, hasta el regreso a Medina en 628 d.C.",
+  "events": ["migracion-a-abisinia"]
+}

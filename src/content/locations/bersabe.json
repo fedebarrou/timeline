@@ -1,0 +1,11 @@
+{
+  "id": "bersabe",
+  "ancientName": "Bersabé",
+  "modernName": "Beersheba, Israel",
+  "region": "levante",
+  "coords": [31.25, 34.79],
+  "svgPosition": [578, 372],
+  "disputed": false,
+  "description": "Oasis al borde del Néguev, principal asentamiento del sur de Canaán en la época patriarcal. Génesis 21:31 explica el nombre como 'pozo del juramento' por el pacto entre Abraham y Abimelec. Allí transcurren episodios centrales de los tres patriarcas: Agar e Ismael en el desierto vecino (Gn 21:14), Abraham planta un tamarisco (Gn 21:33), Isaac construye un altar (Gn 26:23-25) y Jacob recibe una visión nocturna antes de bajar a Egipto (Gn 46:1-5).",
+  "events": ["nacimiento-ismael"]
+}

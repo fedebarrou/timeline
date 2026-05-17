@@ -1,0 +1,10 @@
+{
+  "id": "babilonia-imperial",
+  "ancientName": "Babilonia (neo-babilónica)",
+  "modernName": "Hilla, Irak",
+  "region": "mesopotamia",
+  "coords": [32.54, 44.42],
+  "svgPosition": [635, 320],
+  "description": "Capital del imperio neo-babilónico bajo Nabucodonosor II, destructor del Templo de Salomón en el 587 a.C. y deportador del pueblo de Judá. Famosa por sus jardines colgantes, la puerta de Ishtar y los zigurats que inspiraron el relato de Babel.",
+  "events": ["exilio-babilonico", "daniel-en-babilonia"]
+}

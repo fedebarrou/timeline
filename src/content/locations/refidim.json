@@ -1,0 +1,11 @@
+{
+  "id": "refidim",
+  "ancientName": "Refidim",
+  "modernName": "Wadi Refayid, Sinaí occidental (identificación tradicional)",
+  "region": "sinai",
+  "coords": [28.83, 33.65],
+  "svgPosition": [552, 423],
+  "disputed": false,
+  "description": "Última parada antes del Sinaí (Éxodo 17). Allí el pueblo murmuró por agua, Moisés golpeó la roca en Horeb y brotó agua (Ex 17:1-7), y los amalecitas atacaron — el primer combate de Israel, ganado mientras Aarón y Hur sostenían los brazos en alto de Moisés (Ex 17:8-16). También aquí Jetro visita a Moisés y aconseja el sistema de jueces subordinados (Ex 18). La identificación con Wadi Refayid (entre el Sinaí tradicional y el oeste) es geográficamente coherente con el itinerario, pero arqueológicamente no confirmada.",
+  "events": ["agua-de-la-roca"]
+}

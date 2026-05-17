@@ -1,0 +1,10 @@
+{
+  "id": "hebron-judea",
+  "ancientName": "Ciudad de Judá en la montaña",
+  "modernName": "Ain Karem / región de Hebrón, Cisjordania",
+  "region": "levante",
+  "coords": [31.77, 35.16],
+  "svgPosition": [581, 363],
+  "description": "Lucas 1:39 indica que María se dirigió 'a una ciudad de Judá, en la región montañosa' para visitar a Isabel y Zacarías. La tradición cristiana identifica el lugar con Ain Karem, en las colinas al oeste de Jerusalén, aunque otros proponen la región de Hebrón, ciudad sacerdotal.",
+  "events": ["visitacion-isabel", "nacimiento-juan-bautista"]
+}

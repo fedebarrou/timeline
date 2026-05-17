@@ -1,0 +1,10 @@
+{
+  "id": "nazaret",
+  "ancientName": "Nazaret",
+  "modernName": "Nazaret, norte de Israel",
+  "region": "levante",
+  "coords": [32.70, 35.30],
+  "svgPosition": [579, 353],
+  "description": "Aldea de Galilea en las colinas al sur del valle de Esdrelón. Hogar de María y José y lugar donde transcurre la infancia y juventud de Jesús. Sin gran relevancia previa al evangelio: Natanael preguntará '¿de Nazaret puede salir algo bueno?' (Jn 1:46).",
+  "events": ["anunciacion"]
+}

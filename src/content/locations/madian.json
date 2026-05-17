@@ -1,0 +1,11 @@
+{
+  "id": "madian",
+  "ancientName": "Tierra de Madián",
+  "modernName": "Noroeste de Arabia Saudita / sur de Jordania",
+  "region": "arabia",
+  "coords": [28.97, 35.05],
+  "svgPosition": [565, 422],
+  "disputed": false,
+  "description": "Territorio al este del golfo de Aqaba habitado por los madianitas, descendientes de Madián hijo de Abraham y Cetura (Génesis 25:1-4). Moisés huyó a Madián tras matar al egipcio y allí vivió 40 años como pastor del rebaño de Jetro (Reuel), sacerdote madianita cuya hija Séfora desposó (Éxodo 2:15-22). Su capital sería Madyan (actual al-Bad' o Maghair Shuayb, 'cuevas de Shuayb', en Arabia Saudita), conservando tumbas nabateas y referencias islámicas al profeta Shu'ayb. En el Corán, los madianitas son destinatarios de la predicación de Shu'ayb (Sura 7:85-93; 11:84-95), identificado por la tradición islámica con el suegro de Moisés.",
+  "events": ["moises-mata-egipcio"]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "monte-moriah",
+  "ancientName": "Monte Moriah",
+  "modernName": "Jerusalén, Monte del Templo / Haram al-Sharif",
+  "region": "levante",
+  "coords": [31.78, 35.24],
+  "svgPosition": [582, 360],
+  "disputed": false,
+  "description": "Elevación rocosa identificada por Génesis 22:2 como el sitio donde Abraham debía ofrecer a su hijo. La tradición judía (2 Crónicas 3:1) la equipara con la cima donde Salomón edificó el Primer Templo. La tradición islámica venera el mismo afloramiento rocoso, hoy bajo la Cúpula de la Roca, como el lugar de la ofrenda (ligada en su mayoría a Ismael) y del viaje nocturno (Isra) del profeta Muhammad. Es uno de los espacios más cargados del mundo abrahámico.",
+  "events": ["akedah-sacrificio-isaac"]
+}

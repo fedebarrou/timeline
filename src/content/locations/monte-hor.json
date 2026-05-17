@@ -1,0 +1,23 @@
+{
+  "id": "monte-hor",
+  "ancientName": "Monte Hor",
+  "modernName": "Jebel Madurah (Jordania) — identificación tradicional disputada",
+  "region": "levante",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Jebel Madurah / Jebel Harun (Jordania, cerca de Petra)",
+      "coords": [30.32, 35.45],
+      "svgPosition": [575, 410],
+      "support": "Identificación tradicional árabe-cristiana. Jebel Harun ('monte de Aarón') cerca de Petra contiene un santuario islámico que tradicionalmente conmemora la sepultura de Aarón. Eusebio (Onomasticon) y Jerónimo respaldan esta ubicación."
+    },
+    {
+      "name": "Jebel Madra, Néguev oriental",
+      "coords": [30.86, 35.10],
+      "svgPosition": [572, 400],
+      "support": "Alternativa académica moderna: la frontera bíblica del territorio edomita era más al noroeste; el Monte Hor 'en los confines de la tierra de Edom' (Núm 33:37) podría estar en el Néguev oriental, no cerca de Petra."
+    }
+  ],
+  "description": "Montaña 'en los confines de la tierra de Edom' donde murió Aarón a los 123 años (Números 20:22-29; 33:37-39). Moisés, Aarón y Eleazar subieron al monte; Moisés le quitó las vestiduras sacerdotales a Aarón y se las puso a Eleazar, su hijo. Aarón murió allí y todo Israel lo lloró durante 30 días. La identificación tradicional árabe es Jebel Harun ('monte de Aarón') cerca de Petra, donde aún se mantiene un santuario islámico. Académicamente la ubicación es debatida: algunos prefieren un sitio en el Néguev oriental más coherente con la frontera edomita real.",
+  "events": ["muerte-de-aaron"]
+}

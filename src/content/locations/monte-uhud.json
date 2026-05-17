@@ -1,0 +1,11 @@
+{
+  "id": "monte-uhud",
+  "ancientName": "Jabal Uḥud — Monte Uḥud",
+  "modernName": "Jabal Uḥud, 5 km al norte de Medina, Arabia Saudita",
+  "region": "arabia",
+  "coords": [24.50, 39.62],
+  "svgPosition": [620, 440],
+  "disputed": false,
+  "description": "Montaña aislada de unos 1.077 metros de altura situada a cinco kilómetros al norte del centro de Medina. El 7 del mes de Shawwāl del año 3 AH (23 de marzo del 625 d.C.) se libró en su falda meridional la segunda gran batalla del Islam: el ejército Quraysh, esta vez de unos tres mil hombres comandados por Abū Sufyān, marchó contra Medina para vengar la derrota de Badr. Los musulmanes — unos setecientos — salieron a defender la ciudad en orden inverso a la estrategia inicial del Profeta. La derrota parcial dejó setenta mártires, entre ellos Ḥamza ibn ʿAbd al-Muṭṭalib; el propio Mahoma fue herido en el rostro. Los versículos Sura 3:121-179 reflexionan sobre la batalla y sus enseñanzas espirituales. Hoy el monte conserva el cementerio de los mártires de Uḥud.",
+  "events": ["batalla-de-uhud"]
+}

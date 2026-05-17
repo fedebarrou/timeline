@@ -1,0 +1,11 @@
+{
+  "id": "desierto-sin",
+  "ancientName": "Desierto de Sin",
+  "modernName": "Sinaí central, Egipto",
+  "region": "sinai",
+  "coords": [29.5, 34.0],
+  "svgPosition": [555, 418],
+  "disputed": false,
+  "description": "Región árida entre Elim y el Sinaí donde el pueblo de Israel murmuró por hambre. Allí Dios dio el maná y las codornices (Éxodo 16). Conviene distinguirlo del 'Desierto de Zin' (con tzade en hebreo), región al sur de Cades-Barnea ya en el Néguev; ambos nombres se confunden a menudo. El Desierto de Sin (con samej) está claramente en la península del Sinaí, entre Elim y el Sinaí. El relato del maná aquí es uno de los milagros más persistentes del éxodo: durante 40 años el pueblo se alimentó de este 'pan del cielo'.",
+  "events": ["mana-y-codornices"]
+}

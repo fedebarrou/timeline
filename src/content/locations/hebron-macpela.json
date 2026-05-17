@@ -1,0 +1,11 @@
+{
+  "id": "hebron-macpela",
+  "ancientName": "Hebrón / Cueva de Macpela",
+  "modernName": "Hebrón, Cisjordania",
+  "region": "levante",
+  "coords": [31.53, 35.10],
+  "svgPosition": [582, 365],
+  "disputed": false,
+  "description": "Ciudad del sur montañoso de Canaán, también llamada Quiriat-Arbá. Génesis 23 narra que Abraham compró allí a Efrón el hitita la cueva de Macpela como sepulcro familiar, tras la muerte de Sara. Según Génesis 25:9, 49:31 y 50:13 fueron enterrados allí Abraham, Sara, Isaac, Rebeca, Lea y Jacob. Las tres tradiciones abrahámicas veneran el sitio: la actual Tumba de los Patriarcas (Haram al-Khalil) es un santuario compartido por judíos y musulmanes.",
+  "events": ["muerte-sara", "muerte-de-jacob"]
+}

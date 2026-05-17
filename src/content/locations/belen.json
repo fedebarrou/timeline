@@ -1,0 +1,10 @@
+{
+  "id": "belen",
+  "ancientName": "Belén",
+  "modernName": "Belén, Cisjordania",
+  "region": "levante",
+  "coords": [31.70, 35.20],
+  "svgPosition": [581, 364],
+  "description": "Pequeña ciudad de Judá a unos 9 km al sur de Jerusalén. 'Casa del pan' (Bet-léjem). Cuna del rey David y, según Miqueas 5:2 y los evangelios, lugar de nacimiento del Mesías.",
+  "events": ["nacimiento-jesus"]
+}

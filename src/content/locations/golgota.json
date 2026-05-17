@@ -1,0 +1,10 @@
+{
+  "id": "golgota",
+  "ancientName": "Gólgota / Calvario",
+  "modernName": "Iglesia del Santo Sepulcro, Jerusalén",
+  "region": "levante",
+  "coords": [31.78, 35.23],
+  "svgPosition": [582, 363],
+  "description": "'Lugar de la Calavera' (Gólgota en arameo, Calvario en latín). Promontorio de ejecuciones romanas a las afueras de la muralla de Jerusalén del siglo I. Lugar de la crucifixión de Jesús (Mc 15:22).",
+  "events": ["crucifixion"]
+}

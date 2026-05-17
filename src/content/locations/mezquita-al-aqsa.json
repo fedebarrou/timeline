@@ -1,0 +1,11 @@
+{
+  "id": "mezquita-al-aqsa",
+  "ancientName": "Al-Masjid al-Aqṣā / Bayt al-Maqdis",
+  "modernName": "Jerusalén — Monte del Templo / Ḥaram ash-Sharīf",
+  "region": "levante",
+  "coords": [31.78, 35.24],
+  "svgPosition": [582, 363],
+  "disputed": false,
+  "description": "El recinto sagrado de Jerusalén, llamado en árabe Ḥaram ash-Sharīf ('el Noble Santuario') y conocido en hebreo como Har ha-Bayit ('Monte del Templo'). El Corán lo designa como al-Masjid al-Aqṣā, 'la mezquita lejana' (Sura 17:1), destino del viaje nocturno (Isrāʾ) de Mahoma desde La Meca. En tiempos del Profeta — antes de la conquista musulmana de Jerusalén en 637 d.C. — el sitio había sido la plataforma del Templo de Salomón, destruido por los babilonios (587 a.C.), reconstruido como Segundo Templo por Zorobabel y ampliado por Herodes, y arrasado finalmente por Tito en el 70 d.C. Tras la conquista islámica, el califa ʿUmar mandó construir allí una primera estructura; las actuales Cúpula de la Roca (691 d.C.) y mezquita Al-Aqṣā (s. VIII) son edificios omeyas y posteriores. Es el tercer lugar más sagrado del Islam tras La Meca y Medina.",
+  "events": ["viaje-nocturno-mi-raj"]
+}

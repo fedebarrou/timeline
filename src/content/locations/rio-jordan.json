@@ -1,0 +1,10 @@
+{
+  "id": "rio-jordan",
+  "ancientName": "Río Jordán",
+  "modernName": "Río Jordán, Israel/Jordania",
+  "region": "levante",
+  "coords": [31.84, 35.55],
+  "svgPosition": [585, 360],
+  "description": "Río principal de la tierra prometida, frontera oriental de Canaán. Los israelitas lo cruzaron a pie seco bajo el liderazgo de Josué. Aquí Elías fue arrebatado al cielo en un carro de fuego y Eliseo recogió su manto.",
+  "events": ["ascenso-elias"]
+}

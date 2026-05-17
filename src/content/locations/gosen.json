@@ -1,0 +1,11 @@
+{
+  "id": "gosen",
+  "ancientName": "Tierra de Gosén",
+  "modernName": "Wadi Tumilat, Delta oriental del Nilo, Egipto",
+  "region": "egipto",
+  "coords": [30.95, 31.83],
+  "svgPosition": [515, 405],
+  "disputed": false,
+  "description": "Región fértil del delta oriental del Nilo donde José asentó a su familia bajo los hicsos (Génesis 47). Cuatro siglos después, los hebreos vivían allí cuando se levantó 'un nuevo rey que no conocía a José' (Éxodo 1:8). La identificación con Wadi Tumilat se apoya en la cercanía a Pi-Ramsés y Pitón, las ciudades de almacenes que los hebreos construyeron para Faraón (Éxodo 1:11). Es la tierra de la esclavitud y, durante las plagas, la única zona protegida ('apartaré la tierra de Gosén... y ninguna mosca habrá en ella', Éxodo 8:22).",
+  "events": ["esclavitud-en-egipto", "moises-confronta-faraon", "diez-plagas", "pesaj-primera-pascua"]
+}

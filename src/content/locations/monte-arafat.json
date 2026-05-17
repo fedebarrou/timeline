@@ -1,0 +1,11 @@
+{
+  "id": "monte-arafat",
+  "ancientName": "Jabal ʿArafāt / Jabal ar-Raḥma — Monte de la Misericordia",
+  "modernName": "Jabal ʿArafāt, 20 km al sureste de La Meca, Arabia Saudita",
+  "region": "arabia",
+  "coords": [21.36, 39.98],
+  "svgPosition": [625, 461],
+  "disputed": false,
+  "description": "Pequeño monte granítico de unos 70 metros de altura situado en la llanura del mismo nombre, a 20 km al sureste de La Meca. La tradición islámica lo identifica con el lugar donde Adán y Eva se reencontraron tras la expulsión del Paraíso (de allí su nombre ʿArafa, 'reconocerse'). Es el corazón geográfico del rito del Ḥajj: en el día 9 del mes de Dhū al-Ḥijja, los peregrinos deben permanecer en la llanura de ʿArafāt desde el mediodía hasta el atardecer (wuqūf, 'la estancia') — sin esa estación, la peregrinación es nula. El día 9 de Dhū al-Ḥijja del año 10 AH (6 de marzo del 632 d.C.), Mahoma pronunció allí su célebre Sermón de la Despedida y recibió, según la tradición, la revelación final: 'Hoy he perfeccionado para vosotros vuestra religión' (Sura 5:3).",
+  "events": ["peregrinacion-de-despedida"]
+}

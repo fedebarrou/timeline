@@ -1,12 +1,12 @@
 <button
   type="button"
-  class="map-toggle-btn fixed top-[7.5rem] md:top-auto md:bottom-6 right-6 z-40 px-4 py-2 rounded-full border-2 border-primary bg-bg text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-xs tracking-wider uppercase shadow-xl"
+  class="map-toggle-btn fixed z-[60] right-4 top-[7.5rem] md:top-auto md:bottom-[5.5rem] md:right-6 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
   data-map-toggle
   aria-label="Cambiar entre mapa antiguo y mapa actual"
   title="Cambiar mapa"
 >
   <span class="icon" data-state="manuscript">▣</span>
-  <span class="label">Mapa actual</span>
+  <span class="label hidden sm:inline">Mapa actual</span>
 </button>
 
 <script>
@@ -15,15 +15,22 @@
   const icon = btn?.querySelector<HTMLElement>('.icon');
   const label = btn?.querySelector<HTMLElement>('.label');
   if (btn && icon && label) {
-    btn.addEventListener('click', () => {
-      toggleMap();
-      const isModern = icon.dataset.state === 'manuscript';
-      icon.dataset.state = isModern ? 'modern' : 'manuscript';
-      icon.textContent = isModern ? '⌘' : '▣';
-      label.textContent = isModern ? 'Mapa antiguo' : 'Mapa actual';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      try {
+        toggleMap();
+        const isModern = icon.dataset.state === 'manuscript';
+        icon.dataset.state = isModern ? 'modern' : 'manuscript';
+        icon.textContent = isModern ? '⌘' : '▣';
+        label.textContent = isModern ? 'Mapa antiguo' : 'Mapa actual';
+      } catch (err) {
+        console.error('map toggle failed', err);
+      }
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'm' || e.key === 'M') btn.click();
     });
+  } else {
+    console.warn('MapToggleButton: required elements not found', { btn, icon, label });
   }
 </script>

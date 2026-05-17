@@ -1,0 +1,11 @@
+{
+  "id": "bostra",
+  "ancientName": "Bostra / Buṣrā",
+  "modernName": "Bosra, sur de Siria (provincia de Darʿā)",
+  "region": "levante",
+  "coords": [32.52, 36.48],
+  "svgPosition": [592, 358],
+  "disputed": false,
+  "description": "Antigua capital de la provincia romana de Arabia Petraea desde Trajano (s. II d.C.) y luego centro episcopal cristiano de notable importancia en la frontera bizantino-gasánida del s. VI-VII. Según la Sīra, en sus inmediaciones — en una celda monástica del camino — vivía el monje Baḥīrā, que reconoce las señales proféticas en el joven Mahoma cuando la caravana de Abū Ṭālib se detiene a descansar. Bosra fue una de las primeras ciudades conquistadas por los ejércitos musulmanes en 634 d.C. Su teatro romano, excepcionalmente conservado, es hoy patrimonio mundial UNESCO.",
+  "events": ["viaje-con-abu-talib-bahira"]
+}

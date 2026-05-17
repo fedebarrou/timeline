@@ -1,0 +1,11 @@
+{
+  "id": "cades-barnea",
+  "ancientName": "Cades-Barnea",
+  "modernName": "Tell el-Qudeirat, Sinaí norte / Néguev sur (frontera Egipto-Israel)",
+  "region": "sinai",
+  "coords": [30.66, 34.50],
+  "svgPosition": [565, 405],
+  "disputed": false,
+  "description": "Oasis en el límite entre el Sinaí y el Néguev, base de operaciones del pueblo de Israel durante casi 38 años en el desierto (Deuteronomio 1:46; 2:14). Desde aquí Moisés envió los doce espías a reconocer Canaán (Números 13). Tras el informe negativo y la rebelión del pueblo, Dios sentenció que esa generación moriría en el desierto sin entrar en la tierra (Núm 14). Aquí también murió Miriam (Núm 20:1) y desde aquí se libró el episodio de Meribá donde Moisés golpeó la roca (Núm 20:2-13). La identificación con Tell el-Qudeirat se apoya en evidencia arqueológica de ocupación desde la Edad de Hierro temprana y en la abundancia de fuentes que coinciden con los manantiales bíblicos.",
+  "events": ["doce-espias"]
+}

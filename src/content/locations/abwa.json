@@ -1,0 +1,11 @@
+{
+  "id": "abwa",
+  "ancientName": "Al-Abwāʾ",
+  "modernName": "Al-Abwāʾ, entre Medina y Yanbu, Arabia Saudita",
+  "region": "arabia",
+  "coords": [23.10, 39.10],
+  "svgPosition": [620, 445],
+  "disputed": false,
+  "description": "Pequeña localidad del Hiyaz situada en el antiguo camino de caravanas entre La Meca y Medina, a unos 190 km al sur de Medina. Según la Sīra, allí muere Āmina bint Wahb, madre de Mahoma, mientras regresaba con el niño desde una visita a parientes maternos en Yathrib. El Profeta tendría entonces unos seis años. Décadas después, ya como líder de la umma, pasaría de nuevo por al-Abwāʾ y, según un hadiz célebre, lloraría sobre la tumba de su madre. La actual localidad conserva el nombre y se sitúa en la provincia de Medina, en el reino de Arabia Saudita.",
+  "events": ["muerte-de-amina"]
+}

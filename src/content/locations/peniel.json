@@ -1,0 +1,25 @@
+{
+  "id": "peniel",
+  "ancientName": "Peniel",
+  "modernName": "Cerca del río Jaboc, Jordania",
+  "region": "levante",
+  "coords": [32.05, 35.62],
+  "svgPosition": [589, 357],
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Tell ed-Dahab el-Gharbi (Transjordania)",
+      "coords": [32.18, 35.68],
+      "svgPosition": [591, 354],
+      "support": "Identificación tradicional del vado del Jaboc donde Jacob lucha con el ángel; tell ocupado desde el Bronce Medio."
+    },
+    {
+      "name": "Tulul edh-Dhahab",
+      "coords": [32.13, 35.71],
+      "svgPosition": [592, 355],
+      "support": "Otra propuesta arqueológica situada junto al curso medio del Jaboc, defendida por excavaciones alemanas recientes."
+    }
+  ],
+  "description": "Vado del río Jaboc, afluente oriental del Jordán, escenario de la lucha nocturna de Jacob (Gn 32:22-32). El nombre significa 'rostro de Dios': Jacob lo nombra así porque, dice, 'he visto a Dios cara a cara y mi vida ha sido librada'. Allí recibe el nombre Israel.",
+  "events": ["jacob-lucha-con-angel"]
+}

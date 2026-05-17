@@ -1,0 +1,10 @@
+{
+  "id": "cenaculo-jerusalen",
+  "ancientName": "Cenáculo / Aposento alto",
+  "modernName": "Monte Sion, Jerusalén",
+  "region": "levante",
+  "coords": [31.77, 35.22],
+  "svgPosition": [582, 363],
+  "description": "Sala superior de una casa en Jerusalén donde Jesús celebra la Última Cena con los Doce (Mc 14:15) y, según Hechos 1-2, donde los discípulos reciben el Espíritu Santo en Pentecostés.",
+  "events": ["ultima-cena", "pentecostes"]
+}

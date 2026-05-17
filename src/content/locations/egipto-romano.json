@@ -1,0 +1,10 @@
+{
+  "id": "egipto-romano",
+  "ancientName": "Egipto (provincia romana)",
+  "modernName": "Egipto",
+  "region": "africa",
+  "coords": [30.05, 31.25],
+  "svgPosition": [535, 410],
+  "description": "Provincia romana de Aegyptus al sur de Judea. Tras la advertencia angelical, José huye allí con María y el Niño para escapar de Herodes (Mt 2:13-15). Tradiciones coptas señalan lugares como Heliópolis, Mostorod y Asiut como etapas de su itinerario.",
+  "events": ["huida-a-egipto"]
+}

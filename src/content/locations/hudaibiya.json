@@ -1,0 +1,11 @@
+{
+  "id": "hudaibiya",
+  "ancientName": "Al-Ḥudaybiyya",
+  "modernName": "Ash-Shumaysī (cerca de La Meca), Arabia Saudita",
+  "region": "arabia",
+  "coords": [21.42, 39.83],
+  "svgPosition": [625, 460],
+  "disputed": false,
+  "description": "Pequeño pozo y aldea situados en el límite del territorio sagrado (al-ḥaram) de La Meca, a unos 22 km al oeste de la ciudad por la ruta hacia Yidda. En Dhū al-Qaʿda del año 6 AH (marzo del 628 d.C.) Mahoma encabeza una peregrinación pacífica desde Medina con unos 1.400 hombres en estado de iḥrām (consagración ritual), pero los Quraysh los interceptan en al-Ḥudaybiyya y les impiden la entrada. Tras negociaciones tensas se firma allí el llamado Tratado de al-Ḥudaybiyya, que reconoce a los musulmanes como entidad política equivalente, instaura una tregua de diez años y abre el camino a la conquista pacífica de La Meca dos años después. La Sura 48 entera (Al-Fatḥ, 'La Apertura') está dedicada a este episodio.",
+  "events": ["tratado-de-hudaibiya"]
+}

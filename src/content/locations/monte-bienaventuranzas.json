@@ -1,0 +1,10 @@
+{
+  "id": "monte-bienaventuranzas",
+  "ancientName": "Monte de las Bienaventuranzas",
+  "modernName": "Mt. Eremos, Galilea",
+  "region": "levante",
+  "coords": [32.88, 35.55],
+  "svgPosition": [580, 350],
+  "description": "Colina al noroeste del lago de Galilea, lugar tradicional del Sermón del Monte (Mt 5-7). Su anfiteatro natural permite que la voz se proyecte hacia el lago.",
+  "events": ["sermon-del-monte"]
+}

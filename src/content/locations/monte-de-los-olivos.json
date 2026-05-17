@@ -1,0 +1,10 @@
+{
+  "id": "monte-de-los-olivos",
+  "ancientName": "Monte de los Olivos",
+  "modernName": "Har HaZeitim, Jerusalén",
+  "region": "levante",
+  "coords": [31.78, 35.25],
+  "svgPosition": [583, 363],
+  "description": "Cresta caliza al este de Jerusalén, separada de la ciudad por el valle del Cedrón. Lugar de oración de Jesús y, según Hechos 1:9-12, escenario de la Ascensión.",
+  "events": ["ascension"]
+}

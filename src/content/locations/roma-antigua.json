@@ -1,0 +1,10 @@
+{
+  "id": "roma-antigua",
+  "ancientName": "Roma imperial",
+  "modernName": "Roma, Italia",
+  "region": "romano",
+  "coords": [41.90, 12.50],
+  "svgPosition": [430, 290],
+  "description": "Capital del Imperio Romano. Centro del poder político y de la persecución bajo Nerón tras el incendio del año 64 d.C. Tradición cristiana sitúa allí el martirio de Pedro (crucificado cabeza abajo) y Pablo (decapitado).",
+  "events": ["muerte-pedro-pablo"]
+}

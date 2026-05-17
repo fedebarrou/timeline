@@ -1,0 +1,29 @@
+{
+  "id": "monte-sinai",
+  "ancientName": "Monte Sinaí / Horeb",
+  "modernName": "Jebel Musa, Península del Sinaí, Egipto (ubicación tradicional)",
+  "region": "sinai",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Jebel Musa, Península del Sinaí (tradición bizantina)",
+      "coords": [28.54, 33.97],
+      "svgPosition": [550, 425],
+      "support": "Identificación tradicional cristiana desde el siglo IV d.C.; Helena, madre de Constantino, fundó allí una capilla. Más tarde Justiniano construyó el Monasterio de Santa Catalina al pie de la montaña. Es el sitio identificado como Monte Sinaí por la tradición copta, ortodoxa, católica y por la mayoría de los peregrinos."
+    },
+    {
+      "name": "Jebel al-Lawz, noroeste de Arabia Saudita",
+      "coords": [28.65, 35.30],
+      "svgPosition": [568, 421],
+      "support": "Algunos arqueólogos modernos (Beit-Arieh, Cornuke, otros) proponen un Sinaí 'madianita' en Arabia, basándose en Gálatas 4:25 ('Agar es el monte Sinaí en Arabia'), en la ubicación de Madián al este del golfo de Aqaba, y en evidencia arqueológica disputada de altares y estructuras."
+    },
+    {
+      "name": "Har Karkom, Néguev central (Israel)",
+      "coords": [30.30, 34.74],
+      "svgPosition": [562, 410],
+      "support": "Hipótesis del arqueólogo Emmanuel Anati, basada en abundante evidencia de culto en Har Karkom durante el Bronce Antiguo (c. 2300-2000 a.C.) y en la conformación geográfica del sitio."
+    }
+  ],
+  "description": "Montaña sagrada donde Moisés vio la zarza ardiente (Éxodo 3) y donde Israel recibió los Diez Mandamientos y la Torá (Éxodo 19-24). La Torá usa dos nombres aparentemente intercambiables —Sinaí y Horeb—; algunas teorías documentarias asocian cada nombre con una fuente literaria distinta. La identificación geográfica es disputada: la tradición bizantina-cristiana sitúa el monte en Jebel Musa (Sinaí egipcio), pero teorías académicas y arqueológicas modernas proponen ubicaciones alternativas en Arabia o el Néguev. En la tradición islámica, el monte es llamado Jabal al-Tur o simplemente al-Tur (Sura 19:52).",
+  "events": ["zarza-ardiente", "diez-mandamientos", "becerro-de-oro", "tabernaculo"]
+}

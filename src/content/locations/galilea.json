@@ -1,0 +1,10 @@
+{
+  "id": "galilea",
+  "ancientName": "Galilea",
+  "modernName": "Región de Galilea, norte de Israel",
+  "region": "levante",
+  "coords": [32.80, 35.50],
+  "svgPosition": [580, 351],
+  "description": "Región del norte de Palestina, en torno al lago homónimo. Tierra fértil de pescadores y agricultores. Escenario principal del ministerio de Jesús: Cafarnaúm, Caná, Betsaida, Magdala y el lago.",
+  "events": ["milagros-de-jesus"]
+}

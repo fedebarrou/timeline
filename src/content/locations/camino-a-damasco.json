@@ -1,0 +1,10 @@
+{
+  "id": "camino-a-damasco",
+  "ancientName": "Camino a Damasco",
+  "modernName": "Carretera Jerusalén-Damasco",
+  "region": "levante",
+  "coords": [33.51, 36.30],
+  "svgPosition": [590, 345],
+  "description": "Ruta antigua que conectaba Jerusalén con Damasco, capital de Siria. Saulo de Tarso viajaba por ella con cartas de los sumos sacerdotes cuando fue derribado por una luz y la voz de Jesús (Hch 9:1-9).",
+  "events": ["conversion-de-pablo"]
+}

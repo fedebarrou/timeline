@@ -1,0 +1,29 @@
+{
+  "id": "mar-rojo",
+  "ancientName": "Yam Suph (Mar de cañas / Mar Rojo)",
+  "modernName": "Mar Rojo / Golfo de Aqaba / Golfo de Suez (zona disputada)",
+  "region": "egipto",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Lagos amargos / Mar de Cañas (Bitter Lakes), Suez",
+      "coords": [30.20, 32.55],
+      "svgPosition": [538, 414],
+      "support": "Interpretación académica predominante: 'Yam Suph' significa literalmente 'mar de cañas' (suph = juncos), no 'mar rojo'. Los lagos pantanosos al norte del golfo de Suez (Lago Timsah, Bitter Lakes) eran navegables en la antigüedad y se ajustan a la geografía del éxodo."
+    },
+    {
+      "name": "Golfo de Suez (tradición helenística)",
+      "coords": [29.50, 32.65],
+      "svgPosition": [540, 420],
+      "support": "Identificación de la Septuaginta (Éxodo 13:18 traducido como erythra thalassa, 'mar rojo'); ubicación tradicional cristiana del cruce; arqueológicamente la travesía desde Ramsés hacia Sinaí cruzaría este brazo."
+    },
+    {
+      "name": "Golfo de Aqaba (Nuweiba)",
+      "coords": [28.97, 34.66],
+      "svgPosition": [560, 425],
+      "support": "Hipótesis defendida por exploradores como Ron Wyatt y otros: el cruce habría sido en el golfo de Aqaba a la altura de Nuweiba; coherente con la hipótesis de un Sinaí en Arabia. Académicamente minoritaria pero popular en círculos evangélicos."
+    }
+  ],
+  "description": "Cuerpo de agua que las aguas separadas permitieron a Israel cruzar a pie seco mientras el ejército de Faraón se ahogaba (Éxodo 14). El nombre hebreo 'Yam Suph' significa literalmente 'mar de juncos / cañas', lo que sugiere una zona pantanosa más que el Mar Rojo profundo; la Septuaginta lo tradujo al griego como 'mar rojo' (erythra thalassa) y de ahí pasó a las traducciones modernas. La ubicación exacta del cruce sigue siendo objeto de debate académico y arqueológico, con propuestas que van desde los Bitter Lakes (interpretación académica predominante) hasta el golfo de Aqaba en Nuweiba (hipótesis evangélica minoritaria).",
+  "events": ["cruce-del-mar-rojo"]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "badr",
+  "ancientName": "Badr — pozos de Badr",
+  "modernName": "Badr, provincia de Medina, Arabia Saudita",
+  "region": "arabia",
+  "coords": [23.78, 38.79],
+  "svgPosition": [618, 442],
+  "disputed": false,
+  "description": "Pequeño valle del Hiyaz situado a unos 130 km al suroeste de Medina, célebre por sus pozos de agua en una de las rutas de caravanas entre La Meca y Siria. El 17 del mes de Ramadán del año 2 AH (17 de marzo del 624 d.C.) se libró allí la primera gran batalla del Islam: 313 musulmanes liderados por Mahoma derrotaron a un ejército Quraysh de aproximadamente mil hombres, comandado por ʿUtba ibn Rabīʿa y otros nobles de La Meca, que acudían a defender la caravana de Abū Sufyān. La Sura 3:123 ('Allah os auxilió en Badr cuando erais débiles') y Sura 8 (Al-Anfāl) entera meditan teológicamente la victoria.",
+  "events": ["batalla-de-badr"]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "sodoma",
+  "ancientName": "Sodoma y Gomorra",
+  "modernName": "Sureste del Mar Muerto, Jordania/Israel",
+  "region": "levante",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Bab edh-Dhra y Numeira (sureste del Mar Muerto)",
+      "coords": [31.24, 35.55],
+      "svgPosition": [585, 370],
+      "support": "Yacimientos del Bronce Antiguo destruidos por fuego y abandonados c. 2350 a.C.; identificación clásica defendida por W. F. Albright y luego por Walter Rast y Thomas Schaub."
+    },
+    {
+      "name": "Tall el-Hammam (valle del Jordán meridional)",
+      "coords": [31.84, 35.67],
+      "svgPosition": [587, 358],
+      "support": "Ciudad fortificada del Bronce Medio destruida violentamente c. 1650 a.C.; propuesta del arqueólogo Steven Collins, controvertida pero discutida en la literatura reciente."
+    },
+    {
+      "name": "Bajo las aguas actuales del Mar Muerto",
+      "coords": [31.04, 35.42],
+      "svgPosition": [583, 372],
+      "support": "Tradición judía y patrística que sitúa las ciudades bajo el extremo sur del Mar Muerto, hoy parcialmente sumergido."
+    }
+  ],
+  "description": "Conjunto de ciudades de la Pentápolis del valle del Sidim (Gn 14:2-3) destruidas según Génesis 19 por 'azufre y fuego' enviados por el Señor. El Corán (Suras 11, 26, 29, 54) narra el mismo episodio, ligado al profeta Lūt. El sitio histórico exacto es disputado, pero la mayoría de propuestas se concentran en torno al Mar Muerto, una región volcánica y rica en azufre.",
+  "events": ["destruccion-sodoma-gomorra"]
+}

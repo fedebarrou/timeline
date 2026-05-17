@@ -1,0 +1,11 @@
+{
+  "id": "meca",
+  "ancientName": "Meca antigua / Bakkah",
+  "modernName": "La Meca, Arabia Saudita",
+  "region": "arabia",
+  "coords": [21.42, 39.83],
+  "svgPosition": [625, 460],
+  "disputed": false,
+  "description": "Valle árido del Hiyaz occidental, llamado Bakkah en Sura 3:96. La tradición islámica lo identifica como el lugar donde Abraham deja a Agar e Ismael (Sura 14:37); el pozo de Zamzam habría brotado allí para salvar al niño. Padre e hijo levantarían más tarde los cimientos de la Kaaba (Sura 2:127). Para el judaísmo y el cristianismo la geografía del episodio de Agar es distinta — el desierto de Bersabé y Parán, en el sur de Canaán —, pero el sitio coránico es uno de los anclajes geográficos centrales del Islam.",
+  "events": ["nacimiento-ismael", "nacimiento-mahoma", "predicacion-publica", "hegira-migracion-a-medina", "viaje-nocturno-mi-raj", "conquista-de-meca"]
+}

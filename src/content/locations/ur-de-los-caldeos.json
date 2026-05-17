@@ -1,0 +1,11 @@
+{
+  "id": "ur-de-los-caldeos",
+  "ancientName": "Ur de los Caldeos",
+  "modernName": "Tell el-Muqayyar, Irak meridional",
+  "region": "mesopotamia",
+  "coords": [30.96, 46.10],
+  "svgPosition": [665, 365],
+  "disputed": false,
+  "description": "Antigua ciudad sumeria del bajo Éufrates, sede del culto al dios lunar Nanna/Sin. Génesis 11:28-31 la identifica como la patria de Taré y Abram, antes de la migración familiar hacia Harán y luego Canaán. Las excavaciones de Leonard Woolley (1922-1934) descubrieron sus tumbas reales y su gran zigurat de Ur-Nammu.",
+  "events": ["nacimiento-abraham", "abraham-rompe-idolos"]
+}

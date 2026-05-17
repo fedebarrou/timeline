@@ -1,0 +1,10 @@
+{
+  "id": "jerico",
+  "ancientName": "Jericó",
+  "modernName": "Tell es-Sultan, Cisjordania",
+  "region": "levante",
+  "coords": [31.87, 35.44],
+  "svgPosition": [583, 360],
+  "description": "Ciudad cananea de palmeras, considerada una de las más antiguas habitadas del mundo. Famosa por la caída de sus murallas tras siete vueltas de los israelitas con trompetas, según Josué 6.",
+  "events": ["conquista-jerico"]
+}

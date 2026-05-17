@@ -1,0 +1,10 @@
+{
+  "id": "monte-tabor",
+  "ancientName": "Monte Tabor",
+  "modernName": "Har Tavor, Galilea",
+  "region": "levante",
+  "coords": [32.69, 35.39],
+  "svgPosition": [581, 353],
+  "description": "Monte aislado de forma cónica que se eleva en la baja Galilea, al este de Nazaret. Tradición cristiana lo identifica como el 'alto monte' de la Transfiguración (Mt 17:1-9).",
+  "events": ["transfiguracion"]
+}

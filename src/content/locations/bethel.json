@@ -1,0 +1,11 @@
+{
+  "id": "bethel",
+  "ancientName": "Betel",
+  "modernName": "Beitin, Cisjordania",
+  "region": "levante",
+  "coords": [31.93, 35.23],
+  "svgPosition": [581, 358],
+  "disputed": false,
+  "description": "Localidad de la montaña central de Canaán, al norte de Jerusalén. Su nombre significa 'casa de Dios' (bet-El). Abraham levanta allí un altar al llegar a la tierra prometida (Gn 12:8); Jacob recibe en el lugar la visión de la escalera que une cielo y tierra y consagra una piedra como betilo (Gn 28:10-22). Más tarde Israel volverá a ese mismo enclave en momentos clave de su historia tribal.",
+  "events": ["escalera-de-jacob"]
+}

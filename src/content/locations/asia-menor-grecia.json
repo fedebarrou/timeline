@@ -1,0 +1,10 @@
+{
+  "id": "asia-menor-grecia",
+  "ancientName": "Asia Menor y Grecia",
+  "modernName": "Turquía, Grecia y Chipre",
+  "region": "mediterraneo",
+  "coords": [38.50, 27.10],
+  "svgPosition": [490, 305],
+  "description": "Territorio cubierto por los tres viajes misioneros de Pablo (Hch 13-21): Chipre, las provincias de Galacia, Asia, Macedonia y Acaya. Pablo funda comunidades en Antioquía de Pisidia, Iconio, Listra, Derbe, Tróade, Filipos, Tesalónica, Berea, Atenas, Corinto y Éfeso.",
+  "events": ["viajes-misioneros-pablo"]
+}

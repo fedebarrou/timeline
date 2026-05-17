@@ -1,0 +1,10 @@
+{
+  "id": "getsemani",
+  "ancientName": "Huerto de Getsemaní",
+  "modernName": "Monte de los Olivos, Jerusalén",
+  "region": "levante",
+  "coords": [31.78, 35.24],
+  "svgPosition": [582, 363],
+  "description": "Olivar al pie del Monte de los Olivos, al otro lado del torrente Cedrón. Nombre derivado del arameo 'Gat-Shemanim' (prensa de aceite). Lugar de la agonía y arresto de Jesús (Mt 26:36-56).",
+  "events": ["getsemani"]
+}

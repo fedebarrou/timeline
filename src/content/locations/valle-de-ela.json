@@ -1,0 +1,10 @@
+{
+  "id": "valle-de-ela",
+  "ancientName": "Valle de Ela",
+  "modernName": "Wadi es-Sant, Israel",
+  "region": "levante",
+  "coords": [31.69, 34.96],
+  "svgPosition": [578, 365],
+  "description": "Valle al oeste de Belén donde los ejércitos de Saúl y los filisteos se enfrentaron. Allí el joven David derrotó al gigante Goliat con una piedra de su honda, según 1 Samuel 17.",
+  "events": ["david-vs-goliat"]
+}

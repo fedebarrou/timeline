@@ -1,0 +1,11 @@
+{
+  "id": "cueva-de-hira",
+  "ancientName": "Ghār Ḥirāʾ — Cueva de Hira",
+  "modernName": "Jabal an-Nūr (Monte de la Luz), 5 km al noreste de La Meca, Arabia Saudita",
+  "region": "arabia",
+  "coords": [21.46, 39.86],
+  "svgPosition": [625, 459],
+  "disputed": false,
+  "description": "Pequeña gruta en la ladera del Jabal an-Nūr ('Monte de la Luz'), unos cinco kilómetros al noreste del centro de La Meca. La cueva, de escasos cuatro metros de profundidad, era frecuentada por Mahoma en sus retiros espirituales antes de la profecía, durante los meses del año en que los meccanos practicaban el taḥannuth (retiro contemplativo). Según la tradición islámica, en una de esas noches del mes de Ramadán del año 610 d.C., el ángel Gabriel se aparece allí y le transmite los primeros versículos del Corán: 'Iqraʾ bi-smi rabbika l-ladhī khalaq' ('Recita en el nombre de tu Señor que ha creado', Sura 96:1-5). Es uno de los lugares más simbólicamente cargados del Islam, aunque no forma parte de los ritos canónicos de peregrinación.",
+  "events": ["revelacion-en-hira"]
+}

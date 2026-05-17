@@ -1,0 +1,11 @@
+{
+  "id": "egipto-antiguo",
+  "ancientName": "Egipto faraónico",
+  "modernName": "Egipto (zona del Delta y Heliópolis)",
+  "region": "egipto",
+  "coords": [30.05, 31.23],
+  "svgPosition": [510, 410],
+  "disputed": false,
+  "description": "Civilización del valle del Nilo y su delta, escenario decisivo de la saga patriarcal a partir de José. Génesis 39-50 sitúa a José como visir de un faraón sin nombre (asignado por la cronología tradicional al Reino Medio o al período de los Hicsos). La tradición rabínica suele identificar la corte con la de Heliópolis (On), donde Putifar habría sido sacerdote, y la coránica retoma el escenario en la Sura 12 (Yusuf), una de las narrativas más extensas y unificadas del Corán.",
+  "events": ["jose-en-egipto", "reencuentro-jose-hermanos", "muerte-de-jose"]
+}

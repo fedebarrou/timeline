@@ -1,0 +1,23 @@
+{
+  "id": "los-siete-cielos",
+  "ancientName": "As-Samawāt as-Sabʿ — Los siete cielos",
+  "modernName": "Concepto cosmológico islámico (no ubicación geográfica)",
+  "region": "cielo",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Cosmología islámica de los siete cielos",
+      "coords": [0, 0],
+      "svgPosition": [500, 80],
+      "support": "Los siete cielos (as-samawāt as-sabʿ) son una entidad cosmológica reiterada en el Corán (Sura 2:29; 17:44; 23:17; 41:12; 65:12; 67:3; 71:15). No corresponden a una ubicación geográfica sino a estratos celestes superpuestos. En el Miʿrāj, Mahoma asciende sucesivamente por los siete cielos guiado por Gabriel, encontrando en cada uno a un profeta y, en el séptimo, al Bayt al-Maʿmūr y al sidrat al-muntahā (loto del límite)."
+    },
+    {
+      "name": "Antecedentes en la cosmología semítica antigua",
+      "coords": [33.0, 44.0],
+      "svgPosition": [600, 320],
+      "support": "La idea de cielos múltiples está atestiguada en la tradición mesopotámica, en el judaísmo del Segundo Templo (2 Enoc, Apocalipsis de Abraham, 2 Corintios 12:2 — 'arrebatado hasta el tercer cielo'), en la mística merkabá y en la cosmología cristiana siríaca. La cosmología coránica retoma y reorganiza este patrón cultural común."
+    }
+  ],
+  "description": "Los 'siete cielos' (as-samawāt as-sabʿ) son el escenario del Miʿrāj, la ascensión nocturna de Mahoma. No constituyen una ubicación geográfica sino una entidad cosmológica: estratos celestes superpuestos, cada uno habitado por un profeta de las tradiciones anteriores. La idea es propia de la cosmología semítica antigua — judaísmo intertestamentario, cristianismo siríaco — y el Corán la afirma reiteradamente (Sura 2:29; 67:3 entre otras). En la narrativa del Miʿrāj, los hadices canónicos sitúan a Adán en el primer cielo, a Juan y Jesús en el segundo, a José en el tercero, a Idrīs (Enoc) en el cuarto, a Aarón en el quinto, a Moisés en el sexto y a Abraham en el séptimo. Por encima de los siete cielos se encuentra el sidrat al-muntahā ('loto del límite') y el trono divino.",
+  "events": ["viaje-nocturno-mi-raj"]
+}

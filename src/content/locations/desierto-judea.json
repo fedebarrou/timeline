@@ -1,0 +1,10 @@
+{
+  "id": "desierto-judea",
+  "ancientName": "Desierto de Judea",
+  "modernName": "Desierto de Judea, Israel/Palestina",
+  "region": "levante",
+  "coords": [31.50, 35.40],
+  "svgPosition": [583, 365],
+  "description": "Yermo árido entre Jerusalén y el mar Muerto. Lugar tradicional de retiro y prueba espiritual: aquí Jesús ayuna cuarenta días y es tentado por Satanás (Mt 4:1-11).",
+  "events": ["tentaciones-desierto"]
+}

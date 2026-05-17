@@ -1,0 +1,10 @@
+{
+  "id": "tumba-de-jesus",
+  "ancientName": "Sepulcro de Jesús",
+  "modernName": "Iglesia del Santo Sepulcro, Jerusalén",
+  "region": "levante",
+  "coords": [31.78, 35.23],
+  "svgPosition": [582, 363],
+  "description": "Sepulcro nuevo excavado en la roca, propiedad de José de Arimatea, cercano al Gólgota (Jn 19:41-42). Tumba vacía donde se anuncia la resurrección en la madrugada del primer día (Mt 28:1-7).",
+  "events": ["resurreccion"]
+}

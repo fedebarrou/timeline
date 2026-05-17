@@ -1,0 +1,11 @@
+{
+  "id": "ramses",
+  "ancientName": "Pi-Ramsés (Per-Ramessu)",
+  "modernName": "Qantir / Tell el-Dab'a, Delta oriental del Nilo, Egipto",
+  "region": "egipto",
+  "coords": [30.81, 31.83],
+  "svgPosition": [515, 408],
+  "disputed": false,
+  "description": "Ciudad-almacén que los hebreos esclavizados construyeron para Faraón (Éxodo 1:11: 'Y edificaron para Faraón ciudades de almacén: Pitón y Ramesés'). Fue desde Ramesés que el pueblo de Israel salió hacia Sucot (Éxodo 12:37: 'partieron los hijos de Israel de Ramesés a Sucot, como seiscientos mil hombres a pie, sin contar los niños'). Arqueológicamente, Pi-Ramsés era la capital del Imperio Nuevo bajo Ramsés II (siglo XIII a.C.), una de las ciudades más grandes del mundo antiguo. Las excavaciones modernas en Qantir y Tell el-Dab'a han revelado palacios, templos y fundiciones que coinciden con la magnitud descrita. El nombre de la ciudad ('Ramesés' en hebreo) es el principal argumento de la cronología 'tardía' del éxodo: el éxodo habría ocurrido bajo Ramsés II o su sucesor Merneptah.",
+  "events": ["salida-de-egipto"]
+}

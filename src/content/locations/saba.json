@@ -1,0 +1,23 @@
+{
+  "id": "saba",
+  "ancientName": "Saba",
+  "modernName": "Yemen / Etiopía (debatido)",
+  "region": "arabia",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Marib, Yemen",
+      "coords": [15.43, 45.33],
+      "svgPosition": [640, 480],
+      "support": "Capital del reino sabeo según inscripciones del primer milenio a.C.; tradición islámica clásica (al-Tabari) identifica a Bilqis como reina de Marib."
+    },
+    {
+      "name": "Aksum, Etiopía",
+      "coords": [14.13, 38.72],
+      "svgPosition": [612, 500],
+      "support": "Tradición etíope del Kebra Nagast: la reina Makeda gobernaba Aksum y de su unión con Salomón descendería la dinastía salomónica de Etiopía."
+    }
+  ],
+  "description": "Reino antiguo del sur de Arabia, célebre por su comercio de incienso, oro y especias. La Biblia (1 Reyes 10) y el Corán (Sura 27) narran la visita de su reina a Salomón. La tradición etíope la identifica con Makeda; la árabe, con Bilqis.",
+  "events": ["reina-de-saba"]
+}

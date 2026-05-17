@@ -1,0 +1,10 @@
+{
+  "id": "monte-carmelo",
+  "ancientName": "Monte Carmelo",
+  "modernName": "Carmelo, norte de Israel",
+  "region": "levante",
+  "coords": [32.74, 35.05],
+  "svgPosition": [578, 350],
+  "description": "Cordillera costera del norte de Israel, escenario del enfrentamiento del profeta Elías contra los 450 profetas de Baal según 1 Reyes 18. Fuego del cielo consume el holocausto preparado por Elías frente al silencio de Baal.",
+  "events": ["elias-y-baal"]
+}
