@@ -4,9 +4,9 @@ let onEndCb: (() => void) | null = null;
 let onBoundaryCb: ((charIndex: number, charLength: number) => void) | null = null;
 let chosenVoiceName: string | null = null;
 
-const STORAGE_KEY = 'biblia-tts-voice';
-const STORAGE_RATE = 'biblia-tts-rate';
-const STORAGE_PITCH = 'biblia-tts-pitch';
+const STORAGE_KEY = 'timeline-tts-voice';
+const STORAGE_RATE = 'timeline-tts-rate';
+const STORAGE_PITCH = 'timeline-tts-pitch';
 
 if (typeof window !== 'undefined') {
   chosenVoiceName = localStorage.getItem(STORAGE_KEY);

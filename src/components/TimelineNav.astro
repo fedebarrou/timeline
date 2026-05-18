@@ -230,9 +230,9 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   // In fullscreen map mode, the .scenes container is `display:none`, so the
   // IntersectionObserver above never fires and the active dot would freeze on
   // whatever scene was last visible. Listen for the sceneController's
-  // `biblia:scene-changed` event (dispatched on every map scene activation)
+  // `timeline:scene-changed` event (dispatched on every map scene activation)
   // and sync the active dot from there too.
-  window.addEventListener('biblia:scene-changed', (e) => {
+  window.addEventListener('timeline:scene-changed', (e) => {
     const id = (e as CustomEvent).detail?.eventId;
     if (id) updateActive(id);
   });

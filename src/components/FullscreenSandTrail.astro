@@ -281,7 +281,7 @@
       bootstrap();
 
       // Refresh era colours when the theme variables change (e.g. era nav).
-      window.addEventListener('biblia:scene-changed', () => {
+      window.addEventListener('timeline:scene-changed', () => {
         if (active) refreshColors();
       });
     }

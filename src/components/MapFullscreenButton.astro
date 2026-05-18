@@ -74,7 +74,7 @@
       window.addEventListener('touchstart', resetIdle, { passive: true });
       window.addEventListener('click', resetIdle, { passive: true });
       window.addEventListener('keydown', resetIdle, { passive: true });
-      window.addEventListener('biblia:scene-changed', resetIdle as EventListener);
+      window.addEventListener('timeline:scene-changed', resetIdle as EventListener);
       resetIdle();
     }
     function unbindIdle() {
@@ -84,7 +84,7 @@
       window.removeEventListener('touchstart', resetIdle);
       window.removeEventListener('click', resetIdle);
       window.removeEventListener('keydown', resetIdle);
-      window.removeEventListener('biblia:scene-changed', resetIdle as EventListener);
+      window.removeEventListener('timeline:scene-changed', resetIdle as EventListener);
     }
 
     btn.addEventListener('click', (e) => {

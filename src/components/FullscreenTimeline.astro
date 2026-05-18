@@ -134,7 +134,7 @@ if (N > 0 && positions[N - 1] > 100) {
     min-width: 0;
   }
   /* Prev / next arrow buttons living inside the pill. They dispatch
-     `biblia:request-activate` so the marker/camera actually move (in
+     `timeline:request-activate` so the marker/camera actually move (in
      fullscreen, scroll-based navigation is dead because the .scenes
      container is display:none and the ScrollTriggers are paused). */
   .fs-timeline-arrow {
@@ -279,7 +279,7 @@ if (N > 0 && positions[N - 1] > 100) {
     if (marker) active.style.left = marker.style.left;
   }
 
-  window.addEventListener('biblia:scene-changed', (e) => {
+  window.addEventListener('timeline:scene-changed', (e) => {
     const id = (e as CustomEvent).detail?.eventId;
     if (!id) return;
     updateActive(id);
@@ -301,8 +301,8 @@ if (N > 0 && positions[N - 1] > 100) {
       e.preventDefault();
       const id = el.dataset.fsMarker;
       if (!id) return;
-      window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: id } }));
-      window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: id } }));
+      window.dispatchEvent(new CustomEvent('timeline:scene-changed', { detail: { eventId: id } }));
+      window.dispatchEvent(new CustomEvent('timeline:request-activate', { detail: { eventId: id } }));
     });
   });
 
@@ -330,8 +330,8 @@ if (N > 0 && positions[N - 1] > 100) {
     if (idx < 0 || idx >= orderedMarkers.length) return;
     const id = orderedMarkers[idx].dataset.fsMarker;
     if (!id) return;
-    window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: id } }));
-    window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: id } }));
+    window.dispatchEvent(new CustomEvent('timeline:scene-changed', { detail: { eventId: id } }));
+    window.dispatchEvent(new CustomEvent('timeline:request-activate', { detail: { eventId: id } }));
   }
   function refreshArrowsEnabled() {
     const idx = currentIndex();
@@ -347,6 +347,6 @@ if (N > 0 && positions[N - 1] > 100) {
     jumpTo(currentIndex() + 1);
   });
   // Re-evaluate disabled state every time the active dot moves.
-  window.addEventListener('biblia:scene-changed', refreshArrowsEnabled);
+  window.addEventListener('timeline:scene-changed', refreshArrowsEnabled);
   refreshArrowsEnabled();
 </script>

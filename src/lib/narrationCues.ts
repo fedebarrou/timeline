@@ -1,10 +1,10 @@
 /**
  * Narration cue dispatcher.
  *
- * Listens to the global `biblia:narration-boundary` events that
+ * Listens to the global `timeline:narration-boundary` events that
  * `NarratorButton` dispatches (both audio + TTS modes) and, for every cue
  * whose regex matches a small window of narration text around the current
- * `charIndex`, fires a `biblia:cue` CustomEvent that the animation
+ * `charIndex`, fires a `timeline:cue` CustomEvent that the animation
  * primitives layer can consume to trigger map FX.
  *
  * Public surface:
@@ -14,7 +14,7 @@
  *
  * This module is purely a router: it never touches the DOM beyond reading
  * the narration text JSON the page already embeds; whether anyone listens
- * to `biblia:cue` is the responsibility of the FX layer.
+ * to `timeline:cue` is the responsibility of the FX layer.
  */
 
 export type Cue = {
@@ -107,7 +107,7 @@ function getFiredSet(eventId: string): Set<string> {
 }
 
 /** Test a single cue against the window and, if it matches and hasn't
- *  fired, dispatch `biblia:cue` and mark it fired. */
+ *  fired, dispatch `timeline:cue` and mark it fired. */
 function tryFireCue(
   eventId: string,
   scope: 'global' | 'event',
@@ -122,7 +122,7 @@ function tryFireCue(
   if (!cue.match.test(windowText)) return;
   if (fireOnce) fired.add(key);
   window.dispatchEvent(
-    new CustomEvent('biblia:cue', {
+    new CustomEvent('timeline:cue', {
       detail: { eventId, cueId: cue.cueId, data: cue.data ?? null },
     }),
   );
@@ -150,7 +150,7 @@ export function initNarrationCues(): void {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
 
-  window.addEventListener('biblia:narration-boundary', (ev) => {
+  window.addEventListener('timeline:narration-boundary', (ev) => {
     const detail = (ev as CustomEvent).detail || {};
     const eventId: string | undefined = detail.eventId;
     const charIndex: number | undefined = detail.charIndex;
@@ -180,7 +180,7 @@ export function initNarrationCues(): void {
     }
   });
 
-  window.addEventListener('biblia:scene-changed', (ev) => {
+  window.addEventListener('timeline:scene-changed', (ev) => {
     const detail = (ev as CustomEvent).detail || {};
     const newId: string | undefined = detail.eventId;
     // Reset firing state for the previously-active event (so revisits

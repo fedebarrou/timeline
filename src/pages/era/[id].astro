@@ -287,7 +287,7 @@ const allMarkers = events.map((e) => {
     }
     .fs-narration-panel::-webkit-scrollbar { display: none; }
     /* Word-by-word highlighting inside the fullscreen narration panel —
-       driven by `biblia:narration-boundary` events from NarratorButton.
+       driven by `timeline:narration-boundary` events from NarratorButton.
        Mirrors the in-place narrator styling so the look is consistent
        across normal and fullscreen modes. */
     .fs-narration-panel .word {
@@ -590,7 +590,7 @@ const allMarkers = events.map((e) => {
     // re-visits (A → B → A) still rebuild fresh state.
     let lastTokenizedFor: string | null = null;
     let lastTokenizedAt = 0;
-    window.addEventListener('biblia:scene-changed', (e) => {
+    window.addEventListener('timeline:scene-changed', (e) => {
       const id = (e as CustomEvent).detail?.eventId;
       if (!id || !panel || !bodyEl || !titleEl) return;
       const now = Date.now();
@@ -614,10 +614,10 @@ const allMarkers = events.map((e) => {
     });
 
     /* Word-level highlight in the fullscreen panel — driven by the
-       `biblia:narration-boundary` event the NarratorButton dispatches
+       `timeline:narration-boundary` event the NarratorButton dispatches
        from both the audio `timeupdate` handler (via fracToCharIdx) and
        the Web Speech `boundary` callback. Payload: { eventId, charIndex }. */
-    window.addEventListener('biblia:narration-boundary', (e) => {
+    window.addEventListener('timeline:narration-boundary', (e) => {
       const detail = (e as CustomEvent).detail || {};
       if (typeof detail.charIndex !== 'number') return;
       highlightPanelAt(detail.charIndex);
@@ -625,7 +625,7 @@ const allMarkers = events.map((e) => {
 
     // Narration timer — fed by NarratorButton's tick events. Shows
     // [───────●─] 0:23 / 1:42  so the listener sees what's left.
-    window.addEventListener('biblia:narration-tick', (e) => {
+    window.addEventListener('timeline:narration-tick', (e) => {
       if (!durEl) return;
       const { current, duration } = (e as CustomEvent).detail || {};
       if (typeof duration !== 'number' || duration <= 0) return;
@@ -639,7 +639,7 @@ const allMarkers = events.map((e) => {
       if (txt) txt.textContent = `${fmtTime(cur)} / ${fmtTime(duration)}`;
     });
 
-    window.addEventListener('biblia:narration-ended', () => {
+    window.addEventListener('timeline:narration-ended', () => {
       if (!durEl) return;
       const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
       if (fill) fill.style.width = '100%';
@@ -661,7 +661,7 @@ const allMarkers = events.map((e) => {
       if (narrTimeout) clearTimeout(narrTimeout);
       narrTimeout = window.setTimeout(() => setNarrating(false), graceMs);
     }
-    window.addEventListener('biblia:narration-tick', () => {
+    window.addEventListener('timeline:narration-tick', () => {
       // 1.6s grace — slightly more than the audio `timeupdate` cadence
       // (~250ms) and TTS onProgress cadence, so a single dropped tick
       // doesn't flicker the panel off.
@@ -674,10 +674,10 @@ const allMarkers = events.map((e) => {
     // as the narration "restarting" / flickering between scenes. The new
     // scene-changed event fires before audio N+1 starts; pinning for 4s
     // bridges the gap to the first real tick of the next narration.
-    window.addEventListener('biblia:scene-changed', () => {
+    window.addEventListener('timeline:scene-changed', () => {
       pinNarrating(4000);
     });
-    window.addEventListener('biblia:narration-ended', () => {
+    window.addEventListener('timeline:narration-ended', () => {
       // Don't immediately clear data-narrating — give scene-changed (which
       // is about to fire as playMode advances) a chance to take over the
       // pin. A short tail keeps the panel from blinking out between events.
@@ -686,8 +686,8 @@ const allMarkers = events.map((e) => {
   </script>
 
   <script>
-    /* Narration cue dispatcher — listens to `biblia:narration-boundary`
-       and fires `biblia:cue` events when registered regexes match the
+    /* Narration cue dispatcher — listens to `timeline:narration-boundary`
+       and fires `timeline:cue` events when registered regexes match the
        text window around the current charIndex. The map FX layer
        (sibling module) is responsible for actually playing the
        animations. */

@@ -17,7 +17,7 @@ Archivo: `src/lib/tts.ts`
 - `scoreVoice()` ahora suma 1000 puntos a las voces del allow-list (con ranking por posición), y penaliza voces locales no-neurales.
 - Defaults movidos a `rate=0.95`, `pitch=1.0` (más sereno, menos robótico).
 - `addNaturalPauses()` inserta whitespace extra después de `.`, `!`, `?`, `:`, `;` para forzar breves respiraciones.
-- Rate y pitch ahora son persistentes en `localStorage` (`biblia-tts-rate`, `biblia-tts-pitch`).
+- Rate y pitch ahora son persistentes en `localStorage` (`timeline-tts-rate`, `timeline-tts-pitch`).
 
 Archivo: `src/components/VoiceSettings.astro`
 - El dropdown ahora agrupa voces en dos `<optgroup>`: **Recomendadas (premium)** y **Otras voces en español**.

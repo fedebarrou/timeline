@@ -34,9 +34,9 @@
 
   // In fullscreen, viewport-based detection is unreliable because the
   // .scenes are display:none and scroll position is frozen. Track the
-  // active event id via `biblia:scene-changed` events instead.
+  // active event id via `timeline:scene-changed` events instead.
   let activeEventId: string | null = null;
-  window.addEventListener('biblia:scene-changed', (e: Event) => {
+  window.addEventListener('timeline:scene-changed', (e: Event) => {
     const id = (e as CustomEvent<{ eventId?: string }>).detail?.eventId;
     if (id) activeEventId = id;
   });
@@ -78,8 +78,8 @@
       // In fullscreen, the `.scenes` are display:none and ScrollTriggers
       // are paused — scrolling does nothing. Dispatch an explicit
       // request-activate so the map marker / camera / choreography move.
-      window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: targetId } }));
-      window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: targetId } }));
+      window.dispatchEvent(new CustomEvent('timeline:scene-changed', { detail: { eventId: targetId } }));
+      window.dispatchEvent(new CustomEvent('timeline:request-activate', { detail: { eventId: targetId } }));
     } else {
       scrollToElement(targetScene);
     }

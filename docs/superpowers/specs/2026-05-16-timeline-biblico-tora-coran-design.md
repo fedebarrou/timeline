@@ -315,7 +315,7 @@ comparative:
     citation: "Génesis 7:11-24"
     fullText: "..."
     keyDifferences: ["..."]
-  biblia:
+  timeline:
     summary: "..."
     citation: "Génesis 7-9; Hebreos 11:7; 2 Pedro 2:5"
     fullText: "..."
@@ -412,7 +412,7 @@ mentions:
       reference: "6:8-9:29"
       summary: "Construcción del arca, diluvio, alianza, muerte"
       fullText: "..."
-  biblia:
+  timeline:
     - book: "Génesis"
       reference: "6-9"
       summary: "Mismas menciones que la Torá"

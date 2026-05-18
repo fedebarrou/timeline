@@ -1,9 +1,9 @@
 /**
  * narrationFx — text-driven animation PRIMITIVES that listen for
- * `biblia:cue` CustomEvents and render visual effects on the SVG map.
+ * `timeline:cue` CustomEvents and render visual effects on the SVG map.
  *
  * A sibling agent dispatches:
- *    window.dispatchEvent(new CustomEvent('biblia:cue', {
+ *    window.dispatchEvent(new CustomEvent('timeline:cue', {
  *      detail: { eventId, cueId, data }
  *    }))
  *
@@ -62,7 +62,7 @@ import { triggerSandstorm } from './mapSandstorm';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Active event id derived from the latest `biblia:scene-changed` event.
+// Active event id derived from the latest `timeline:scene-changed` event.
 let currentEventId: string | null = null;
 
 // ---------------------------------------------------------------------------
@@ -634,7 +634,7 @@ function fxTraditionBadge(data: { tradition: 'tora' | 'biblia' | 'coran' }) {
   if (!data?.tradition) return;
   const symbols: Record<string, string> = {
     tora: '✡',     // ✡ Star of David
-    biblia: '✝',   // ✝ Cross
+    timeline: '✝',   // ✝ Cross
     coran: '☪',    // ☪ Crescent
   };
   const sym = symbols[data.tradition];
@@ -3075,12 +3075,12 @@ export function initNarrationFx(svg: SVGSVGElement): void {
   inited = true;
 
   // Track the active scene so pinIdx-only cues know which marker to use.
-  window.addEventListener('biblia:scene-changed', (e: Event) => {
+  window.addEventListener('timeline:scene-changed', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
     if (detail?.eventId) currentEventId = detail.eventId;
   });
 
-  window.addEventListener('biblia:cue', (e: Event) => {
+  window.addEventListener('timeline:cue', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string; cueId?: string; data?: any }>)
       .detail;
     if (!detail || !detail.cueId) return;

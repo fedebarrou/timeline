@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://biblia-timeline.vercel.app',
+  site: 'https://linea-de-tiempo.vercel.app',
   // Silence the noisy "504 Outdated Optimize Dep" coming from the dev toolbar
   // entrypoint — it has nothing to do with our code and only adds confusion
   // when debugging the actual app scripts.

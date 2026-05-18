@@ -117,7 +117,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://biblia-timeline.vercel.app',
+  site: 'https://timeline-timeline.vercel.app',
   integrations: [
     mdx(),
     tailwind({ applyBaseStyles: false }),
@@ -541,7 +541,7 @@ const events = defineCollection({
       unified: z.string(),
       divergent: z.boolean().default(false),
       tora: traditionMention.optional(),
-      biblia: traditionMention.optional(),
+      timeline: traditionMention.optional(),
       coran: traditionMention.optional(),
     }),
     sources: z.array(sourceSchema).default([]),
@@ -619,9 +619,9 @@ const characters = defineCollection({
     events: z.array(z.string()).default([]),
     mentions: z.object({
       tora: z.array(traditionRefSchema).default([]),
-      biblia: z.array(traditionRefSchema).default([]),
+      timeline: z.array(traditionRefSchema).default([]),
       coran: z.array(traditionRefSchema).default([]),
-    }).default({ tora: [], biblia: [], coran: [] }),
+    }).default({ tora: [], timeline: [], coran: [] }),
     extraBiblical: z.array(z.object({
       source: z.string(),
       summary: z.string(),
@@ -2609,7 +2609,7 @@ mentions:
     - { book: "Génesis", reference: "1:26-2:25", summary: "Creación del hombre a imagen de Dios; formación de Eva; vida en el Edén." }
     - { book: "Génesis", reference: "3:1-24",   summary: "Caída, expulsión, sentencia al trabajo y la mortalidad." }
     - { book: "Génesis", reference: "5:1-5",    summary: "Genealogía: vivió 930 años y engendró a Set entre otros." }
-  biblia:
+  timeline:
     - { book: "Génesis",    reference: "1-5", summary: "Mismas menciones que la Torá." }
     - { book: "Romanos",    reference: "5:12-21", summary: "Pablo contrasta a Adán (caída) con Cristo (redención)." }
     - { book: "1 Corintios", reference: "15:22, 45", summary: "Adán como 'primer hombre, alma viviente'; Cristo como 'último Adán'." }
@@ -2745,7 +2745,7 @@ comparative:
     citation: "Génesis 1:26-2:25"
     fullText: "Entonces dijo Dios: Hagamos al hombre a nuestra imagen, conforme a nuestra semejanza... Y Jehová Dios formó al hombre del polvo de la tierra, y sopló en su nariz aliento de vida, y fue el hombre un ser viviente."
     keyDifferences: ["Eva formada de la costilla de Adán"]
-  biblia:
+  timeline:
     summary: "Mismo relato que Torá. El NT añade interpretación: Pablo enseña que Adán fue formado primero y luego Eva (1 Tim 2:13)."
     citation: "Génesis 1-2; 1 Timoteo 2:13; 1 Corintios 11:8"
     fullText: "Porque Adán fue formado primero, después Eva."
@@ -3109,10 +3109,10 @@ git commit -m "test: e2e smoke tests for main pages"
 
 - [ ] **Step 1: Crear repo en GitHub**
 
-Ir a https://github.com/new → crear repo `biblia-timeline` (puede ser privado).
+Ir a https://github.com/new → crear repo `timeline-timeline` (puede ser privado).
 
 ```bash
-git remote add origin https://github.com/<tu-usuario>/biblia-timeline.git
+git remote add origin https://github.com/<tu-usuario>/timeline-timeline.git
 git branch -M main
 git push -u origin main
 ```
@@ -3129,9 +3129,9 @@ git push -u origin main
 
 - [ ] **Step 3: Conectar a Vercel**
 
-Ir a https://vercel.com/new → "Import Git Repository" → seleccionar `biblia-timeline` → Deploy.
+Ir a https://vercel.com/new → "Import Git Repository" → seleccionar `timeline-timeline` → Deploy.
 
-Vercel detecta Astro automáticamente. Tras ~2-3 minutos te da una URL `https://biblia-timeline-<id>.vercel.app`.
+Vercel detecta Astro automáticamente. Tras ~2-3 minutos te da una URL `https://timeline-timeline-<id>.vercel.app`.
 
 - [ ] **Step 4: Verificar deploy**
 

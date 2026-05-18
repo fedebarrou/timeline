@@ -15,7 +15,7 @@ let onIndexChange: ((i: number, total: number) => void) | null = null;
  */
 let currentActiveEventId: string | null = null;
 if (typeof window !== 'undefined') {
-  window.addEventListener('biblia:scene-changed', (e: Event) => {
+  window.addEventListener('timeline:scene-changed', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
     if (detail && typeof detail.eventId === 'string') {
       currentActiveEventId = detail.eventId;
@@ -62,15 +62,15 @@ async function playOne(scene: HTMLElement): Promise<void> {
   // In fullscreen mode the .scenes container is `display:none`, so the
   // ScrollTrigger that normally fires sceneController.activate() never
   // triggers — the timeline dot, marker, and choreography would stay
-  // frozen on the previous event. We dispatch `biblia:scene-changed`
+  // frozen on the previous event. We dispatch `timeline:scene-changed`
   // ourselves so TimelineNav and FullscreenNarrationPanel sync, and
   // we also explicitly request a re-activation via the map root if
   // sceneController is listening.
   const eventId = scene.dataset.eventId;
   if (eventId) {
     try {
-      window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId } }));
-      window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId } }));
+      window.dispatchEvent(new CustomEvent('timeline:scene-changed', { detail: { eventId } }));
+      window.dispatchEvent(new CustomEvent('timeline:request-activate', { detail: { eventId } }));
     } catch {}
   }
   await new Promise((r) => setTimeout(r, 1500));
@@ -121,7 +121,7 @@ async function playOne(scene: HTMLElement): Promise<void> {
     onBoundary((charIndex: number) => {
       if (myToken !== playOneToken) return;
       try {
-        window.dispatchEvent(new CustomEvent('biblia:narration-boundary', {
+        window.dispatchEvent(new CustomEvent('timeline:narration-boundary', {
           detail: { eventId, charIndex },
         }));
       } catch {}
@@ -129,7 +129,7 @@ async function playOne(scene: HTMLElement): Promise<void> {
     onProgress((p: number) => {
       if (myToken !== playOneToken) return;
       try {
-        window.dispatchEvent(new CustomEvent('biblia:narration-tick', {
+        window.dispatchEvent(new CustomEvent('timeline:narration-tick', {
           detail: { eventId, current: p * estimatedDuration, duration: estimatedDuration },
         }));
       } catch {}
@@ -138,7 +138,7 @@ async function playOne(scene: HTMLElement): Promise<void> {
       if (myToken !== playOneToken) return;
       onBoundary(null);
       try {
-        window.dispatchEvent(new CustomEvent('biblia:narration-ended', { detail: { eventId } }));
+        window.dispatchEvent(new CustomEvent('timeline:narration-ended', { detail: { eventId } }));
       } catch {}
       safeResolve();
     });
@@ -191,14 +191,14 @@ export async function startPlay(updateUI?: (i: number, total: number) => void) {
 }
 
 /**
- * Fire `biblia:era-ended` so the era-closing parchment can take over.
+ * Fire `timeline:era-ended` so the era-closing parchment can take over.
  * Carries the current era id read off the active scene's `data-era`.
  */
 function emitEraEnded() {
   try {
     const lastScene = scenes[scenes.length - 1];
     const eraId = lastScene?.dataset.era || '';
-    window.dispatchEvent(new CustomEvent('biblia:era-ended', { detail: { eraId } }));
+    window.dispatchEvent(new CustomEvent('timeline:era-ended', { detail: { eraId } }));
   } catch {}
 }
 

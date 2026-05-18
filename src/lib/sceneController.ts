@@ -26,7 +26,7 @@ export function initScrollytelling(scenes: SceneConfig[]) {
   // can request an activate() without depending on ScrollTrigger firing.
   const scenesById = new Map<string, SceneConfig>();
   scenes.forEach((s) => scenesById.set(s.eventId, s));
-  window.addEventListener('biblia:request-activate', (e: Event) => {
+  window.addEventListener('timeline:request-activate', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
     if (!detail?.eventId) return;
     const scene = scenesById.get(detail.eventId);
@@ -76,10 +76,10 @@ export function initScrollytelling(scenes: SceneConfig[]) {
 
   /* Track the last active event id while in fullscreen so we can restore
      the marker to where the user actually is when they exit. playMode and
-     FullscreenTimeline both broadcast `biblia:scene-changed` on every
+     FullscreenTimeline both broadcast `timeline:scene-changed` on every
      navigation. */
   let lastActiveEventId: string | null = null;
-  window.addEventListener('biblia:scene-changed', (e: Event) => {
+  window.addEventListener('timeline:scene-changed', (e: Event) => {
     const id = (e as CustomEvent<{ eventId?: string }>).detail?.eventId;
     if (id) lastActiveEventId = id;
   });
@@ -132,7 +132,7 @@ function activate(scene: SceneConfig, svg: SVGSVGElement, fromRequest = false) {
   // for ALL triggers in DOM order — the LAST one wins, snapping the
   // marker to the final event. Ignore those scroll-driven calls. The
   // playMode controller, FullscreenTimeline dots, and EventNavArrows
-  // all go through `biblia:request-activate` (fromRequest=true), so the
+  // all go through `timeline:request-activate` (fromRequest=true), so the
   // explicit user gestures still work normally.
   if (!fromRequest && document.body.classList.contains('map-fullscreen')) return;
   // Don't yank the camera/marker away while the user is hovering on a
@@ -142,7 +142,7 @@ function activate(scene: SceneConfig, svg: SVGSVGElement, fromRequest = false) {
   //
   // BUT: an explicit user gesture (play-mode auto-advance, FullscreenTimeline
   // dot/arrow click, EventNavArrows, keyboard) goes through
-  // `biblia:request-activate` with fromRequest=true and MUST bypass the
+  // `timeline:request-activate` with fromRequest=true and MUST bypass the
   // lock — otherwise a stale lock (the browser sometimes drops `mouseleave`
   // when pointer-events flips to none under the cursor, especially in
   // fullscreen) freezes the map on the previous event forever.
@@ -221,6 +221,6 @@ function activate(scene: SceneConfig, svg: SVGSVGElement, fromRequest = false) {
   // Notify floating fullscreen controls so they reset their idle/hide timer
   // and re-show the timeline pill on every scene change.
   try {
-    window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: scene.eventId } }));
+    window.dispatchEvent(new CustomEvent('timeline:scene-changed', { detail: { eventId: scene.eventId } }));
   } catch {}
 }

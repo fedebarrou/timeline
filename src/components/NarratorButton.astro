@@ -189,17 +189,17 @@ const tokens = tokenize(narrationText);
     const estimatedDuration = Math.max(2, text.split(/\s+/).filter(Boolean).length / 2.5);
 
     function dispatchTick(current: number, duration: number) {
-      window.dispatchEvent(new CustomEvent('biblia:narration-tick', {
+      window.dispatchEvent(new CustomEvent('timeline:narration-tick', {
         detail: { eventId: id, current, duration },
       }));
     }
     function dispatchBoundary(charIndex: number) {
-      window.dispatchEvent(new CustomEvent('biblia:narration-boundary', {
+      window.dispatchEvent(new CustomEvent('timeline:narration-boundary', {
         detail: { eventId: id, charIndex },
       }));
     }
     function dispatchEnded() {
-      window.dispatchEvent(new CustomEvent('biblia:narration-ended', {
+      window.dispatchEvent(new CustomEvent('timeline:narration-ended', {
         detail: { eventId: id },
       }));
     }
@@ -303,7 +303,7 @@ const tokens = tokenize(narrationText);
     });
 
     // Bind audio listeners at mount so global play mode (which calls
-    // audio.play() directly from playMode.ts) also fires biblia:narration-*
+    // audio.play() directly from playMode.ts) also fires timeline:narration-*
     // events. The function is idempotent.
     if (useAudio) bindAudioOnce();
   });
