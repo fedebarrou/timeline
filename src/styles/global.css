@@ -72,69 +72,69 @@ body,
    label, summary) keep a pointer fallback. We omit cursor rules on inputs/textareas
    so the native text caret remains usable. */
 body[data-era="primordial"] {
-  cursor: url('/cursors/primordial.svg') 20 20, auto;
+  cursor: url('/cursors/primordial.svg') 20 4, auto;
 }
 body[data-era="primordial"] a,
 body[data-era="primordial"] button,
 body[data-era="primordial"] [role="button"],
 body[data-era="primordial"] label,
 body[data-era="primordial"] summary {
-  cursor: url('/cursors/primordial.svg') 20 20, pointer;
+  cursor: url('/cursors/primordial.svg') 20 4, pointer;
 }
 
 body[data-era="patriarcal"] {
-  cursor: url('/cursors/patriarcal.svg') 20 20, auto;
+  cursor: url('/cursors/patriarcal.svg') 20 12, auto;
 }
 body[data-era="patriarcal"] a,
 body[data-era="patriarcal"] button,
 body[data-era="patriarcal"] [role="button"],
 body[data-era="patriarcal"] label,
 body[data-era="patriarcal"] summary {
-  cursor: url('/cursors/patriarcal.svg') 20 20, pointer;
+  cursor: url('/cursors/patriarcal.svg') 20 12, pointer;
 }
 
 body[data-era="exodo"] {
-  cursor: url('/cursors/exodo.svg') 20 20, auto;
+  cursor: url('/cursors/exodo.svg') 20 4, auto;
 }
 body[data-era="exodo"] a,
 body[data-era="exodo"] button,
 body[data-era="exodo"] [role="button"],
 body[data-era="exodo"] label,
 body[data-era="exodo"] summary {
-  cursor: url('/cursors/exodo.svg') 20 20, pointer;
+  cursor: url('/cursors/exodo.svg') 20 4, pointer;
 }
 
 body[data-era="reinos-y-exilio"] {
-  cursor: url('/cursors/reinos-y-exilio.svg') 20 20, auto;
+  cursor: url('/cursors/reinos-y-exilio.svg') 20 10, auto;
 }
 body[data-era="reinos-y-exilio"] a,
 body[data-era="reinos-y-exilio"] button,
 body[data-era="reinos-y-exilio"] [role="button"],
 body[data-era="reinos-y-exilio"] label,
 body[data-era="reinos-y-exilio"] summary {
-  cursor: url('/cursors/reinos-y-exilio.svg') 20 20, pointer;
+  cursor: url('/cursors/reinos-y-exilio.svg') 20 10, pointer;
 }
 
 body[data-era="evangelio"] {
-  cursor: url('/cursors/evangelio.svg') 20 20, auto;
+  cursor: url('/cursors/evangelio.svg') 25 14, auto;
 }
 body[data-era="evangelio"] a,
 body[data-era="evangelio"] button,
 body[data-era="evangelio"] [role="button"],
 body[data-era="evangelio"] label,
 body[data-era="evangelio"] summary {
-  cursor: url('/cursors/evangelio.svg') 20 20, pointer;
+  cursor: url('/cursors/evangelio.svg') 25 14, pointer;
 }
 
 body[data-era="revelacion"] {
-  cursor: url('/cursors/revelacion.svg') 20 20, auto;
+  cursor: url('/cursors/revelacion.svg') 27 6, auto;
 }
 body[data-era="revelacion"] a,
 body[data-era="revelacion"] button,
 body[data-era="revelacion"] [role="button"],
 body[data-era="revelacion"] label,
 body[data-era="revelacion"] summary {
-  cursor: url('/cursors/revelacion.svg') 20 20, pointer;
+  cursor: url('/cursors/revelacion.svg') 27 6, pointer;
 }
 
 /* Inputs/textareas keep native caret regardless of era */
@@ -158,41 +158,41 @@ body[data-era] textarea {
    assignments and re-apply the URL cursor here per era. */
 body[data-era="primordial"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="primordial"] [data-marker-location-portrait] {
-  cursor: url('/cursors/primordial.svg') 20 20, pointer;
+  cursor: url('/cursors/primordial.svg') 20 4, pointer;
 }
 body[data-era="patriarcal"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="patriarcal"] [data-marker-location-portrait] {
-  cursor: url('/cursors/patriarcal.svg') 20 20, pointer;
+  cursor: url('/cursors/patriarcal.svg') 20 12, pointer;
 }
 body[data-era="exodo"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="exodo"] [data-marker-location-portrait] {
-  cursor: url('/cursors/exodo.svg') 20 20, pointer;
+  cursor: url('/cursors/exodo.svg') 20 4, pointer;
 }
 body[data-era="reinos-y-exilio"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="reinos-y-exilio"] [data-marker-location-portrait] {
-  cursor: url('/cursors/reinos-y-exilio.svg') 20 20, pointer;
+  cursor: url('/cursors/reinos-y-exilio.svg') 20 10, pointer;
 }
 body[data-era="evangelio"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="evangelio"] [data-marker-location-portrait] {
-  cursor: url('/cursors/evangelio.svg') 20 20, pointer;
+  cursor: url('/cursors/evangelio.svg') 25 14, pointer;
 }
 body[data-era="revelacion"] [data-marker-chars] [data-char-pin-wrap],
 body[data-era="revelacion"] [data-marker-location-portrait] {
-  cursor: url('/cursors/revelacion.svg') 20 20, pointer;
+  cursor: url('/cursors/revelacion.svg') 27 6, pointer;
 }
 
 /* Belt-and-suspenders: if a page omits `data-era`, fall back to the primordial
    cursor instead of the browser's default arrow. BaseLayout already coalesces
    to 'primordial' but other layouts (e.g. error pages) might skip the attribute. */
 body:not([data-era]) {
-  cursor: url('/cursors/primordial.svg') 20 20, auto;
+  cursor: url('/cursors/primordial.svg') 20 4, auto;
 }
 body:not([data-era]) a,
 body:not([data-era]) button,
 body:not([data-era]) [role="button"],
 body:not([data-era]) label,
 body:not([data-era]) summary {
-  cursor: url('/cursors/primordial.svg') 20 20, pointer;
+  cursor: url('/cursors/primordial.svg') 20 4, pointer;
 }
 
 @keyframes marker-passive-pulse {

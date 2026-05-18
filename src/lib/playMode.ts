@@ -34,9 +34,28 @@ let currentActiveEventId: string | null = null;
 if (typeof window !== 'undefined') {
   window.addEventListener('timeline:scene-changed', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
-    if (detail && typeof detail.eventId === 'string') {
-      currentActiveEventId = detail.eventId;
-    }
+    if (!detail || typeof detail.eventId !== 'string') return;
+    currentActiveEventId = detail.eventId;
+
+    // If era-play is active and the new active scene differs from the one
+    // playMode is currently reading, redirect playback to it. Every navigation
+    // gesture in the app — scroll (ScrollTrigger → sceneController), timeline
+    // dots (normal AND fullscreen), step arrows (TimelineNav AND
+    // FullscreenTimeline), EventNavArrows, keyboard — funnels through
+    // `timeline:scene-changed`, so a single listener here keeps era-play in
+    // sync without duplicating the jump logic in every caller.
+    //
+    // Loop-safety: playOne() also dispatches scene-changed for the scene it's
+    // about to read (line ~89). For those self-dispatches, the new eventId
+    // matches scenes[currentIndex] so the equality guard bails — no recursion.
+    if (!playing) return;
+    if (scenes[currentIndex]?.dataset.eventId === detail.eventId) return;
+    const idx = scenes.findIndex((s) => s.dataset.eventId === detail.eventId);
+    if (idx === -1) return;
+    currentIndex = idx;
+    jumpRequested = true;
+    if (onIndexChange) onIndexChange(currentIndex + 1, scenes.length);
+    cancelAllNarration();
   });
 }
 
@@ -106,16 +125,41 @@ async function playOne(scene: HTMLElement): Promise<void> {
   if (audio) {
     return new Promise((resolve) => {
       let resolved = false;
-      const safeResolve = () => { if (!resolved) { resolved = true; resolve(); } };
-      const onAudioEnd = () => { audio.removeEventListener('ended', onAudioEnd); safeResolve(); };
-      audio.addEventListener('ended', onAudioEnd);
+      const cleanup = () => {
+        audio.removeEventListener('ended', onDone);
+        audio.removeEventListener('pause', onDone);
+      };
+      const onDone = () => {
+        if (resolved) return;
+        resolved = true;
+        cleanup();
+        resolve();
+      };
+      audio.addEventListener('ended', onDone);
+      // 'pause' lets cancelAllNarration() (called by stopPlay/jumpToEventId
+      // and the scene-changed redirect above) resolve this promise so the
+      // loop can advance to the new index. Without it, pausing the audio
+      // leaves the await dangling forever and era-play freezes on the old
+      // event — the bug that manifested as "clicking a dot during MP3
+      // playback does nothing".
+      audio.addEventListener('pause', onDone);
       try { audio.currentTime = 0; } catch {}
       const p = audio.play();
       if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          // Audio failed — fall back to Web Speech.
-          audio.removeEventListener('ended', onAudioEnd);
-          onEnd(() => { if (myToken === playOneToken) safeResolve(); });
+        p.catch((err) => {
+          if (resolved) return;
+          // If we were paused mid-play, play() rejects with AbortError —
+          // that's a user cancel, not a load failure. Just resolve. The
+          // 'pause' listener above will normally handle it, but the order
+          // of 'pause' vs the play() promise rejection isn't guaranteed
+          // across browsers, so we guard here too.
+          if (err && (err as DOMException).name === 'AbortError') {
+            onDone();
+            return;
+          }
+          // Audio truly failed — fall back to Web Speech.
+          cleanup();
+          onEnd(() => { if (myToken === playOneToken) onDone(); });
           speak(text);
         });
       }

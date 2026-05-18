@@ -1,0 +1,60 @@
+---
+/**
+ * Renders the canvas overlay used by the sand page transition, plus the
+ * CSS that veils the new page during the arrival half.
+ *
+ * Why the canvas is server-rendered instead of created in JS:
+ *   The IN phase runs on a freshly-loaded document — if the canvas was
+ *   created dynamically after `load`, there'd be a flash where the new
+ *   page renders "naked" before the JS catches up. By rendering the
+ *   canvas as part of the initial HTML AND hiding body siblings via CSS
+ *   while `html.sand-arriving` is set (the flag is added in a synchronous
+ *   <head> script in BaseLayout), the first frame the user sees is
+ *   already covered by the overlay — the page reveals as the sand
+ *   settles, not before.
+ *
+ * Filtering of link clicks lives in `src/lib/sandPageTransition.ts` so
+ * this component stays a thin SSR shell + a single import.
+ */
+---
+<canvas data-sand-page-transition aria-hidden="true"></canvas>
+
+<style is:global>
+  [data-sand-page-transition] {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    /* Above every other floating UI (FullscreenSandTrail = 56, fullscreen
+       map = 60, modals etc.). */
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  /* ── ARRIVAL VEIL ────────────────────────────────────────────────────
+     While the new page is "settling" out of the sand, hide every body
+     sibling so the bare new HTML never flashes underneath. The canvas
+     itself is excluded so the overlay (which we paint a dim layer +
+     particles into) stays visible. JS removes `sand-arriving` from
+     <html> once the IN animation finishes, at which point the body
+     content re-appears and the canvas itself fades to 0. */
+  html.sand-arriving body > *:not([data-sand-page-transition]) {
+    visibility: hidden !important;
+  }
+  html.sand-arriving [data-sand-page-transition] {
+    opacity: 1 !important;
+    /* Match the active era's background colour exactly. The JS dim
+       paint uses the same --era-bg with full opacity at peak, so the
+       CSS base under the canvas equals the JS overlay — no visible
+       seam, no tonal jump when the JS paint catches up. */
+    background-color: var(--era-bg);
+  }
+</style>
+
+<script>
+  import { maybePlayIn, attachClickInterceptor } from '../lib/sandPageTransition';
+  attachClickInterceptor();
+  maybePlayIn();
+</script>

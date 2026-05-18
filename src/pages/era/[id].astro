@@ -12,6 +12,9 @@ import EraClosingDialog from '../../components/EraClosingDialog.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
 import EventNavArrows from '../../components/EventNavArrows.astro';
+import CharacterInfoPanel from '../../components/CharacterInfoPanel.astro';
+import BoundariesToggleButton from '../../components/BoundariesToggleButton.astro';
+import { getBoundarySetFor } from '../../lib/boundaries';
 import { deriveCanonicity } from '../../lib/canonicity';
 
 export async function getStaticPaths() {
@@ -93,6 +96,10 @@ const sceneConfigs = events.map((e) => {
     journeys,
   };
 });
+
+// Per-era political boundaries — null when no set is registered for this era,
+// which makes BoundariesToggleButton render nothing and the JS no-op safely.
+const boundarySet = getBoundarySetFor(era.data.id);
 
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
@@ -289,14 +296,21 @@ const allMarkers = events.map((e) => {
     /* Word-by-word highlighting inside the fullscreen narration panel —
        driven by `timeline:narration-boundary` events from NarratorButton.
        Mirrors the in-place narrator styling so the look is consistent
-       across normal and fullscreen modes. */
-    .fs-narration-panel .word {
+       across normal and fullscreen modes.
+       NOTE: `.word` spans are created dynamically by `renderTokenized()`
+       in JS, so Astro's automatic scoping (which only stamps
+       `data-astro-cid-*` on template elements at build time) never
+       applies. Wrapping `.word` in `:global()` keeps the panel selector
+       scoped but lets these rules match the JS-created children. Without
+       this, the highlight never paints in fullscreen — every token kept
+       its default opacity/background, the user saw "ningún resaltado". */
+    .fs-narration-panel :global(.word) {
       transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
       padding: 0 1px;
       border-radius: 2px;
     }
-    .fs-narration-panel .word.spoken-past { opacity: 0.45; }
-    .fs-narration-panel .word.spoken-current {
+    .fs-narration-panel :global(.word.spoken-past) { opacity: 0.45; }
+    .fs-narration-panel :global(.word.spoken-current) {
       background: var(--era-accent);
       color: var(--era-bg);
       font-weight: 600;
@@ -318,14 +332,18 @@ const allMarkers = events.map((e) => {
       font-variant-numeric: tabular-nums;
     }
     .fs-narration-duration.is-active { display: flex; }
-    .fs-narration-duration .bar {
+    /* Same JS-injection caveat as the `.word` rules above: `.bar` + its
+       inner `<span>` are created by `ensureDurMarkup()` so Astro never
+       stamps them with the scope attribute. `:global()` lets the styled
+       rules match. */
+    .fs-narration-duration :global(.bar) {
       flex: 1 1 auto;
       height: 2px;
       background: color-mix(in srgb, var(--era-primary) 20%, transparent);
       border-radius: 2px;
       overflow: hidden;
     }
-    .fs-narration-duration .bar > span {
+    .fs-narration-duration :global(.bar > span) {
       display: block;
       height: 100%;
       width: 0%;
@@ -336,6 +354,12 @@ const allMarkers = events.map((e) => {
       display: block;
       opacity: 0.85;
       transform: translateX(0);
+      /* Re-enable pointer events while active so the user can wheel/touch
+         the panel to read ahead or rewind. The auto-scroll-on-active-word
+         only triggers when the current word is near the panel edges, so
+         without manual scroll a curious reader can't catch up to a word
+         they missed earlier in the paragraph. */
+      pointer-events: auto;
     }
     body.map-fullscreen.map-fullscreen-idle .fs-narration-panel {
       opacity: 0 !important;
@@ -392,6 +416,10 @@ const allMarkers = events.map((e) => {
       <ManuscriptMap />
       <ModernMapLayer />
       <MapToggleButton />
+      <BoundariesToggleButton
+        hasBoundaries={boundarySet !== null}
+        caption={boundarySet?.caption}
+      />
       <MapFullscreenButton />
     </div>
 
@@ -410,6 +438,10 @@ const allMarkers = events.map((e) => {
     {/* Dedicated fullscreen-only timeline pill (top-center). */}
     <FullscreenTimeline events={events} />
 
+    {/* Right-side character info panel — cycles through the event's
+        characters as narration progresses (fullscreen only). */}
+    <CharacterInfoPanel events={events} charById={charByIdMap} />
+
     {/* End-of-era parchment dialog — shown when play mode finishes. */}
     <EraClosingDialog currentEraId={era.data.id} />
 
@@ -418,20 +450,26 @@ const allMarkers = events.map((e) => {
     </div>
   </div>
 
-  <script type="application/json" id="map-data" set:html={JSON.stringify({ sceneConfigs, allMarkers })}></script>
+  <script type="application/json" id="map-data" set:html={JSON.stringify({ sceneConfigs, allMarkers, boundaries: boundarySet?.polygons ?? null })}></script>
 
   <script>
     import { initScrollytelling } from '../../lib/sceneController';
     import { renderMarker } from '../../lib/mapMarkers';
     import { registerMarkers } from '../../lib/mapToggle';
     import { initNarrationFx } from '../../lib/narrationFx';
+    import { renderBoundaries } from '../../lib/mapBoundaries';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
-      const { sceneConfigs, allMarkers } = JSON.parse(dataEl.textContent || '{}');
+      const { sceneConfigs, allMarkers, boundaries } = JSON.parse(dataEl.textContent || '{}');
       const svg = document.querySelector('[data-map-root]') as SVGSVGElement | null;
       if (svg) {
         allMarkers.forEach((m: any) => renderMarker(svg, m));
+        // Pre-populate boundaries (hidden by default via the layer's
+        // `is-hidden` class in ManuscriptMap.astro). The toggle button
+        // only flips opacity; rendering up-front avoids a flash when the
+        // user first clicks it.
+        if (boundaries && Array.isArray(boundaries)) renderBoundaries(svg, boundaries);
       }
       registerMarkers(allMarkers.filter((m: any) => m.coords).map((m: any) => ({
         id: m.id, coords: m.coords, label: m.label,
@@ -616,9 +654,14 @@ const allMarkers = events.map((e) => {
     /* Word-level highlight in the fullscreen panel — driven by the
        `timeline:narration-boundary` event the NarratorButton dispatches
        from both the audio `timeupdate` handler (via fracToCharIdx) and
-       the Web Speech `boundary` callback. Payload: { eventId, charIndex }. */
+       the Web Speech `boundary` callback. Payload: { eventId, charIndex }.
+       Virtual boundaries (`virtual: true`, emitted by narrationCues.ts
+       when no real narration is running so FX still fire) MUST NOT paint
+       the panel — that would mislead the user into thinking the audio is
+       playing when there's just no sound. */
     window.addEventListener('timeline:narration-boundary', (e) => {
       const detail = (e as CustomEvent).detail || {};
+      if (detail.virtual) return;
       if (typeof detail.charIndex !== 'number') return;
       highlightPanelAt(detail.charIndex);
     });
@@ -643,6 +686,25 @@ const allMarkers = events.map((e) => {
       if (!durEl) return;
       const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
       if (fill) fill.style.width = '100%';
+    });
+
+    /* User-initiated stop: era-play "Detener" or any other source that
+       flips playMode to false. Without this, the last word's
+       spoken-current + all preceding spoken-past classes lingered on
+       the panel, making it look like the narrator was paused mid-read
+       instead of actually stopped. Resetting words + the duration bar
+       returns the panel to a neutral "ready to play" state while
+       keeping the text visible so the user can still read it. */
+    window.addEventListener('timeline:play-state-changed', (e) => {
+      const playing = (e as CustomEvent).detail?.playing;
+      if (playing) return;
+      resetPanelWords();
+      if (!durEl) return;
+      durEl.classList.remove('is-active');
+      const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
+      const txt = durEl.querySelector<HTMLElement>('[data-fs-dur-text]');
+      if (fill) fill.style.width = '0%';
+      if (txt) txt.textContent = '0:00 / 0:00';
     });
 
     /* `body[data-narrating="1"]` flag — pins the reading column visible

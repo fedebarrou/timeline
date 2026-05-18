@@ -3,14 +3,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import CharacterTimeline from '../../components/CharacterTimeline.astro';
 import PortraitPlaceholder from '../../components/PortraitPlaceholder.astro';
 import TranslucentBackdrop from '../../components/TranslucentBackdrop.astro';
+import CharacterNavSidebar from '../../components/CharacterNavSidebar.astro';
+import { orderCharacters, GROUP_TO_ERA } from '../../lib/characterOrder';
 import { getCollection, getEntry, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const chars = await getCollection('characters');
-  return chars.map((c) => ({ params: { id: c.data.id }, props: { char: c } }));
+  const eras = await getCollection('eras');
+  const eraNameById = new Map(eras.map((e) => [e.data.id, e.data.name] as const));
+
+  // For each character, precompute its era + the ordered list of fellow
+  // characters in the SAME era. The sidebar then shows just that era's
+  // line-up (Adán→Noé while reading anyone primordial, Abraham→Ismael
+  // while reading anyone patriarcal, etc.), with the current one
+  // highlighted. Doing the filter here keeps the sidebar a dumb renderer.
+  return chars.map((c) => {
+    const eraId = c.data.group ? GROUP_TO_ERA[c.data.group] : undefined;
+    const eraName = eraId ? eraNameById.get(eraId) ?? 'Era' : 'Era';
+    const sameEra = eraId
+      ? chars.filter((ch) => ch.data.group && GROUP_TO_ERA[ch.data.group] === eraId)
+      : [c];
+    const ordered = orderCharacters(sameEra);
+    return {
+      params: { id: c.data.id },
+      props: { char: c, ordered, eraName },
+    };
+  });
 }
 
-const { char } = Astro.props;
+const { char, ordered, eraName } = Astro.props;
 const data = char.data;
 const { Content } = await render(char);
 
@@ -64,9 +85,25 @@ function formatGregorian(g: number): string {
 }
 
 const hasLifeRange = data.birthYear !== undefined || data.deathYear !== undefined;
+// Años vividos — every character page must surface this, even when unknown.
+// Priority: explicit `ageAtDeath` from the schema → computed from birth+death
+// dates → fallback to "Desconocido". Some patriarchs have an `ageAtDeath`
+// without dated bounds (e.g. tradition records the age but not the year),
+// hence the explicit field wins over the difference.
+const yearsLivedLabel: string =
+  data.ageAtDeath !== undefined
+    ? `${data.ageAtDeath} años`
+    : data.birthYear !== undefined && data.deathYear !== undefined
+      ? `${data.deathYear - data.birthYear} años`
+      : 'Desconocido';
 ---
 <BaseLayout title={data.name}>
   <TranslucentBackdrop src={data.portrait} alt={data.name} />
+  {/* Sidebar is `position: fixed` (and hidden below 1280px), so it
+      doesn't participate in the document flow — the article keeps its
+      original centred max-w-4xl rhythm and the sidebar floats in the
+      empty left margin only when there's room for it. */}
+  <CharacterNavSidebar currentId={data.id} ordered={ordered} eraName={eraName} />
   <div class="relative z-10">
   <article class="px-6 py-16 max-w-4xl mx-auto">
     <a href="/personajes" class="back-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity mb-8">
@@ -87,14 +124,17 @@ const hasLifeRange = data.birthYear !== undefined || data.deathYear !== undefine
         {data.alternateNames.meaning && (
           <p class="text-xl md:text-2xl italic opacity-75 mt-3 font-display">"{data.alternateNames.meaning}"</p>
         )}
-        {hasLifeRange && (
-          <p class="text-base opacity-70 mt-4">
-            {data.birthYear !== undefined && data.deathYear !== undefined && `Año ${data.birthYear} — ${data.deathYear}`}
-            {data.birthYear !== undefined && data.deathYear === undefined && `Nacido año ${data.birthYear}`}
-            {data.birthYear === undefined && data.deathYear !== undefined && `Fallecido año ${data.deathYear}`}
-            {data.ageAtDeath && ` (vivió ${data.ageAtDeath} años)`}
-          </p>
-        )}
+        <p class="text-base opacity-70 mt-4">
+          {hasLifeRange && (
+            <>
+              {data.birthYear !== undefined && data.deathYear !== undefined && `Año ${data.birthYear} — ${data.deathYear}`}
+              {data.birthYear !== undefined && data.deathYear === undefined && `Nacido año ${data.birthYear}`}
+              {data.birthYear === undefined && data.deathYear !== undefined && `Fallecido año ${data.deathYear}`}
+              {' · '}
+            </>
+          )}
+          Años vividos: <span class="font-medium">{yearsLivedLabel}</span>
+        </p>
       </div>
     </header>
 

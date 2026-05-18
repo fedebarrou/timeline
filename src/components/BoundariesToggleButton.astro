@@ -1,0 +1,74 @@
+---
+/**
+ * Toggle button for the political-boundaries overlay.
+ *
+ * Sits at the BOTTOM-LEFT of the map container (mirror of MapToggleButton
+ * at bottom-right). Only renders if the current era has a boundary set
+ * registered in `src/lib/boundaries/index.ts`. The button itself is
+ * server-rendered conditionally; the active state is local DOM state.
+ */
+interface Props {
+  hasBoundaries: boolean;
+  caption?: string;
+}
+const { hasBoundaries, caption } = Astro.props;
+if (!hasBoundaries) return null;
+---
+<button
+  type="button"
+  class="boundaries-toggle-btn absolute z-[60] bottom-4 left-4 md:bottom-5 md:left-5 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
+  data-boundaries-toggle
+  aria-pressed="false"
+  aria-label="Mostrar divisiones políticas históricas"
+  title={caption ? `Divisiones políticas — ${caption}` : 'Divisiones políticas'}
+>
+  {/* Subtle "boundary lines" icon — two dashed crossing arcs hint at
+      political polygons without committing to any specific era's shape. */}
+  <svg
+    width="14" height="14" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 12c4-7 14-7 18 0" stroke-dasharray="3 2"></path>
+    <path d="M3 12c4 7 14 7 18 0" stroke-dasharray="3 2"></path>
+  </svg>
+  <span class="label hidden sm:inline">Divisiones</span>
+</button>
+
+<script>
+  /* Wait for sceneController + mapBoundaries to have rendered before
+     wiring the click — the click handler queries the SVG via
+     `[data-map-root]`, which is in the template, so it's available
+     immediately. The render-on-init is responsible for populating the
+     layer; the toggle only flips visibility on the populated layer. */
+  import { setBoundariesVisible, areBoundariesVisible } from '../lib/mapBoundaries';
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-boundaries-toggle]');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const svg = document.querySelector<SVGSVGElement>('[data-map-root]');
+      if (!svg) return;
+      const next = !areBoundariesVisible(svg);
+      setBoundariesVisible(svg, next);
+      btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+      btn.classList.toggle('is-active', next);
+    });
+
+    // Keyboard shortcut — D = divisiones. Mirrors M (map toggle).
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'd' && e.key !== 'D') return;
+      // Don't hijack if focus is in a text input/textarea.
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      btn.click();
+    });
+  }
+</script>
+
+<style>
+  .boundaries-toggle-btn.is-active {
+    background: var(--era-primary);
+    color: var(--era-bg);
+  }
+</style>

@@ -2,6 +2,7 @@
 import SiteNav from '../components/SiteNav.astro';
 import EraTheme from '../components/EraTheme.astro';
 import FullscreenSandTrail from '../components/FullscreenSandTrail.astro';
+import SandPageTransition from '../components/SandPageTransition.astro';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -35,11 +36,30 @@ const allEras = await getCollection('eras');
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    {/* Sand-transition pre-paint flag.
+        Runs SYNCHRONOUSLY in <head> before <body> renders. If the
+        previous page set the sessionStorage handshake, we add the
+        `sand-arriving` class to <html> BEFORE the next paint. CSS in
+        SandPageTransition.astro hides every body child except the
+        canvas while this class is set — that way the user never sees
+        the new page rendered "naked" before the sand FX kicks in.
+        The deferred script that runs maybePlayIn() removes the class
+        once the settle animation finishes. */}
+    <script is:inline>
+      (function () {
+        try {
+          if (sessionStorage.getItem('sand-page-transition') === '1') {
+            document.documentElement.classList.add('sand-arriving');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body data-era={bodyEra}>
     {allEras.map((era) => <EraTheme era={era} />)}
     <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
     <FullscreenSandTrail />
+    <SandPageTransition />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
     <script>

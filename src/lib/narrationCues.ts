@@ -143,6 +143,61 @@ export function registerEventCues(eventId: string, cues: Cue[]): void {
  *  same page would attach duplicate listeners and fire each cue twice. */
 let initialized = false;
 
+/* ─── Virtual narration scrubber ───────────────────────────────────────────
+ * Plays a synthetic charIndex sweep when no real narration is running so the
+ * map's narration FX still come alive on scene-activation. The user asked
+ * for "que los efectos se muestren aunque no se esté narrando" — without
+ * this, cues only fired during era-play or "Escuchar", leaving every other
+ * navigation gesture (scroll, dot click, era nav) without animation payload.
+ *
+ * Mechanics:
+ *  - On scene-changed (and ~1.6s grace to let a real narration's first tick
+ *    win), we kick a setInterval that advances a fake charIndex linearly
+ *    through the event's narration text.
+ *  - Each step dispatches `timeline:narration-boundary` with `virtual: true`,
+ *    so the cue listener below picks it up and fires every matching cue —
+ *    exactly as it would for a real audio playback.
+ *  - The fs-narration-panel listener ([id].astro) ignores `virtual: true`
+ *    so the word highlight stays a TRUE narration affordance.
+ *  - Any real `timeline:narration-tick` aborts the simulator: the user just
+ *    pressed play, real narration is taking over.
+ */
+const VIRTUAL_TICK_MS = 80;        // dispatch cadence
+const VIRTUAL_CHAR_STEP = 8;       // chars advanced per tick → ~100 cps
+const VIRTUAL_DEFER_MS = 1600;     // delay after scene-changed before kicking in
+
+let virtualTimer: ReturnType<typeof setInterval> | null = null;
+let virtualDeferTimer: ReturnType<typeof setTimeout> | null = null;
+let realNarrationLastSeenAt = 0;
+const REAL_NARRATION_GRACE_MS = 1500;
+
+function isRealNarrationActive(): boolean {
+  return Date.now() - realNarrationLastSeenAt < REAL_NARRATION_GRACE_MS;
+}
+
+function stopVirtualScrubber(): void {
+  if (virtualTimer != null) { clearInterval(virtualTimer); virtualTimer = null; }
+  if (virtualDeferTimer != null) { clearTimeout(virtualDeferTimer); virtualDeferTimer = null; }
+}
+
+function startVirtualScrubberFor(eventId: string): void {
+  stopVirtualScrubber();
+  const text = readNarrationText(eventId);
+  if (!text) return;
+  let charIndex = 0;
+  virtualTimer = setInterval(() => {
+    // A real boundary/tick reasserts itself? Bail — the user pressed play.
+    if (isRealNarrationActive()) { stopVirtualScrubber(); return; }
+    charIndex += VIRTUAL_CHAR_STEP;
+    window.dispatchEvent(
+      new CustomEvent('timeline:narration-boundary', {
+        detail: { eventId, charIndex, virtual: true },
+      }),
+    );
+    if (charIndex >= text.length) stopVirtualScrubber();
+  }, VIRTUAL_TICK_MS);
+}
+
 /**
  * Install the global listeners. Call once per page load.
  */
@@ -150,11 +205,25 @@ export function initNarrationCues(): void {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
 
+  // A real `narration-tick` is the unambiguous "audio is playing" signal —
+  // NarratorButton dispatches it on every `timeupdate`. Use it to gate the
+  // virtual scrubber so the two never run in parallel.
+  window.addEventListener('timeline:narration-tick', () => {
+    realNarrationLastSeenAt = Date.now();
+    if (virtualTimer || virtualDeferTimer) stopVirtualScrubber();
+  });
+
   window.addEventListener('timeline:narration-boundary', (ev) => {
     const detail = (ev as CustomEvent).detail || {};
     const eventId: string | undefined = detail.eventId;
     const charIndex: number | undefined = detail.charIndex;
     if (!eventId || typeof charIndex !== 'number') return;
+
+    // Real boundaries also count as "narration alive" — they fire from
+    // audio.timeupdate AND from the TTS onboundary handler. Virtual ones
+    // do NOT update the timestamp; otherwise the scrubber would keep
+    // itself alive forever.
+    if (!detail.virtual) realNarrationLastSeenAt = Date.now();
 
     activeEventId = eventId;
 
@@ -189,5 +258,16 @@ export function initNarrationCues(): void {
     if (activeEventId) firedCues.delete(activeEventId);
     if (newId) firedCues.delete(newId);
     activeEventId = newId ?? null;
+
+    // Kick the virtual scrubber unless real narration is already running.
+    // The defer-timer gives real narration (which may be about to start —
+    // playMode dispatches scene-changed BEFORE audio.play) a chance to win.
+    stopVirtualScrubber();
+    if (!newId) return;
+    virtualDeferTimer = setTimeout(() => {
+      virtualDeferTimer = null;
+      if (isRealNarrationActive()) return;
+      startVirtualScrubberFor(newId);
+    }, VIRTUAL_DEFER_MS);
   });
 }

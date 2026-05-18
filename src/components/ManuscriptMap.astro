@@ -154,6 +154,11 @@ const MODERN_LABELS = [
     ))}
   </g>
 
+  {/* Historical political boundaries — hidden by default. Populated by
+      `mapBoundaries.ts` per era when the user toggles "Divisiones políticas".
+      Sits BEFORE scene-objects/markers so dashed regional outlines never
+      occlude clickable pins or animated set pieces. */}
+  <g class="boundaries is-hidden" data-layer="boundaries"></g>
   <g class="scene-objects" data-layer="scene-objects"></g>
   <g class="markers" data-layer="markers"></g>
   <g class="routes" data-layer="routes"></g>
@@ -195,4 +200,10 @@ const MODERN_LABELS = [
   :global(.map-container[data-map-mode="manuscript"] [data-loc-name-modern]) { display: none !important; }
   :global(.map-container[data-map-mode="modern"]    [data-loc-name-ancient]) { display: none !important; }
   :global(.map-container[data-map-mode="modern"]    [data-loc-name-modern]) { display: block !important; }
+
+  /* Boundaries layer — toggled via `setBoundariesVisible()` in mapBoundaries.ts
+     by adding/removing `is-hidden`. Fade keeps the appearance smooth instead
+     of a hard pop when the user clicks the toggle. */
+  .boundaries { transition: opacity 320ms ease; opacity: 1; }
+  .boundaries.is-hidden { opacity: 0; pointer-events: none; }
 </style>

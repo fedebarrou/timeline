@@ -1,0 +1,546 @@
+---
+/**
+ * Floating right-side panel that auto-cycles through the active event's
+ * characters as the narration progresses. Reuses the look of the hover
+ * preview card (mapHoverPreview.ts) — portrait with the same SVG mask,
+ * name, role, canonicity badge, body — so the visual identity stays
+ * consistent across the app.
+ *
+ * Visibility:
+ *  - Only renders in fullscreen mode (mirror layout of `.fs-narration-panel`).
+ *  - Shows when a scene with characters becomes active.
+ *  - Pinned visible while narration is running (`body[data-narrating="1"]`,
+ *    set by NarratorButton and [id].astro's tick listener).
+ *
+ * Character cycling — time-slice heuristic:
+ *  - On `timeline:scene-changed`: load the event's characters, show the first.
+ *  - On `timeline:narration-tick`: pick `characters[floor(progress * N)]`.
+ *  - If the event has 0 characters → panel hides.
+ *  - If 1 character → no dots, sticks on that character.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { deriveCanonicity } from '../lib/canonicity';
+
+interface Props {
+  events: CollectionEntry<'events'>[];
+  charById: Map<string, any>;
+}
+const { events, charById } = Astro.props;
+
+const eventCharacters = events.map((e) => {
+  const chars = ((e.data.characters as any[]) ?? []).map((c: any) => {
+    const cd = charById.get(c.id);
+    return {
+      id: c.id,
+      name: cd?.name ?? c.id,
+      portrait: cd?.portrait ?? null,
+      role: c.role ?? null,
+      lore: c.lore ?? null,
+      meaning: cd?.alternateNames?.meaning ?? null,
+      significance: cd?.significance ?? null,
+      canonicity: deriveCanonicity(cd),
+    };
+  });
+  return { eventId: e.data.id, characters: chars };
+});
+---
+<aside class="character-info-panel" data-character-info-panel aria-hidden="true">
+  <div class="cip-row">
+    <div class="cip-portrait" data-cip-portrait>
+      <img alt="" data-cip-portrait-img onerror="this.style.display='none'" />
+    </div>
+    <div class="cip-text">
+      <div class="cip-meta">
+        <span class="cip-kind">Personaje</span>
+        <span class="cip-canonicity" data-cip-canonicity></span>
+      </div>
+      <div class="cip-name" data-cip-name></div>
+      <div class="cip-meaning" data-cip-meaning></div>
+      <div class="cip-role" data-cip-role></div>
+    </div>
+  </div>
+  <div class="cip-body" data-cip-body></div>
+  <div class="cip-controls" data-cip-controls>
+    <button
+      type="button"
+      class="cip-arrow"
+      data-cip-prev
+      aria-label="Personaje anterior"
+      title="Anterior"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="cip-dots" data-cip-dots></div>
+    <button
+      type="button"
+      class="cip-arrow"
+      data-cip-next
+      aria-label="Personaje siguiente"
+      title="Siguiente"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  </div>
+</aside>
+
+<script type="application/json" data-character-info-data set:html={JSON.stringify(eventCharacters)}></script>
+
+<style>
+  .character-info-panel {
+    display: none;
+    position: fixed;
+    top: var(--fs-panel-top, 7rem);
+    right: var(--fs-col-left, 1.5rem);
+    /* Horizontal card geometry — slightly narrower than before since the
+       inner layout is now portrait-left + text-right. */
+    width: clamp(260px, 26vw, 330px);
+    max-height: 70vh;
+    /* Generous left padding so the gradient fade on the LEFT edge never
+       eats into readable content (foto + texto sit well inside the
+       opaque zone). Right side hugs the viewport edge so the panel
+       reads as anchored to the screen, not floating. */
+    padding: 0.95rem 1.1rem 0.95rem 1.8rem;
+    overflow-y: auto;
+    z-index: 53;
+    /* Soft fade toward the map (LEFT side) so the panel dissolves into
+       the manuscript rather than sitting as a hard rectangle. No mask
+       on the inner content — only the background gradient fades, so
+       text/portrait remain crisp at any padding. */
+    background: linear-gradient(
+      to left,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.5) 60%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    font-family: var(--era-body, 'EB Garamond', Georgia, serif);
+    color: var(--era-text);
+    transition: opacity 360ms ease, transform 360ms ease;
+    opacity: 0;
+    transform: translateX(10px);
+    pointer-events: none;
+    scrollbar-width: none;
+  }
+  .character-info-panel::-webkit-scrollbar { display: none; }
+
+  /* Horizontal row: portrait left, text column right. Body lives BELOW
+     the row so it spans the full panel width and has more reading line
+     length than if it stayed inside the narrow right column. */
+  .character-info-panel .cip-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+  }
+  .character-info-panel .cip-text {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-top: 0.15rem;
+  }
+
+  body.map-fullscreen .character-info-panel.is-active {
+    display: block;
+    opacity: 0.92;
+    transform: translateX(0);
+  }
+  body.map-fullscreen.map-fullscreen-idle .character-info-panel {
+    opacity: 0 !important;
+    transform: translateX(10px) !important;
+  }
+  body.map-fullscreen[data-narrating="1"] .character-info-panel.is-active,
+  body.map-fullscreen.map-fullscreen-idle[data-narrating="1"] .character-info-panel.is-active {
+    display: block !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+
+  /* ── NORMAL MODE (non-fullscreen) ────────────────────────────────────
+     Anchored to the BOTTOM-RIGHT of the sticky map, sitting just above
+     the MapToggleButton ("Mapa antiguo"). The previous top-right
+     placement clashed with the next-era arrow, the fullscreen toggle,
+     and the play-mode button in the TimelineNav — that whole top band
+     is already crowded. Bottom-right is the quiet zone of the map.
+     Hidden on mobile (<768px): the map is a 40vh band at the top there
+     and a floating panel over the article would obscure reading. */
+  @media (min-width: 768px) {
+    body:not(.map-fullscreen) .character-info-panel {
+      /* Override the default fullscreen anchors so the bottom rule
+         below isn't fighting them. */
+      top: auto;
+      right: 0.75rem;
+      /* Above the MapToggleButton (bottom: 1rem md:bottom-5 = 1.25rem,
+         button height ~2.5rem + a gap so the card never touches the
+         button). 5rem clears everything with a visible breathing line. */
+      bottom: 5rem;
+      width: clamp(180px, 17vw, 230px);
+      /* Panel grows UPWARD from the bottom anchor — cap so it never
+         hits the timeline arrow / play button band at the top. */
+      max-height: 60vh;
+      padding: 0.7rem 0.85rem 0.7rem 1.2rem;
+      background: linear-gradient(
+        to left,
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0, 0, 0, 0.55) 65%,
+        rgba(0, 0, 0, 0.05) 100%
+      );
+      pointer-events: auto;
+    }
+    body:not(.map-fullscreen) .character-info-panel.is-active {
+      display: block;
+      opacity: 0.94;
+      transform: translateX(0);
+    }
+  }
+  /* Inner-element overrides — proportionally shrink so the row still
+     fits with the smaller width. Portrait drops 100→76, name 15→13,
+     meaning 12→11, body 12→11, gap tightens. */
+  @media (min-width: 768px) {
+    body:not(.map-fullscreen) .character-info-panel .cip-portrait {
+      flex: 0 0 76px;
+      width: 76px;
+      height: 76px;
+    }
+    body:not(.map-fullscreen) .character-info-panel .cip-row { gap: 0.55rem; }
+    body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 13px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-meaning { font-size: 11px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-body { font-size: 11px; line-height: 1.45; }
+    body:not(.map-fullscreen) .character-info-panel .cip-role { font-size: 8px; padding: 1px 6px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-canonicity { font-size: 8px; padding: 1px 6px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-kind { font-size: 8px; }
+  }
+
+  .character-info-panel .cip-portrait {
+    flex: 0 0 100px;
+    width: 100px;
+    height: 100px;
+    margin: 0;
+    /* Asymmetric nebula mask: top / bottom / right keep the original soft
+       turbulence-displaced ellipse, but the LEFT edge fades to transparent
+       so the portrait "dissolves" toward the gradient-faded panel margin.
+       Done in a single SVG via:
+         (a) a horizontal linearGradient fill on the outer (filtered)
+             ellipse — the displacement filter now operates on an alpha
+             ramp instead of solid black, producing wispier strands the
+             closer we get to the left edge;
+         (b) shifting the inner solid ellipse to cx=56 + narrowing it to
+             rx=30 so the "hard core" of the portrait sits on the right
+             half, leaving the left to rely purely on the wispy outer
+             gradient. Top/bottom/right edges share the original ellipse
+             geometry so their look is preserved. */
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.22' stop-color='black' stop-opacity='0.6'/><stop offset='0.44' stop-color='black' stop-opacity='1'/></linearGradient></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='url(%23lg)' filter='url(%23c)'/><ellipse cx='56' cy='48' rx='30' ry='32' fill='black'/></svg>");
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.22' stop-color='black' stop-opacity='0.6'/><stop offset='0.44' stop-color='black' stop-opacity='1'/></linearGradient></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='url(%23lg)' filter='url(%23c)'/><ellipse cx='56' cy='48' rx='30' ry='32' fill='black'/></svg>");
+    -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--era-accent) 40%, transparent));
+  }
+  .character-info-panel .cip-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    filter: contrast(1.05) saturate(1.05);
+    display: block;
+  }
+  .character-info-panel .cip-meta {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 4px;
+  }
+  .character-info-panel .cip-kind {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.55;
+  }
+  .character-info-panel .cip-canonicity {
+    display: none; align-items: center; gap: 5px;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .character-info-panel .cip-canonicity.has-text { display: inline-flex; }
+  .character-info-panel .cip-canonicity-dot {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .character-info-panel .cip-name {
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: 15px; letter-spacing: 0.03em;
+    color: var(--era-primary); line-height: 1.2;
+  }
+  .character-info-panel .cip-meaning {
+    display: none;
+    font-style: italic; font-size: 12px; opacity: 0.78; margin-top: 3px;
+  }
+  .character-info-panel .cip-meaning.has-text { display: block; }
+  .character-info-panel .cip-role {
+    display: none;
+    margin-top: 8px;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 2px 7px; border: 1px solid var(--era-border); border-radius: 999px;
+    opacity: 0.85; width: fit-content;
+  }
+  .character-info-panel .cip-role.has-text { display: inline-block; }
+  /* Body sits below the full portrait+text row so it can use the entire
+     panel width — better reading line length for the longer lore/significance
+     paragraph than if it were squeezed into the narrow right column. */
+  .character-info-panel .cip-body {
+    display: none;
+    font-size: 12px; line-height: 1.5; margin-top: 0.25rem;
+    opacity: 0.88; white-space: pre-line;
+  }
+  .character-info-panel .cip-body.has-text { display: block; }
+  /* Bottom controls row: prev arrow · dots · next arrow. Only rendered
+     when the active event has more than one character (the JS hides the
+     whole row otherwise via `.has-multi`). */
+  .character-info-panel .cip-controls {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid color-mix(in srgb, var(--era-primary) 18%, transparent);
+  }
+  .character-info-panel .cip-controls.has-multi { display: flex; }
+  .character-info-panel .cip-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--era-primary) 35%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--era-surface) 60%, transparent);
+    color: var(--era-primary);
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, transform 100ms ease;
+  }
+  .character-info-panel .cip-arrow:hover {
+    background: color-mix(in srgb, var(--era-accent) 25%, var(--era-surface));
+    border-color: var(--era-accent);
+  }
+  .character-info-panel .cip-arrow:active { transform: scale(0.92); }
+  .character-info-panel .cip-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .character-info-panel .cip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: color-mix(in srgb, var(--era-primary) 25%, transparent);
+    transition: background 260ms ease, transform 260ms ease;
+  }
+  .character-info-panel .cip-dot.is-active {
+    background: var(--era-accent);
+    transform: scale(1.4);
+  }
+
+  /* Cross-fade animation when cycling between characters within the same event. */
+  @keyframes cip-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .character-info-panel.cip-fade .cip-portrait,
+  .character-info-panel.cip-fade .cip-name,
+  .character-info-panel.cip-fade .cip-meaning,
+  .character-info-panel.cip-fade .cip-role,
+  .character-info-panel.cip-fade .cip-body,
+  .character-info-panel.cip-fade .cip-canonicity {
+    animation: cip-fade-in 320ms ease;
+  }
+</style>
+
+<script>
+  import { CANONICITY_COLORS, CANONICITY_LABELS, type Canonicity } from '../lib/canonicity';
+
+  type Character = {
+    id: string;
+    name: string;
+    portrait: string | null;
+    role: string | null;
+    lore: string | null;
+    meaning: string | null;
+    significance: string | null;
+    canonicity: Canonicity;
+  };
+
+  const dataEl = document.querySelector<HTMLScriptElement>('script[data-character-info-data]');
+  const panel = document.querySelector<HTMLElement>('[data-character-info-panel]');
+  if (dataEl && panel) {
+    let raw: Array<{ eventId: string; characters: Character[] }> = [];
+    try { raw = JSON.parse(dataEl.textContent || '[]'); } catch {}
+    const byEvent = new Map<string, Character[]>();
+    for (const r of raw) byEvent.set(r.eventId, r.characters);
+
+    const portraitImg = panel.querySelector<HTMLImageElement>('[data-cip-portrait-img]');
+    const canonicityEl = panel.querySelector<HTMLElement>('[data-cip-canonicity]');
+    const nameEl = panel.querySelector<HTMLElement>('[data-cip-name]');
+    const meaningEl = panel.querySelector<HTMLElement>('[data-cip-meaning]');
+    const roleEl = panel.querySelector<HTMLElement>('[data-cip-role]');
+    const bodyEl = panel.querySelector<HTMLElement>('[data-cip-body]');
+    const dotsEl = panel.querySelector<HTMLElement>('[data-cip-dots]');
+    const controlsEl = panel.querySelector<HTMLElement>('[data-cip-controls]');
+    const prevBtn = panel.querySelector<HTMLButtonElement>('[data-cip-prev]');
+    const nextBtn = panel.querySelector<HTMLButtonElement>('[data-cip-next]');
+
+    let activeChars: Character[] = [];
+    let activeIdx = -1;
+
+    // Auto-cycle state. While `narrationActive` is true (a tick has
+    // fired in the last 1.5 s) the timer is paused and the tick handler
+    // drives `setIdxFromProgress`. Same while the user is hovering the
+    // panel (so they can read at their pace). Manual prev/next clicks
+    // also reset the timer.
+    const AUTO_CYCLE_MS = 6000;
+    let autoTimer: ReturnType<typeof setInterval> | null = null;
+    let narrationActive = false;
+    let narrationFadeTimer: ReturnType<typeof setTimeout> | null = null;
+    let hoverPaused = false;
+
+    function startAutoCycle() {
+      if (autoTimer != null) return;
+      if (activeChars.length <= 1) return;
+      if (narrationActive || hoverPaused) return;
+      autoTimer = setInterval(() => {
+        if (narrationActive || hoverPaused) return;
+        if (activeChars.length <= 1) { stopAutoCycle(); return; }
+        const next = (activeIdx + 1) % activeChars.length;
+        activeIdx = next;
+        renderCharacter(activeChars[next]);
+        renderControls(activeChars.length, next);
+      }, AUTO_CYCLE_MS);
+    }
+    function stopAutoCycle() {
+      if (autoTimer != null) { clearInterval(autoTimer); autoTimer = null; }
+    }
+    function restartAutoCycle() {
+      stopAutoCycle();
+      startAutoCycle();
+    }
+
+    function renderControls(n: number, idx: number) {
+      // The whole row (arrows + dots) is governed by `has-multi`.
+      // Single-character events hide everything — there's nothing to
+      // navigate to, the panel just sticks on that one character.
+      const multi = n > 1;
+      controlsEl?.classList.toggle('has-multi', multi);
+      if (!dotsEl) return;
+      if (!multi) { dotsEl.innerHTML = ''; return; }
+      const parts: string[] = [];
+      for (let i = 0; i < n; i++) {
+        parts.push(`<span class="cip-dot${i === idx ? ' is-active' : ''}"></span>`);
+      }
+      dotsEl.innerHTML = parts.join('');
+    }
+
+    function setText(el: HTMLElement | null, text: string | null | undefined) {
+      if (!el) return;
+      const t = (text ?? '').trim();
+      el.textContent = t;
+      el.classList.toggle('has-text', !!t);
+    }
+
+    function renderCharacter(c: Character) {
+      if (portraitImg) {
+        if (c.portrait) {
+          portraitImg.src = c.portrait;
+          portraitImg.style.display = '';
+        } else {
+          portraitImg.removeAttribute('src');
+          portraitImg.style.display = 'none';
+        }
+      }
+      setText(nameEl, c.name);
+      setText(meaningEl, c.meaning);
+      setText(roleEl, c.role);
+      // Prefer event-specific lore; fall back to the character's general significance.
+      setText(bodyEl, c.lore ?? c.significance);
+      if (canonicityEl) {
+        const col = CANONICITY_COLORS[c.canonicity];
+        const lbl = CANONICITY_LABELS[c.canonicity];
+        canonicityEl.style.color = col;
+        canonicityEl.style.borderColor = col;
+        canonicityEl.style.borderStyle = 'solid';
+        canonicityEl.style.borderWidth = '1px';
+        canonicityEl.style.background = `color-mix(in srgb, ${col} 12%, transparent)`;
+        canonicityEl.innerHTML = `<span class="cip-canonicity-dot" style="background:${col}"></span>${lbl}`;
+        canonicityEl.classList.toggle('has-text', !!lbl);
+      }
+      // Re-trigger fade animation on the inner blocks. Reflow is needed so the
+      // animation actually replays when we re-apply the same class.
+      panel!.classList.remove('cip-fade');
+      void panel!.offsetWidth;
+      panel!.classList.add('cip-fade');
+    }
+
+    function showFor(eventId: string) {
+      const chars = byEvent.get(eventId) ?? [];
+      activeChars = chars;
+      stopAutoCycle();
+      if (chars.length === 0) {
+        panel!.classList.remove('is-active');
+        activeIdx = -1;
+        return;
+      }
+      activeIdx = 0;
+      renderCharacter(chars[0]);
+      renderControls(chars.length, 0);
+      panel!.classList.add('is-active');
+      // Kick the auto-cycle for this event. Narration tick will pause
+      // it via `narrationActive` if narration is also running.
+      startAutoCycle();
+    }
+
+    function setIdxFromProgress(progress: number) {
+      if (activeChars.length === 0) return;
+      const p = Math.max(0, Math.min(1, progress));
+      const next = Math.min(activeChars.length - 1, Math.floor(p * activeChars.length));
+      if (next === activeIdx) return;
+      activeIdx = next;
+      renderCharacter(activeChars[next]);
+      renderControls(activeChars.length, next);
+    }
+
+    function step(direction: 1 | -1) {
+      if (activeChars.length <= 1) return;
+      const n = activeChars.length;
+      const next = (activeIdx + direction + n) % n;
+      activeIdx = next;
+      renderCharacter(activeChars[next]);
+      renderControls(n, next);
+      // Manual nav → restart the auto-cycle clock so the user doesn't
+      // get clobbered by an auto-advance milliseconds after their click.
+      restartAutoCycle();
+    }
+
+    prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); step(-1); });
+    nextBtn?.addEventListener('click', (e) => { e.stopPropagation(); step(1); });
+
+    // Hover-to-pause — desktop only. Touch devices fire `mouseenter`
+    // briefly on tap and then `mouseleave`, so this still behaves on
+    // mobile (auto-cycle resumes after the tap).
+    panel.addEventListener('mouseenter', () => { hoverPaused = true; stopAutoCycle(); });
+    panel.addEventListener('mouseleave', () => { hoverPaused = false; startAutoCycle(); });
+
+    window.addEventListener('timeline:scene-changed', (e) => {
+      const id = (e as CustomEvent).detail?.eventId;
+      if (typeof id === 'string') showFor(id);
+    });
+
+    window.addEventListener('timeline:narration-tick', (e) => {
+      const { current, duration } = (e as CustomEvent).detail || {};
+      if (typeof duration !== 'number' || duration <= 0) return;
+      // Narration is driving — hand off cycling to it and pause the auto
+      // timer. After 1.5 s of no ticks we consider narration gone and
+      // resume auto-cycle.
+      narrationActive = true;
+      stopAutoCycle();
+      if (narrationFadeTimer != null) clearTimeout(narrationFadeTimer);
+      narrationFadeTimer = setTimeout(() => {
+        narrationActive = false;
+        startAutoCycle();
+      }, 1500);
+      setIdxFromProgress((current ?? 0) / duration);
+    });
+  }
+</script>
