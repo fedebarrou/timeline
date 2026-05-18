@@ -14,6 +14,50 @@ type PreviewData = {
 let cardEl: HTMLElement | null = null;
 let hideTimer: number | null = null;
 let globalGuardInstalled = false;
+let stylesInstalled = false;
+
+/**
+ * Inject the preview's CSS once into <head>. Necessary because the mask SVG
+ * data-URI contains double quotes — putting it inline in style="..." attributes
+ * breaks attribute parsing, which silently kills every style in the attribute
+ * (including layout properties like flex). Living in a <style> tag instead
+ * means the CSS parser handles it correctly.
+ */
+function installStyles() {
+  if (stylesInstalled) return;
+  stylesInstalled = true;
+  const css = `
+    [data-map-preview] .mpv-row { display: flex; align-items: flex-start; gap: 4px; }
+    [data-map-preview] .mpv-portrait {
+      flex: 0 0 150px;
+      width: 150px;
+      height: 150px;
+      align-self: flex-start;
+      margin-top: 6px;
+      -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='black' filter='url(%23c)'/><ellipse cx='50' cy='48' rx='32' ry='32' fill='black'/></svg>");
+              mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='black' filter='url(%23c)'/><ellipse cx='50' cy='48' rx='32' ry='32' fill='black'/></svg>");
+      -webkit-mask-size: 100% 100%;
+              mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+              mask-repeat: no-repeat;
+      filter: drop-shadow(0 0 10px color-mix(in srgb, var(--era-accent) 40%, transparent));
+    }
+    [data-map-preview] .mpv-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: contrast(1.05) saturate(1.05);
+    }
+    [data-map-preview] .mpv-portrait[data-kind="character"] img { object-position: top; }
+    [data-map-preview] .mpv-portrait[data-kind="location"] img { object-position: center; }
+    [data-map-preview] .mpv-text { flex: 1 1 0; min-width: 0; padding: 14px 14px 14px 4px; }
+  `;
+  const style = document.createElement('style');
+  style.setAttribute('data-map-preview-styles', '');
+  style.textContent = css;
+  document.head.appendChild(style);
+}
 
 /**
  * Installs a single document-level mousemove guard the first time a preview
@@ -46,9 +90,10 @@ function ensureCard(): HTMLElement {
   Object.assign(cardEl.style, {
     position: 'fixed',
     zIndex: '80',
-    width: '320px',
+    width: '360px',
     maxHeight: '78vh',
     overflowY: 'auto',
+    overflowX: 'hidden',
     background: 'var(--era-surface)',
     border: '1px solid var(--era-primary)',
     borderRadius: '12px',
@@ -67,21 +112,23 @@ function ensureCard(): HTMLElement {
 export function showPreview(e: MouseEvent, data: PreviewData) {
   const card = ensureCard();
   installGlobalGuard();
+  installStyles();
   if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
 
   const parts: string[] = [];
-  if (data.imageSrc) {
-    const safe = escape(data.imageSrc);
-    // Image: object-contain so portraits/landscapes aren't cropped.
-    // Aspect-ratio gives a stable area; background tinted with era-bg.
+  const hasImage = !!data.imageSrc;
+  if (hasImage) {
+    const safe = escape(data.imageSrc!);
+    parts.push(`<div class="mpv-row">`);
     parts.push(`
-      <div style="width:100%;aspect-ratio:4/3;background:var(--era-bg);display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <img src="${safe}" alt="${escape(data.title)}" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;"
-          onerror="this.style.display='none'" />
+      <div class="mpv-portrait" data-kind="${data.kind}">
+        <img src="${safe}" alt="${escape(data.title)}" onerror="this.style.display='none'" />
       </div>
     `);
+    parts.push(`<div class="mpv-text">`);
+  } else {
+    parts.push('<div style="padding: 14px 16px 16px;">');
   }
-  parts.push('<div style="padding: 14px 16px 16px;">');
   // Top row: kind chip + canonicity badge (characters only)
   const kindLabel = data.kind === 'character' ? 'Personaje' : 'Lugar';
   if (data.kind === 'character' && data.canonicity) {
@@ -130,7 +177,8 @@ export function showPreview(e: MouseEvent, data: PreviewData) {
   if (data.body) {
     parts.push(`<p style="font-size:13px;line-height:1.5;margin-top:10px;opacity:0.88;white-space:pre-line;">${escape(data.body)}</p>`);
   }
-  parts.push('</div>');
+  parts.push('</div>'); // close text-content column
+  if (hasImage) parts.push('</div>'); // close horizontal flex wrapper
   card.innerHTML = parts.join('');
 
   positionCard(e);

@@ -31,8 +31,7 @@ const allEras = await getCollection('eras');
     <meta name="copyright" content="© 2026 Federico Barroumeres. All Rights Reserved." />
     <meta name="robots" content="index, follow, noai, noimageai" />
     <link rel="author" href="mailto:fbarroumeres@gmail.com" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/images/logo2.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -43,5 +42,38 @@ const allEras = await getCollection('eras');
     <FullscreenSandTrail />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
+    <script>
+      /* Fixed favicon: composes the logo on a solid black circle so the
+         mesh detail of the logo reads clearly regardless of the era's
+         background. Runs once on load. */
+      (function () {
+        const SIZE = 64;
+        const PAD = 4;
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = SIZE;
+          canvas.height = SIZE;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2, 0, Math.PI * 2);
+          ctx.fill();
+          const draw = SIZE - PAD * 2;
+          ctx.drawImage(img, PAD, PAD, draw, draw);
+          const href = canvas.toDataURL('image/png');
+          let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.type = 'image/png';
+          link.href = href;
+        };
+        img.src = '/images/logo2.png';
+      })();
+    </script>
   </body>
 </html>
