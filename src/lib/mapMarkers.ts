@@ -1,5 +1,37 @@
 import { gsap } from './scrollytelling';
 import { showPreview, movePreview, hidePreview } from './mapHoverPreview';
+import { CANONICITY_COLORS, type Canonicity } from './canonicity';
+
+/**
+ * Global focus-lock flag. When the user is hovering over a character pin
+ * or location portrait we don't want ScrollTrigger's `activate(scene)` to
+ * fire and swap the marker out from under them. `sceneController.ts`
+ * reads this through `isFocusLocked()` and skips activation while true.
+ */
+let focusLockCount = 0;
+export function isFocusLocked(): boolean { return focusLockCount > 0; }
+export function lockFocus() { focusLockCount++; }
+export function releaseFocus() {
+  focusLockCount = Math.max(0, focusLockCount - 1);
+}
+/**
+ * Hard-reset the focus-lock counter. Called by sceneController when a NEW
+ * event is being activated — at that point the previously-hovered pin
+ * (which incremented the lock on `mouseenter`) gets its pointer-events
+ * flipped to `none` by activateMarker, and the browser doesn't always
+ * deliver the corresponding `mouseleave` event reliably (especially in
+ * fullscreen, where the map container is `position: fixed` and the
+ * .scenes container is `display:none`). Without this reset the counter
+ * stays positive forever and every subsequent activate() bails at the
+ * `isFocusLocked()` guard — which is exactly the "fullscreen play
+ * doesn't advance the map" bug. Resetting on every new-event activate
+ * is safe because the hover-card preview is also dismissed at the same
+ * time (hidePreview() inside activateMarker), so there's no state to
+ * preserve.
+ */
+export function resetFocusLock() {
+  focusLockCount = 0;
+}
 
 // ---------------------------------------------------------------------------
 // Tooltip helpers (shared across all map interactive elements)
@@ -96,6 +128,8 @@ export interface CharacterPin {
   lore?: string | null;
   meaning?: string | null;
   significance?: string | null;
+  /** Canonicity tier (drives the pin border color and the hover-card badge). */
+  canonicity?: Canonicity;
 }
 
 export interface MarkerSpec {
@@ -109,6 +143,8 @@ export interface MarkerSpec {
   locationName?: string;
   locationDescription?: string | null;
   locationModernName?: string | null;
+  /** True when the location is academically disputed (multiple proposedLocations). Shown as a pill in the hover preview card. */
+  locationDisputed?: boolean;
   eventTitle?: string;
   eventSubtitle?: string | null;
 }
@@ -169,7 +205,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     fo.setAttribute('width', `${W}`);
     fo.setAttribute('height', `${H + 26}`); // extra room for wrapped caption
     fo.innerHTML = `
-  <div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:4px;align-items:center;font-family:var(--era-display,'Cinzel',serif);pointer-events:none;">
+  <div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;display:flex;flex-direction:column;gap:4px;align-items:center;font-family:var(--era-display,'Cinzel',serif);pointer-events:inherit;">
     <div style="
       width:${W}px;
       height:${H}px;
@@ -182,11 +218,11 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         0 0 0 1px rgba(0,0,0,0.6),
         0 0 18px rgba(0,0,0,0.35);
       position:relative;
-      pointer-events:auto;
+      pointer-events:inherit;
     ">
       <img src="${marker.locationPortrait.replace(/"/g, '&quot;')}"
            alt="${(marker.locationName ?? '').replace(/"/g, '&quot;')}"
-           style="width:140%;height:140%;object-fit:cover;display:block;margin-left:-20%;margin-top:-20%;"
+           style="width:100%;height:100%;object-fit:cover;object-position:center center;display:block;"
            onerror="this.style.display='none'" />
       <div style="
         position:absolute;
@@ -195,9 +231,9 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         pointer-events:none;
       "></div>
     </div>
-    ${marker.locationName ? `<div style="
+    ${marker.locationName ? `<div data-loc-name-ancient style="
       font-size:7px;
-      color:var(--era-primary);
+      color:var(--era-label-on-dark, var(--era-primary));
       text-align:center;
       letter-spacing:1px;
       text-transform:uppercase;
@@ -213,15 +249,38 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       font-family:var(--era-display,'Cinzel',serif);
       pointer-events:none;
     ">${marker.locationName.replace(/</g, '&lt;')}</div>` : ''}
+    ${marker.locationModernName ? `<div data-loc-name-modern style="
+      display:none;
+      font-size:7px;
+      color:var(--era-label-on-dark, var(--era-text));
+      text-align:center;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      opacity:0.95;
+      line-height:1.25;
+      white-space:normal;
+      word-wrap:break-word;
+      max-width:${W}px;
+      padding:2px 6px;
+      background:rgba(0,0,0,0.5);
+      border-radius:4px;
+      font-weight:600;
+      font-family:var(--era-body,'Inter',sans-serif);
+      pointer-events:none;
+    ">${marker.locationModernName.replace(/</g, '&lt;')}</div>` : ''}
   </div>`;
 
     locGroup.appendChild(fo);
 
     // --- Hover interaction: scale up + tooltip ---
-    locGroup.style.cursor = 'pointer';
+    // NOTE: cursor is intentionally NOT set inline here. Era-specific cursor
+    // URLs are applied via CSS (body[data-era="…"] [data-marker-location-portrait])
+    // so the parchment cursor stays consistent across map pins.
     locGroup.style.pointerEvents = 'none';
 
+    let locFocused = false;
     const showLocTip = (e: MouseEvent) => {
+      if (!locFocused) { lockFocus(); locFocused = true; }
       showPreview(e, {
         kind: 'location',
         title: marker.locationName ?? '',
@@ -229,6 +288,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         subtitle: marker.locationModernName ?? null,
         role: null,
         body: marker.locationDescription ?? null,
+        disputed: marker.locationDisputed ?? false,
       });
       // Scale up the location portrait inside locGroup
       const innerFo = locGroup.querySelector('foreignObject');
@@ -240,6 +300,7 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     };
     const moveLocTip = (e: MouseEvent) => movePreview(e);
     const hideLocTip = () => {
+      if (locFocused) { releaseFocus(); locFocused = false; }
       hidePreview();
       const innerFo = locGroup.querySelector('foreignObject');
       if (innerFo) (innerFo as SVGElement).style.transform = 'scale(1)';
@@ -257,9 +318,21 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
     const charGroup = document.createElementNS(ns, 'g');
     charGroup.setAttribute('data-marker-chars', '');
     charGroup.setAttribute('opacity', '0');
-    charPins.slice(0, 5).forEach((char, idx) => {
-      const cx = 18 + idx * 22;
-      const cy = 14;
+    const visiblePins = charPins.slice(0, 6);
+    /* Layout: single row for 1-3 chars, double-row honeycomb for 4-6 to
+       prevent overlap during hover (each avatar scales 1.4× → 22.4 SVG units;
+       with the old 22-unit spacing neighbouring pins would cover each other,
+       especially in event-heavy clusters like the Revelación era). */
+    const useTwoRows = visiblePins.length > 3;
+    const rowSize = useTwoRows ? Math.ceil(visiblePins.length / 2) : visiblePins.length;
+    const COL_STEP = 28;       // horizontal spacing between pins (size 16 + 12 gap)
+    const ROW_STEP = 24;       // vertical spacing between rows
+    const ROW_OFFSET_X = 14;   // half-step horizontal offset for second row
+    visiblePins.forEach((char, idx) => {
+      const row = useTwoRows ? Math.floor(idx / rowSize) : 0;
+      const col = idx % rowSize;
+      const cx = 16 + col * COL_STEP + (row === 1 ? ROW_OFFSET_X : 0);
+      const cy = 10 + row * ROW_STEP;
       const size = 16;
       const initials = char.name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
@@ -272,20 +345,32 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       const imgSrc = char.avatar ?? char.portrait ?? '';
       const safePortrait = imgSrc ? imgSrc.replace(/"/g, '&quot;') : '';
       const safeInitials = initials.replace(/'/g, "\\'");
-      fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:1px solid var(--era-primary);background:var(--era-surface);display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--era-primary);font-family:var(--era-display,'Cinzel',serif);">${
+      // Border colour encodes canonicity (canonical scripture vs. tradition vs.
+      // apocryphal vs. unknown). Falls back to "unknown" gray when missing.
+      const borderColor = CANONICITY_COLORS[char.canonicity ?? 'unknown'];
+      fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:1px solid ${borderColor};background:var(--era-surface);display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--era-primary);font-family:var(--era-display,'Cinzel',serif);">${
         imgSrc
           ? `<img src="${safePortrait}" alt="${char.name}" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.display='none';this.parentNode.textContent='${safeInitials}'" />`
           : initials
       }</div>`;
 
-      // tiny name below the thumbnail
+      // Name label — hidden by default, revealed on hover only. This prevents
+      // adjacent character pin names from stacking on top of each other when
+      // an event has several characters at the same svg position.
       const nameText = document.createElementNS(ns, 'text');
       nameText.setAttribute('x', `0`);
       nameText.setAttribute('y', `${size / 2 + 5}`);
       nameText.setAttribute('text-anchor', 'middle');
       nameText.setAttribute('font-size', '4');
       nameText.setAttribute('font-family', "var(--era-display, 'Cinzel', serif)");
-      nameText.setAttribute('fill', 'var(--era-text)');
+      // The character-pin name sits directly over the dark map "paper"
+      // (e.g. Revelación's #1a1f3d navy), so it needs the same light-on-dark
+      // fallback as the location captions — otherwise `--era-text` (dark
+      // brown in light-themed eras) becomes invisible.
+      nameText.setAttribute('fill', 'var(--era-label-on-dark, var(--era-text))');
+      nameText.setAttribute('opacity', '0');
+      nameText.setAttribute('data-char-pin-name', '');
+      nameText.setAttribute('pointer-events', 'none');
       nameText.textContent = char.name;
 
       const pinWrap = document.createElementNS(ns, 'g');
@@ -295,10 +380,14 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       pinWrap.appendChild(nameText);
 
       // --- Hover interaction: scale up + tooltip ---
-      pinWrap.style.cursor = 'pointer';
+      // NOTE: cursor handled by global.css era rules targeting
+      // [data-char-pin-wrap]; setting it inline here would override the
+      // era cursor URL.
       pinWrap.style.pointerEvents = 'none';  // default off — enabled only when marker is active
 
+      let pinFocused = false;
       const showCharTip = (e: MouseEvent) => {
+        if (!pinFocused) { lockFocus(); pinFocused = true; }
         showPreview(e, {
           kind: 'character',
           title: char.name,
@@ -306,18 +395,25 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
           subtitle: char.meaning ?? null,
           role: char.role ?? null,
           body: char.lore ?? char.significance ?? null,
+          canonicity: char.canonicity ?? 'unknown',
         });
-        // Scale up the pin
+        // Scale up the pin + reveal its name label
         pinWrap.style.transition = 'transform 200ms ease';
         const base = pinWrap.getAttribute('data-base-transform') ?? pinWrap.getAttribute('transform') ?? 'translate(0,0)';
         pinWrap.setAttribute('data-base-transform', base);
         pinWrap.setAttribute('transform', `${base} scale(1.4)`);
+        nameText.setAttribute('opacity', '1');
+        // Bring this pin to the top of SVG z-order so its scaled-up state
+        // (and the revealed name) doesn't sit behind a neighbour pin.
+        pinWrap.parentElement?.appendChild(pinWrap);
       };
       const moveCharTip = (e: MouseEvent) => movePreview(e);
       const hideCharTip = () => {
+        if (pinFocused) { releaseFocus(); pinFocused = false; }
         hidePreview();
         const base = pinWrap.getAttribute('data-base-transform');
         if (base) pinWrap.setAttribute('transform', base);
+        nameText.setAttribute('opacity', '0');
       };
 
       pinWrap.addEventListener('mouseenter', showCharTip);
@@ -333,6 +429,10 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
 }
 
 export function activateMarker(svgRoot: SVGSVGElement, id: string) {
+  // Switching markers must dismiss any lingering hover preview. mouseleave
+  // does NOT fire automatically when pointer-events flips to 'none' on the
+  // previously-hovered pin (which happens below), so we force-hide here.
+  hidePreview();
   // Hide all markers
   const all = svgRoot.querySelectorAll<SVGGElement>('[data-marker]');
   all.forEach((m) => {

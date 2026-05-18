@@ -5,11 +5,14 @@ import EventScene from '../../components/EventScene.astro';
 import ManuscriptMap from '../../components/ManuscriptMap.astro';
 import ModernMapLayer from '../../components/ModernMapLayer.astro';
 import MapToggleButton from '../../components/MapToggleButton.astro';
+import MapFullscreenButton from '../../components/MapFullscreenButton.astro';
+import FullscreenControls from '../../components/FullscreenControls.astro';
+import FullscreenTimeline from '../../components/FullscreenTimeline.astro';
+import EraClosingDialog from '../../components/EraClosingDialog.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
-import PlayButton from '../../components/PlayButton.astro';
-import VoiceSettings from '../../components/VoiceSettings.astro';
 import EventNavArrows from '../../components/EventNavArrows.astro';
+import { deriveCanonicity } from '../../lib/canonicity';
 
 export async function getStaticPaths() {
   const eras = await getCollection('eras');
@@ -104,7 +107,8 @@ const allMarkers = events.map((e) => {
       role: c.role,                                  // per-event role
       lore: c.lore ?? null,                          // event-specific narrative lore
       meaning: cd?.alternateNames?.meaning ?? null,  // name meaning
-      significance: cd?.significance ?? null,         // short bio
+      significance: cd?.significance ?? null,        // short bio
+      canonicity: deriveCanonicity(cd),              // canonical / traditional / apocryphal / unknown
     };
   });
   const fullLoc = locByIdMap.get(loc.id);
@@ -118,6 +122,7 @@ const allMarkers = events.map((e) => {
     locationName: loc.ancientName,
     locationDescription: fullLoc?.description ?? null,
     locationModernName: fullLoc?.modernName ?? null,
+    locationDisputed: fullLoc?.disputed ?? false,
     eventTitle: e.data.title,
     eventSubtitle: e.data.subtitle ?? null,
   };
@@ -128,17 +133,285 @@ const allMarkers = events.map((e) => {
   currentEraId={era.data.id}
   currentEraName={era.data.name}
 >
-  <style>main { padding-top: 7rem !important; }</style>
+  <style>
+    /* Sticky header stack: SiteNav (top:0) + TimelineNav (top:3rem).
+       Set as CSS vars so main padding, the map's fixed/sticky top, and
+       any scroll-margin-top use a single source of truth — no gap. */
+    :root {
+      /* SiteNav real height ≈ 56px due to the h-8 (32px) logo + py-3 (24px). */
+      --site-nav-h: 3.5rem;
+      --timeline-nav-h: 3.5rem;
+      --sticky-header-h: calc(var(--site-nav-h) + var(--timeline-nav-h));
+      /* Extra breathing room so the "— AÑO N —" line sits below the header,
+         not flush against it. Matches the JS scrollToElement offset. */
+      --scroll-anchor-offset: calc(var(--sticky-header-h) + 1rem);
+    }
+    main { padding-top: var(--sticky-header-h) !important; }
+    /* The year anchor — not the section top — is what we want under the
+       header on hash-based jumps. The section itself uses `flex justify-center`
+       inside min-h-[120vh], so its offsetTop is far above the visible content. */
+    .event-scene { scroll-margin-top: var(--scroll-anchor-offset); }
+    [data-event-year-anchor] { scroll-margin-top: var(--scroll-anchor-offset); }
+    /* In modern mode, container background must be transparent so the
+       maplibre basemap (z-0 inside the container) is visible behind the
+       SVG overlay. The manuscript background is provided by the SVG
+       paper layers in manuscript mode. NOTE: the container has an inline
+       `background: var(--era-bg)` which beats scoped CSS, so mapToggle.ts
+       also clears it via `el.style.background = 'transparent'`. This rule
+       is defense-in-depth for cases where JS hasn't run yet. */
+    .map-container[data-map-mode="modern"],
+    div.map-container[data-map-mode="modern"] {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    /* ─── Map fullscreen mode ──────────────────────────────────────────── */
+    /* Triggered by body.map-fullscreen (set by MapFullscreenButton). */
+    body.map-fullscreen .scenes,
+    body.map-fullscreen main > * { /* shouldn't be needed but defensive */ }
+    body.map-fullscreen .scenes {
+      display: none !important;
+    }
+    body.map-fullscreen .map-container {
+      position: fixed !important;
+      top: var(--site-nav-h) !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: calc(100vh - var(--site-nav-h)) !important;
+      z-index: 35;
+    }
+    /* In fullscreen the TimelineNav becomes a floating pill centred at the
+       top, auto-hiding on idle. The user can mousemove / click / tap to
+       bring it back. A scene change (dispatched from sceneController) also
+       resets the idle timer so the pill briefly reappears with each event.
+       NOTE: TimelineNav uses `fixed top-12 inset-x-0` Tailwind classes — we
+       need `!important` on every property here to outweigh that specificity. */
+    /* In fullscreen, hide the canonical TimelineNav entirely — we render a
+       dedicated `FullscreenTimeline` component instead (much simpler, no
+       specificity wars with the normal-mode Tailwind utilities). */
+    body.map-fullscreen [data-timeline-nav] { display: none !important; }
+    /* ── Fullscreen title (persistent step indicator) ────────────────────
+       The title lives OUTSIDE the narration panel so it can stay anchored
+       and visible regardless of idle/narration state. It's the user's
+       "you are here" beacon — should always read at a glance. */
+    /* Shared "reading column" geometry — title + narration panel are
+       sized and positioned off the same anchors. The title now sits at
+       the SAME row as the timeline pill (centered, +3.5rem), but
+       left-aligned, forming a [title | timeline | (play btn)] row. */
+    :root {
+      --fs-col-left: 1.5rem;
+      --fs-col-width: clamp(220px, 34vw, 400px);
+      --fs-title-top: calc(var(--site-nav-h) + 3.5rem);
+      /* Title is ~2.5rem tall at this size; panel sits below it with
+         a tiny breathing gap. */
+      --fs-panel-top: calc(var(--site-nav-h) + 7rem);
+    }
+
+    .fs-narration-title {
+      display: none;
+      position: fixed;
+      top: var(--fs-title-top);
+      left: var(--fs-col-left);
+      width: var(--fs-col-width);
+      /* Compact padding so the title fits at the same row as the
+         centered timeline pill without dwarfing it vertically. */
+      padding: 0.45rem 1rem;
+      font-family: var(--era-display, 'Cinzel', serif);
+      font-size: clamp(1rem, 1.7vw, 1.45rem);
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      color: var(--era-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: radial-gradient(
+        ellipse at center,
+        var(--era-bg) 0%,
+        var(--era-bg) 30%,
+        color-mix(in srgb, var(--era-bg) 70%, transparent) 60%,
+        transparent 100%
+      );
+      border: none;
+      box-shadow: none;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+      z-index: 54;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 480ms ease, transform 480ms ease;
+    }
+    body.map-fullscreen .fs-narration-title {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Floating narration panel — subtle, blends into the map. Half-height
+       max, soft blurred backdrop instead of a solid card so it reads as
+       text floating on top of the manuscript, not as a solid sidebar.
+       Shares column geometry with the title above (same left + width). */
+    .fs-narration-panel {
+      display: none;
+      position: fixed;
+      top: var(--fs-panel-top);
+      left: var(--fs-col-left);
+      width: var(--fs-col-width);
+      max-height: 50vh;
+      padding: 0.75rem 1.2rem;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--era-text);
+      /* Soft, semi-transparent — blurs the map below for legibility but
+         keeps it visible. */
+      background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.35) 70%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      border: none;
+      border-radius: 8px;
+      box-shadow: none;
+      backdrop-filter: blur(6px);
+      mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+      z-index: 54;
+      transition: opacity 360ms ease, transform 360ms ease;
+      opacity: 0;
+      transform: translateX(-10px);
+      pointer-events: none;
+      scrollbar-width: none;
+    }
+    .fs-narration-panel::-webkit-scrollbar { display: none; }
+    /* Word-by-word highlighting inside the fullscreen narration panel —
+       driven by `biblia:narration-boundary` events from NarratorButton.
+       Mirrors the in-place narrator styling so the look is consistent
+       across normal and fullscreen modes. */
+    .fs-narration-panel .word {
+      transition: background-color 120ms ease, color 120ms ease, opacity 120ms ease;
+      padding: 0 1px;
+      border-radius: 2px;
+    }
+    .fs-narration-panel .word.spoken-past { opacity: 0.45; }
+    .fs-narration-panel .word.spoken-current {
+      background: var(--era-accent);
+      color: var(--era-bg);
+      font-weight: 600;
+      opacity: 1;
+    }
+    /* Reading-progress timer — sits at the bottom of the narration panel,
+       a compact `[bar] 0:23 / 1:42` line so the listener can see how much
+       narration is left at a glance. Empty until the first tick fires. */
+    .fs-narration-duration {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.55rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid color-mix(in srgb, var(--era-primary) 18%, transparent);
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      color: color-mix(in srgb, var(--era-text) 80%, transparent);
+      font-variant-numeric: tabular-nums;
+    }
+    .fs-narration-duration.is-active { display: flex; }
+    .fs-narration-duration .bar {
+      flex: 1 1 auto;
+      height: 2px;
+      background: color-mix(in srgb, var(--era-primary) 20%, transparent);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .fs-narration-duration .bar > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--era-accent);
+      transition: width 150ms linear;
+    }
+    body.map-fullscreen .fs-narration-panel.is-active {
+      display: block;
+      opacity: 0.85;
+      transform: translateX(0);
+    }
+    body.map-fullscreen.map-fullscreen-idle .fs-narration-panel {
+      opacity: 0 !important;
+      transform: translateX(-10px) !important;
+    }
+    /* While narration is actively playing, the reading column must stay
+       visible — even after the idle-fade kicks in, even with no mouse
+       movement. NarratorButton's tick events keep `body[data-narrating="1"]`
+       set; once narration ends or pauses we revert to the idle behaviour. */
+    body.map-fullscreen[data-narrating="1"] .fs-narration-panel,
+    body.map-fullscreen.map-fullscreen-idle[data-narrating="1"] .fs-narration-panel {
+      display: block !important;
+      opacity: 1 !important;
+      transform: translateX(0) !important;
+    }
+    body.map-fullscreen[data-narrating="1"] .fs-narration-title {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+    body.map-fullscreen.map-fullscreen-idle [data-timeline-nav] {
+      opacity: 0 !important;
+      transform: translateX(-50%) translateY(-8px) !important;
+      pointer-events: none !important;
+    }
+    /* In fullscreen the MapFullscreenButton stays visible at the viewport's
+       top-right so the user can click its collapse icon to exit. Switch from
+       absolute (relative to .map-container, which sits below the site nav)
+       to fixed so it aligns with the FullscreenControls play button at
+       `top: 0.75rem`. The play button sits to its left at `right: 4rem`. */
+    body.map-fullscreen [data-map-fullscreen-toggle] {
+      position: fixed !important;
+      top: 0.75rem !important;
+      right: 0.75rem !important;
+      z-index: 60 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+    @media (min-width: 768px) {
+      body.map-fullscreen [data-map-fullscreen-toggle] {
+        top: 1rem !important;
+        right: 1rem !important;
+      }
+    }
+    /* Main padding is no longer needed for the narrative column. */
+    body.map-fullscreen main { padding-top: 0 !important; }
+  </style>
   <EraTheme era={era} />
   <TimelineNav events={events} eras={eras} allEras={allEras} currentEraId={era.data.id} />
+  <FullscreenControls />
 
   <div class="relative">
     <!-- Single map instance: fixed right on desktop, sticky top on mobile -->
-    <div class="map-container md:fixed md:top-[7rem] md:right-0 md:w-[55%] lg:md:w-[60%] md:h-[calc(100vh-7rem)] sticky top-[6rem] z-20 h-[40vh] w-full bg-bg border-b md:border-b-0 border-border">
+    <div class="map-container md:fixed md:right-0 md:w-[55%] lg:w-[60%] sticky z-20 h-[40vh] md:h-[calc(100vh-var(--sticky-header-h))] w-full" data-map-mode="manuscript" style="top: var(--sticky-header-h); background: var(--era-bg);">
       <ManuscriptMap />
       <ModernMapLayer />
       <MapToggleButton />
+      <MapFullscreenButton />
     </div>
+
+    {/* Persistent fullscreen title — always visible in fullscreen mode,
+        updates with each scene change so the user always knows which
+        step they're on. Lives OUTSIDE the narration panel so it doesn't
+        fade with idle/narration state. */}
+    <h2 class="fs-narration-title" data-fs-narration-title aria-live="polite">{events[0]?.data.title ?? ''}</h2>
+
+    {/* Floating narration text panel — only shown in fullscreen. */}
+    <aside class="fs-narration-panel" data-fs-narration-panel aria-hidden="true">
+      <div data-fs-narration-body>Empezá la reproducción para ver el texto.</div>
+      <div class="fs-narration-duration" data-fs-narration-duration aria-hidden="true"></div>
+    </aside>
+
+    {/* Dedicated fullscreen-only timeline pill (top-center). */}
+    <FullscreenTimeline events={events} />
+
+    {/* End-of-era parchment dialog — shown when play mode finishes. */}
+    <EraClosingDialog currentEraId={era.data.id} />
 
     <div class="scenes">
       {events.map((event) => <EventScene event={event} />)}
@@ -151,6 +424,7 @@ const allMarkers = events.map((e) => {
     import { initScrollytelling } from '../../lib/sceneController';
     import { renderMarker } from '../../lib/mapMarkers';
     import { registerMarkers } from '../../lib/mapToggle';
+    import { initNarrationFx } from '../../lib/narrationFx';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
@@ -163,16 +437,265 @@ const allMarkers = events.map((e) => {
         id: m.id, coords: m.coords, label: m.label,
       })));
       initScrollytelling(sceneConfigs);
+      if (svg) initNarrationFx(svg);
     }
   </script>
 
   <script>
-    import { initNarrators } from '../../lib/narratorWiring';
-    document.addEventListener('DOMContentLoaded', initNarrators);
-    if (document.readyState !== 'loading') initNarrators();
+    /* Auto-start play when arriving with ?play=1 (e.g. from the previous
+       era's closing parchment). We also enter fullscreen so the
+       transition between eras stays in the immersive mode. The query
+       param is then stripped so a refresh doesn't loop into autoplay. */
+    import { startPlay } from '../../lib/playMode';
+
+    (function autoStart() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('play') !== '1') return;
+        // Strip the flag so reloads don't re-trigger autoplay.
+        params.delete('play');
+        const qs = params.toString();
+        const cleanUrl = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+
+        const kickoff = () => {
+          // Ask the map to enter fullscreen for the new era too.
+          const fsToggle = document.querySelector<HTMLButtonElement>('[data-map-fullscreen-toggle]');
+          if (fsToggle && !document.body.classList.contains('map-fullscreen')) fsToggle.click();
+          // Small delay so the fullscreen layout settles before scrollTo.
+          setTimeout(() => { startPlay(); }, 600);
+        };
+        if (document.readyState === 'complete') kickoff();
+        else window.addEventListener('load', kickoff, { once: true });
+      } catch {}
+    })();
   </script>
 
-  <PlayButton />
-  <VoiceSettings />
+  {/* NarratorButton wires its own click handlers inline per instance. */}
+
+  <script>
+    /* Fullscreen narration panel: listen for scene changes and play start,
+       fetch the current event's narration text from its `<script data-narration-text>`
+       script tag, and show it in a side panel during fullscreen playback. */
+    const panel = document.querySelector<HTMLElement>('[data-fs-narration-panel]');
+    const titleEl = document.querySelector<HTMLElement>('[data-fs-narration-title]');
+    const bodyEl = document.querySelector<HTMLElement>('[data-fs-narration-body]');
+    const durEl = document.querySelector<HTMLElement>('[data-fs-narration-duration]');
+
+    function readNarrationFor(eventId: string): string {
+      const s = document.querySelector<HTMLScriptElement>(`script[data-narration-text][data-event-id="${eventId}"]`);
+      if (!s) return '';
+      try { return JSON.parse(s.textContent || '""'); } catch { return ''; }
+    }
+
+    function getEventTitle(eventId: string): string {
+      const marker = document.querySelector<HTMLElement>(`[data-timeline-marker="${eventId}"]`);
+      return marker?.dataset.markerTitle || eventId;
+    }
+
+    function fmtTime(s: number): string {
+      if (!isFinite(s) || s < 0) s = 0;
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function ensureDurMarkup() {
+      if (!durEl || durEl.dataset.built) return;
+      durEl.dataset.built = '1';
+      durEl.innerHTML = `
+        <span class="bar"><span data-fs-dur-fill></span></span>
+        <span data-fs-dur-text>0:00 / 0:00</span>
+      `;
+    }
+
+    /* Tokenize narration text into word + whitespace spans matching the
+       NarratorButton tokenizer exactly (same regex, same offsets). We use
+       data-start/data-end char offsets so the boundary handler can map
+       Web Speech `charIndex` (TTS) or audio-progress→char (audio mode)
+       to the active word the same way the in-place narrator does. */
+    function renderTokenized(target: HTMLElement, text: string) {
+      target.innerHTML = '';
+      if (!text) { target.textContent = 'Sin narración disponible.'; return; }
+      const re = /(\s+|[^\s]+)/g;
+      let m: RegExpExecArray | null;
+      const frag = document.createDocumentFragment();
+      while ((m = re.exec(text)) !== null) {
+        const tok = m[0];
+        const start = m.index;
+        const end = start + tok.length;
+        if (/^\s+$/.test(tok)) {
+          // Preserve whitespace; \n -> <br>, runs of spaces -> spaces.
+          const parts = tok.split('\n');
+          parts.forEach((p, i) => {
+            if (p) frag.appendChild(document.createTextNode(p));
+            if (i < parts.length - 1) frag.appendChild(document.createElement('br'));
+          });
+        } else {
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.setAttribute('data-word', '');
+          span.dataset.start = String(start);
+          span.dataset.end = String(end);
+          span.textContent = tok;
+          frag.appendChild(span);
+        }
+      }
+      target.appendChild(frag);
+    }
+
+    /* Active-word cache per panel — rebuilt on scene change so we don't
+       re-query the DOM for every boundary tick (those fire ~20–50/s). */
+    let panelWordEls: HTMLElement[] = [];
+
+    function resetPanelWords() {
+      for (const w of panelWordEls) w.classList.remove('spoken-past', 'spoken-current');
+    }
+
+    function highlightPanelAt(charIndex: number) {
+      if (panelWordEls.length === 0) return;
+      let activeIdx = -1;
+      for (let i = 0; i < panelWordEls.length; i++) {
+        const start = parseInt(panelWordEls[i].dataset.start || '0', 10);
+        const end = parseInt(panelWordEls[i].dataset.end || '0', 10);
+        if (charIndex >= start && charIndex < end) { activeIdx = i; break; }
+        if (start > charIndex) { activeIdx = Math.max(i - 1, 0); break; }
+      }
+      if (activeIdx === -1) activeIdx = panelWordEls.length - 1;
+      for (let i = 0; i < panelWordEls.length; i++) {
+        const w = panelWordEls[i];
+        w.classList.toggle('spoken-past', i < activeIdx);
+        w.classList.toggle('spoken-current', i === activeIdx);
+      }
+      const active = panelWordEls[activeIdx];
+      if (active && panel) {
+        // Only scroll inside the panel if the active word is near its
+        // edges (top/bottom 60px). Use the panel as the scroll context
+        // so we don't yank the whole page.
+        const pRect = panel.getBoundingClientRect();
+        const wRect = active.getBoundingClientRect();
+        const edge = 60;
+        if (wRect.top < pRect.top + edge || wRect.bottom > pRect.bottom - edge) {
+          active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    // De-duplicate consecutive scene-changed events for the SAME id —
+    // playMode dispatches scene-changed, then `request-activate` causes
+    // sceneController.activate() to dispatch it AGAIN with the same id.
+    // Without dedup the panel re-tokenizes twice and the duration
+    // display resets twice on every transition. We only suppress the
+    // duplicate when it lands within a short coalescing window so genuine
+    // re-visits (A → B → A) still rebuild fresh state.
+    let lastTokenizedFor: string | null = null;
+    let lastTokenizedAt = 0;
+    window.addEventListener('biblia:scene-changed', (e) => {
+      const id = (e as CustomEvent).detail?.eventId;
+      if (!id || !panel || !bodyEl || !titleEl) return;
+      const now = Date.now();
+      if (id === lastTokenizedFor && now - lastTokenizedAt < 750) return;
+      lastTokenizedFor = id;
+      lastTokenizedAt = now;
+      const text = readNarrationFor(id);
+      titleEl.textContent = getEventTitle(id);
+      renderTokenized(bodyEl, text);
+      panelWordEls = Array.from(bodyEl.querySelectorAll<HTMLElement>('[data-word]'));
+      resetPanelWords();
+      panel.classList.add('is-active');
+      // Reset duration display on scene change.
+      if (durEl) {
+        durEl.classList.remove('is-active');
+        const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
+        const txt = durEl.querySelector<HTMLElement>('[data-fs-dur-text]');
+        if (fill) fill.style.width = '0%';
+        if (txt) txt.textContent = '0:00 / 0:00';
+      }
+    });
+
+    /* Word-level highlight in the fullscreen panel — driven by the
+       `biblia:narration-boundary` event the NarratorButton dispatches
+       from both the audio `timeupdate` handler (via fracToCharIdx) and
+       the Web Speech `boundary` callback. Payload: { eventId, charIndex }. */
+    window.addEventListener('biblia:narration-boundary', (e) => {
+      const detail = (e as CustomEvent).detail || {};
+      if (typeof detail.charIndex !== 'number') return;
+      highlightPanelAt(detail.charIndex);
+    });
+
+    // Narration timer — fed by NarratorButton's tick events. Shows
+    // [───────●─] 0:23 / 1:42  so the listener sees what's left.
+    window.addEventListener('biblia:narration-tick', (e) => {
+      if (!durEl) return;
+      const { current, duration } = (e as CustomEvent).detail || {};
+      if (typeof duration !== 'number' || duration <= 0) return;
+      ensureDurMarkup();
+      durEl.classList.add('is-active');
+      const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
+      const txt = durEl.querySelector<HTMLElement>('[data-fs-dur-text]');
+      const cur = Math.max(0, Math.min(duration, current || 0));
+      const pct = (cur / duration) * 100;
+      if (fill) fill.style.width = `${pct.toFixed(1)}%`;
+      if (txt) txt.textContent = `${fmtTime(cur)} / ${fmtTime(duration)}`;
+    });
+
+    window.addEventListener('biblia:narration-ended', () => {
+      if (!durEl) return;
+      const fill = durEl.querySelector<HTMLElement>('[data-fs-dur-fill]');
+      if (fill) fill.style.width = '100%';
+    });
+
+    /* `body[data-narrating="1"]` flag — pins the reading column visible
+       while a voice is actively reading. Tick events come from
+       NarratorButton (audio `timeupdate` + TTS `onProgress`); we set the
+       flag on each tick and clear it after a short silence or on the
+       end-event. CSS rules higher up override the idle-fade while the
+       flag is set, so the panel + title stay readable hands-free. */
+    let narrTimeout: number | null = null;
+    function setNarrating(on: boolean) {
+      if (on) document.body.setAttribute('data-narrating', '1');
+      else document.body.removeAttribute('data-narrating');
+    }
+    function pinNarrating(graceMs: number) {
+      setNarrating(true);
+      if (narrTimeout) clearTimeout(narrTimeout);
+      narrTimeout = window.setTimeout(() => setNarrating(false), graceMs);
+    }
+    window.addEventListener('biblia:narration-tick', () => {
+      // 1.6s grace — slightly more than the audio `timeupdate` cadence
+      // (~250ms) and TTS onProgress cadence, so a single dropped tick
+      // doesn't flicker the panel off.
+      pinNarrating(1600);
+    });
+    // Keep the panel visible across the 3s "between events" gap during
+    // playMode. Without this, audio N ends → narration-ended clears the
+    // flag → 1500ms loop sleep + 1500ms playOne preamble → panel sits at
+    // its dim 0.85 (or fully hidden if idle), which the user perceives
+    // as the narration "restarting" / flickering between scenes. The new
+    // scene-changed event fires before audio N+1 starts; pinning for 4s
+    // bridges the gap to the first real tick of the next narration.
+    window.addEventListener('biblia:scene-changed', () => {
+      pinNarrating(4000);
+    });
+    window.addEventListener('biblia:narration-ended', () => {
+      // Don't immediately clear data-narrating — give scene-changed (which
+      // is about to fire as playMode advances) a chance to take over the
+      // pin. A short tail keeps the panel from blinking out between events.
+      pinNarrating(2000);
+    });
+  </script>
+
+  <script>
+    /* Narration cue dispatcher — listens to `biblia:narration-boundary`
+       and fires `biblia:cue` events when registered regexes match the
+       text window around the current charIndex. The map FX layer
+       (sibling module) is responsible for actually playing the
+       animations. */
+    import { initNarrationCues } from '../../lib/narrationCues';
+    import { loadEventCues } from '../../lib/cues';
+    initNarrationCues();
+    loadEventCues();
+  </script>
+
   <EventNavArrows />
 </BaseLayout>

@@ -1,5 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import PlayButton from './PlayButton.astro';
+import VoiceSettings from './VoiceSettings.astro';
 
 interface Props {
   events: CollectionEntry<'events'>[];
@@ -55,11 +57,11 @@ const prevEra = currentEraIdx > 0 ? sortedAllEras[currentEraIdx - 1] : null;
 const nextHref = nextEra ? `/era/${nextEra.data.id}` : '/';
 const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 ---
-<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-6 py-3 bg-bg shadow-lg" data-timeline-nav>
-  <div class="relative h-8 max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-8">
+<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-3 md:px-5 py-3 bg-bg shadow-lg" data-timeline-nav>
+  <div class="flex items-center gap-3 md:gap-4 h-8 w-full">
 
-    {/* Left slot: previous era */}
-    <div class="flex justify-start">
+    {/* LEFT cluster — era anterior, hugs natural width */}
+    <div class="shrink-0 flex items-center">
       {prevEra ? (
         <a
           href={prevHref}
@@ -81,8 +83,10 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       )}
     </div>
 
-    {/* Center: timeline bar with prev/next step arrows on the extremes */}
-    <div class="relative h-8 w-full md:w-[560px] lg:w-[780px] flex items-center gap-2">
+    {/* CENTER timeline — flex-1 takes ALL remaining space between left/right clusters.
+        `gap-3 md:gap-4` separates the step arrows from the timeline track so the
+        first and last dots breathe instead of touching the buttons. */}
+    <div class="flex-1 min-w-0 relative h-8 flex items-center gap-3 md:gap-4">
       <button
         type="button"
         class="step-arrow step-arrow-prev shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full border border-border bg-bg/80 hover:border-accent hover:text-accent text-primary flex items-center justify-center opacity-70 hover:opacity-100 transition-all"
@@ -92,43 +96,46 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <div class="relative h-8 flex-1">
-      <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
+      <div class="relative h-8 flex-1 min-w-0 px-2 md:px-3">
+        <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
 
-      {sortedEras.map((era) => {
-        const eraEvents = events.filter((e) => e.data.era === era.data.id);
-        if (eraEvents.length === 0) return null;
-        const eraMin = Math.min(...eraEvents.map((e) => e.data.biblicalYear));
-        const eraMax = Math.max(...eraEvents.map((e) => e.data.biblicalYear));
-        const leftPct = pct(eraMin);
-        const widthPct = Math.max(pct(eraMax) - pct(eraMin), 2);
-        return (
-          <div
-            class="absolute top-1/2 -translate-y-1/2 h-1 rounded"
-            style={`left: ${leftPct}%; width: ${widthPct}%; background: ${era.data.palette.primary}; opacity: 0.4`}
-            title={era.data.name}
-          />
-        );
-      })}
+        {sortedEras.map((era) => {
+          const eraEvents = events.filter((e) => e.data.era === era.data.id);
+          if (eraEvents.length === 0) return null;
+          const eraMin = Math.min(...eraEvents.map((e) => e.data.biblicalYear));
+          const eraMax = Math.max(...eraEvents.map((e) => e.data.biblicalYear));
+          const leftPct = pct(eraMin);
+          const widthPct = Math.max(pct(eraMax) - pct(eraMin), 2);
+          return (
+            <div
+              class="absolute top-1/2 -translate-y-1/2 h-1 rounded"
+              style={`left: ${leftPct}%; width: ${widthPct}%; background: ${era.data.palette.primary}; opacity: 0.4`}
+              title={era.data.name}
+            />
+          );
+        })}
 
-      {events.map((e) => {
-        const left = eventPositions.get(e.data.id) ?? pct(e.data.biblicalYear);
-        return (
-          <a
-            href={`#event-${e.data.id}`}
-            class="timeline-dot absolute top-1/2 -translate-x-1/2 -translate-y-1/2 group"
-            style={`left: ${left}%`}
-            data-timeline-marker={e.data.id}
-          >
-            <div class="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
-            <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-bg border border-border rounded px-2 py-1 z-10">
-              {e.data.title} <span class="opacity-50">· año {e.data.biblicalYear}</span>
-            </div>
-          </a>
-        );
-      })}
+        {events.map((e) => {
+          const left = eventPositions.get(e.data.id) ?? pct(e.data.biblicalYear);
+          return (
+            <a
+              href={`#event-${e.data.id}`}
+              class="timeline-dot absolute top-1/2 -translate-x-1/2 -translate-y-1/2 group"
+              style={`left: ${left}%`}
+              data-timeline-marker={e.data.id}
+              data-marker-title={e.data.title}
+              data-marker-year={e.data.biblicalYear}
+            >
+              <div class="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
+              {/* Year label sitting BELOW the dot. Tiny, low opacity, plain. */}
+              <div class="timeline-dot-year absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[9px] opacity-50 whitespace-nowrap pointer-events-none">
+                {e.data.biblicalYear}
+              </div>
+            </a>
+          );
+        })}
 
-      <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
+        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
       </div>
       <button
         type="button"
@@ -141,15 +148,28 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       </button>
     </div>
 
-    {/* Right slot: next era or empty */}
-    <div class="flex justify-end">
+    {/* RIGHT cluster — voice + restart + play, then era siguiente LAST.
+        Play sits before the next-era arrow so the user reproducer la era
+        BEFORE saltar a la siguiente, no al revés. */}
+    <div class="shrink-0 flex items-center gap-2 md:gap-3">
+      <VoiceSettings />
+      <button
+        type="button"
+        class="restart-btn inline-flex items-center justify-center w-7 h-7 rounded-full border border-primary bg-bg/70 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors text-[11px] shadow-sm"
+        data-timeline-restart
+        aria-label="Volver al inicio"
+        title="Volver al inicio de la era"
+      >
+        <span aria-hidden="true">⏮</span>
+      </button>
+      <PlayButton />
       {nextEra ? (
         <a
           href={nextHref}
           class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
           title={`Siguiente era: ${nextEra.data.name}`}
         >
-          <span class="hidden md:inline">{nextEra.data.name}</span>
+          <span class="hidden lg:inline">{nextEra.data.name}</span>
           <span>→</span>
         </a>
       ) : null}
@@ -157,15 +177,42 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   </div>
 </div>
 
+<style>
+  .restart-btn { display: none; }
+  body.map-fullscreen .restart-btn { display: inline-flex; }
+</style>
+
 <script>
-  import { isPlaying, jumpToEventId } from '../lib/playMode';
+  import { isPlaying, jumpToEventId, restartPlay } from '../lib/playMode';
+  import { scrollToElement } from '../lib/scrollOffset';
+
+  // Restart pill (only visible in fullscreen via CSS) — mirrors PlayButton UI.
+  const restartBtn = document.querySelector<HTMLButtonElement>('[data-timeline-restart]');
+  restartBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const playBtn = document.querySelector<HTMLElement>('[data-play-mode]');
+    const icon = playBtn?.querySelector<HTMLElement>('.play-icon');
+    const label = playBtn?.querySelector<HTMLElement>('.play-label');
+    const progress = playBtn?.querySelector<HTMLElement>('[data-play-progress]');
+    function setPlayingUI() {
+      progress?.classList.remove('hidden');
+      if (icon) { icon.textContent = '■'; icon.dataset.state = 'playing'; }
+      if (label) label.textContent = 'Detener';
+    }
+    function resetUI() {
+      if (icon) { icon.textContent = '▶'; icon.dataset.state = 'paused'; }
+      if (label) label.textContent = 'Reproducir era';
+      progress?.classList.add('hidden');
+    }
+    setPlayingUI();
+    restartPlay((i, total) => { if (progress) progress.textContent = `${i}/${total}`; }).finally(resetUI);
+  });
 
   function updateActive(eventId: string) {
-    const marker = document.querySelector(`[data-timeline-marker="${eventId}"]`);
+    const marker = document.querySelector<HTMLAnchorElement>(`[data-timeline-marker="${eventId}"]`);
     const active = document.querySelector<HTMLElement>('[data-timeline-active]');
     if (!marker || !active) return;
-    const left = (marker as HTMLElement).style.left;
-    active.style.left = left;
+    active.style.left = marker.style.left;
   }
 
   const scenes = document.querySelectorAll<HTMLElement>('[data-event-scene]');
@@ -179,6 +226,16 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
 
   scenes.forEach((s) => observer.observe(s));
+
+  // In fullscreen map mode, the .scenes container is `display:none`, so the
+  // IntersectionObserver above never fires and the active dot would freeze on
+  // whatever scene was last visible. Listen for the sceneController's
+  // `biblia:scene-changed` event (dispatched on every map scene activation)
+  // and sync the active dot from there too.
+  window.addEventListener('biblia:scene-changed', (e) => {
+    const id = (e as CustomEvent).detail?.eventId;
+    if (id) updateActive(id);
+  });
 
   // Step arrows: jump to prev/next event step from the timeline bar
   function findCurrentSceneIndex(): number {
@@ -208,7 +265,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       const progress = playBtn?.querySelector<HTMLElement>('[data-play-progress]');
       jumpToEventId(id, (i, total) => { if (progress) progress.textContent = `${i}/${total}`; });
     } else {
-      sceneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToElement(sceneEl);
     }
   }
 
@@ -219,7 +276,9 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
     });
   });
 
-  // When in play mode, clicking a timeline dot jumps the narration to that event
+  // When in play mode, clicking a timeline dot jumps the narration to that event.
+  // Otherwise, perform an offset-aware scroll so the year indicator stays visible
+  // below the sticky header stack.
   document.querySelectorAll<HTMLAnchorElement>('[data-timeline-marker]').forEach((dot) => {
     dot.addEventListener('click', (ev) => {
       const id = dot.getAttribute('data-timeline-marker');
@@ -231,8 +290,13 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         jumpToEventId(id, (i, total) => {
           if (progress) progress.textContent = `${i}/${total}`;
         });
+        return;
       }
-      // Otherwise let the anchor's default scroll behavior happen.
+      const target = document.getElementById(`event-${id}`);
+      if (target) {
+        ev.preventDefault();
+        scrollToElement(target);
+      }
     });
   });
 </script>

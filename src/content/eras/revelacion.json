@@ -6,15 +6,16 @@
   "yearRange": { "from": 4330, "to": 4392 },
   "gregorianRange": { "from": 570, "to": 632 },
   "palette": {
-    "bg": "#1a1f3d",
-    "bgGradient": "linear-gradient(180deg,#1a1f3d 0%,#28305a 100%)",
-    "surface": "#28305a",
-    "primary": "#f0c878",
-    "secondary": "#5868a8",
-    "accent": "#f8e0a8",
-    "text": "#d8d8f0",
-    "muted": "rgba(216,216,240,.55)",
-    "border": "rgba(240,200,120,.25)"
+    "bg": "#d8cdb8",
+    "bgGradient": "linear-gradient(180deg,#d8cdb8 0%,#c8bca4 60%,#b8ab90 100%)",
+    "surface": "#c8bca4",
+    "primary": "#8a6a3a",
+    "secondary": "#a8895a",
+    "accent": "#9a7840",
+    "text": "#2e2418",
+    "muted": "rgba(46,36,24,.55)",
+    "border": "rgba(138,106,58,.30)",
+    "labelOnDark": "#f0e2c0"
   },
   "typography": {
     "display": "'Cinzel', 'EB Garamond', serif",
@@ -51,5 +52,9 @@
   "transition": {
     "intoNext": "fade-to-light",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era de la Revelación. Según la tradición islámica, Mahoma, un mercader huérfano de La Meca, recibió a los cuarenta años la visita del ángel Gabriel en la cueva de Hira y comenzó a recitar los versos del Corán. Predicó un Dios único frente a los ídolos de su ciudad, sufrió el rechazo de los suyos y huyó a Medina en la migración llamada Hégira, que marca el año cero del calendario musulmán. Años más tarde regresó a La Meca en paz, predicó un último sermón en el monte Arafat y murió en brazos de su esposa.",
+    "nextPreview": "Y aquí termina el viaje. Tres tradiciones, la Torá del pueblo judío, la Biblia de los cristianos y el Corán de los musulmanes, han cruzado los mismos desiertos, han llamado al mismo Abraham padre y han imaginado al mismo Dios de maneras distintas. Comparten profetas, lugares y preguntas. Disienten en respuestas. Te invitamos a quedarte con esa conversación inacabada entre tres pueblos que aún hoy, contemplando el mismo cielo, intentan comprender lo que significa ser humano."
   }
 }

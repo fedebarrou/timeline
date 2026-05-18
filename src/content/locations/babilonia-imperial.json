@@ -2,6 +2,7 @@
   "id": "babilonia-imperial",
   "ancientName": "Babilonia (neo-babilónica)",
   "modernName": "Hilla, Irak",
+  "portrait": "/images/locations/babilonia-imperial.jpg",
   "region": "mesopotamia",
   "coords": [32.54, 44.42],
   "svgPosition": [635, 320],

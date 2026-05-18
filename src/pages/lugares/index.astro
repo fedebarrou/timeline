@@ -27,22 +27,6 @@ locations.forEach((l) => {
     <h1 class="font-display text-4xl mb-2">Lugares</h1>
     <p class="opacity-70 mb-6">Geografía sagrada: el escenario de los relatos.</p>
 
-    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
-      <p class="text-sm">
-        <span class="opacity-70">Mostrando solo</span>
-        <span class="font-display text-base mx-1">lugares</span>
-        <span class="opacity-70">de</span>
-        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
-      </p>
-      <button
-        type="button"
-        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
-        data-era-filter-clear
-      >
-        Ver todas las eras →
-      </button>
-    </div>
-
     {[...byRegion.entries()].map(([region, items]) => (
       <div class="mb-12" data-group-section data-section-era="">
         <h2 class="text-xs tracking-[0.3em] uppercase opacity-60 mb-5">{region}</h2>
@@ -133,13 +117,6 @@ locations.forEach((l) => {
       }
     });
   }
-
-  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
-  clearBtn?.addEventListener('click', () => {
-    localStorage.removeItem(STORAGE_ID);
-    localStorage.removeItem(STORAGE_NAME);
-    applyFilter();
-  });
 
   applyFilter();
   document.addEventListener('DOMContentLoaded', applyFilter);

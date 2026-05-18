@@ -2,6 +2,7 @@
   "id": "jerico",
   "ancientName": "Jericó",
   "modernName": "Tell es-Sultan, Cisjordania",
+  "portrait": "/images/locations/jerico.jpg",
   "region": "levante",
   "coords": [31.87, 35.44],
   "svgPosition": [583, 360],

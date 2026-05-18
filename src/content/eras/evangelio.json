@@ -51,5 +51,9 @@
   "transition": {
     "intoNext": "geometric-blue",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era del Evangelio. Según los relatos, María recibió el anuncio de que sería madre, José soñó con un ángel y unos sabios siguieron una estrella. Jesús, ya adulto, fue bautizado en el Jordán, tentado en el desierto y seguido por discípulos. La tradición cristiana afirma que sanó enfermos, multiplicó panes y enseñó en parábolas. Traicionado por uno de los suyos, fue crucificado bajo el gobernador romano Poncio Pilato, y sus seguidores afirmaron haberlo visto vivo al tercer día. Pedro y Pablo llevaron el mensaje hasta Roma, donde murieron por él.",
+    "nextPreview": "Lo que sigue es la era de la Revelación. En el desierto árabe, seis siglos más tarde, un hombre llamado Mahoma se retirará a meditar en la cueva de Hira. La tradición islámica narra que allí recibirá la visita del ángel Gabriel y comenzará a recitar los versos de un libro nuevo, el Corán. Huirá de La Meca a Medina, fundará una comunidad, regresará en paz a su ciudad natal y dejará una fe que hoy recitan más de mil millones de voces."
   }
 }

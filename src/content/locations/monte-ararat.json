@@ -2,11 +2,29 @@
   "id": "monte-ararat",
   "ancientName": "Ararat",
   "portrait": "/images/locations/monte-ararat.png",
-  "modernName": "Monte Ararat, Turquía oriental",
+  "modernName": "Monte Ararat, Turquía oriental (identificación tradicional)",
   "region": "anatolia",
-  "coords": [39.7, 44.3],
-  "svgPosition": [555, 195],
-  "disputed": false,
-  "description": "Cima donde reposó el arca de Noé tras el Diluvio según las tres tradiciones. Hoy es el pico más alto de Turquía.",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Monte Ararat (Ağrı Dağı), Turquía oriental",
+      "coords": [39.7, 44.3],
+      "svgPosition": [555, 195],
+      "support": "Identificación tradicional cristiana y armenia, asociada al pico volcánico más alto de Turquía (5.137 m). El nombre 'Ararat' aparece como una región (Urartu) en Génesis 8:4, no como un pico concreto; la asociación con Ağrı Dağı se consolida en la tradición medieval."
+    },
+    {
+      "name": "Cudi Dağı (Jabal Judi), sureste de Turquía",
+      "coords": [37.37, 42.41],
+      "svgPosition": [578, 213],
+      "support": "Identificación de la tradición islámica (Corán 11:44 menciona explícitamente al-Jūdī) y de fuentes cristianas siríacas tempranas (Efrén el Sirio, Beroso). Restos arqueológicos y peregrinaciones medievales atestiguan culto al lugar del arca en esta montaña."
+    },
+    {
+      "name": "Montañas de Urartu (cordillera del lago Van)",
+      "coords": [38.5, 43.0],
+      "svgPosition": [565, 205],
+      "support": "Lectura académica que entiende 'montes de Ararat' (hebreo: hārê ʾărārāṭ) como referencia genérica a la cordillera del reino de Urartu (siglos IX-VII a.C.), sin señalar un pico específico."
+    }
+  ],
+  "description": "Cima donde reposó el arca de Noé tras el Diluvio. Génesis 8:4 habla de 'montes de Ararat' en plural y región, no de un pico concreto. La identificación geográfica precisa es disputada entre la tradición cristiana (Ağrı Dağı), la tradición islámica (al-Jūdī / Cudi Dağı) y la lectura académica que sitúa el evento en la antigua región de Urartu.",
   "events": ["diluvio", "alianza-arcoiris"]
 }

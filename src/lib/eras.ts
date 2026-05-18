@@ -21,6 +21,10 @@ export function eraToCssVars(era: Era['data']): string {
     `--era-text: ${p.text};`,
     `--era-muted: ${p.muted};`,
     `--era-border: ${p.border};`,
+    // Text colour for captions painted OVER a dark mask (e.g. map thumbnail
+    // labels). Defaults to `primary`, which only works when `primary` itself
+    // is light; light-themed eras (Revelación) override via `palette.labelOnDark`.
+    `--era-label-on-dark: ${p.labelOnDark ?? p.primary};`,
     `--era-display: ${t.display};`,
     `--era-body: ${t.body};`,
     `--era-ui: ${t.ui};`,

@@ -2,11 +2,29 @@
   "id": "tierra-pre-diluviana",
   "portrait": "/images/locations/tierra-pre-diluviana.png",
   "ancientName": "Tierra antediluviana",
-  "modernName": "Región del Creciente Fértil — Mesopotamia",
+  "modernName": "Región mítica previa al Diluvio — sin localización histórica verificable",
   "region": "mesopotamia",
-  "coords": [33.0, 44.0],
-  "svgPosition": [620, 320],
-  "disputed": false,
-  "description": "La región donde vivió la humanidad descendiente de Set y Caín antes del Diluvio. Las tradiciones sitúan a la mayoría de los patriarcas antediluvianos en torno al Creciente Fértil mesopotámico.",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Creciente Fértil mesopotámico (lectura tradicional)",
+      "coords": [33.0, 44.0],
+      "svgPosition": [620, 320],
+      "support": "Las genealogías de Génesis 4-5 y los relatos paralelos de Beroso y la lista de reyes sumeria sitúan a los patriarcas antediluvianos en torno al Tigris y el Éufrates. La tradición rabínica y patrística asume que la humanidad pre-diluviana vivió cerca del Edén, en el sur de Mesopotamia."
+    },
+    {
+      "name": "Mundo antediluviano global (lectura literalista universal)",
+      "coords": [0.0, 0.0],
+      "svgPosition": [600, 300],
+      "support": "Lecturas literalistas modernas, especialmente protestantes evangélicas y mormonas, entienden que el Diluvio cubrió toda la tierra habitada y por tanto la humanidad antediluviana se extendía por todo el globo, sin un centro geográfico identificable."
+    },
+    {
+      "name": "Geografía mítica no histórica (lectura académica)",
+      "coords": [33.0, 44.0],
+      "svgPosition": [620, 320],
+      "support": "La crítica académica considera el relato antediluviano como prehistoria mítica heredada de tradiciones mesopotámicas (Atrahasis, Gilgamesh): no corresponde a una geografía histórica verificable sino a un horizonte simbólico previo al tiempo histórico."
+    }
+  ],
+  "description": "La región donde, según los relatos, vivió la humanidad descendiente de Set y Caín antes del Diluvio. Su localización es por definición disputada: la tradición la sitúa en torno al Creciente Fértil mesopotámico, las lecturas literalistas la entienden como mundo global, y la crítica académica la considera una geografía mítica sin correlato histórico verificable.",
   "events": ["nacimiento-enoc", "asuncion-enoc", "nacimiento-noe", "orden-construir-arca", "diluvio"]
 }

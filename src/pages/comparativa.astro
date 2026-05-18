@@ -5,78 +5,104 @@ import { getCollection } from 'astro:content';
 const events = (await getCollection('events'))
   .filter((e) => e.data.comparative.divergent)
   .sort((a, b) => a.data.order - b.data.order);
+
+const traditions = [
+  { key: 'tora', label: '📜 Torá' },
+  { key: 'biblia', label: '✝ Biblia' },
+  { key: 'coran', label: '☪ Corán' },
+] as const;
 ---
 <BaseLayout title="Comparativa entre tradiciones">
   <section class="px-6 py-16 max-w-6xl mx-auto">
     <h1 class="font-display text-4xl mb-2">Comparativa</h1>
     <p class="opacity-70 mb-6">Eventos donde la Torá, la Biblia y el Corán difieren.</p>
 
-    <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
-      <p class="text-sm">
-        <span class="opacity-70">Mostrando solo</span>
-        <span class="font-display text-base mx-1">eventos divergentes</span>
-        <span class="opacity-70">de</span>
-        <span class="font-display text-base text-accent ml-1" data-era-filter-label>Era</span>
-      </p>
-      <button
-        type="button"
-        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
-        data-era-filter-clear
-      >
-        Ver todas las eras →
-      </button>
+    <div class="hidden md:grid grid-cols-[1.2fr_repeat(3,1fr)] gap-px text-sm uppercase tracking-wider opacity-60 mb-2">
+      <div class="p-3">Evento</div>
+      {traditions.map((t) => <div class="p-3">{t.label}</div>)}
     </div>
 
-    <table class="w-full text-sm">
-      <thead class="text-xs uppercase tracking-wider opacity-60">
-        <tr>
-          <th class="text-left p-3">Evento</th>
-          <th class="text-left p-3 w-1/4">📜 Torá</th>
-          <th class="text-left p-3 w-1/4">✝ Biblia</th>
-          <th class="text-left p-3 w-1/4">☪ Corán</th>
-        </tr>
-      </thead>
-      <tbody>
-        {events.map((e) => (
-          <tr class="border-t border-border" data-era={e.data.era}>
-            <td class="p-3 align-top">
-              <a href={`/timeline#${e.data.id}`} class="font-display hover:text-accent">{e.data.title}</a>
-              <p class="text-xs opacity-60 mt-1">Año {e.data.biblicalYear}</p>
-            </td>
-            <td class="p-3 align-top opacity-90">{e.data.comparative.tora?.summary ?? '—'}</td>
-            <td class="p-3 align-top opacity-90">{e.data.comparative.biblia?.summary ?? '—'}</td>
-            <td class="p-3 align-top opacity-90">{e.data.comparative.coran?.summary ?? '—'}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div class="flex flex-col gap-4">
+      {events.map((e) => (
+        <article
+          class="comparative-row grid gap-4 md:gap-px border-t border-border pt-4 md:pt-0"
+          data-era={e.data.era}
+        >
+          <header class="md:p-3 md:align-top">
+            <a href={`/timeline#${e.data.id}`} class="font-display text-lg hover:text-accent">{e.data.title}</a>
+            <p class="text-sm opacity-60 mt-1">Año {e.data.biblicalYear}</p>
+          </header>
+
+          {traditions.map((t) => {
+            const cell = e.data.comparative[t.key];
+            if (!cell) {
+              return (
+                <div class="md:p-3 md:align-top opacity-50" data-tradition={t.key}>
+                  <div class="md:hidden text-xs uppercase tracking-wider opacity-60 mb-1">{t.label}</div>
+                  <p>—</p>
+                </div>
+              );
+            }
+            return (
+              <div class="md:p-3 md:align-top space-y-2" data-tradition={t.key}>
+                <div class="md:hidden text-xs uppercase tracking-wider opacity-60">{t.label}</div>
+                <p class="opacity-90 leading-relaxed">{cell.summary}</p>
+                {cell.citation && (
+                  <span class="inline-block text-xs px-2 py-0.5 rounded-full border border-border opacity-70 font-mono">
+                    {cell.citation}
+                  </span>
+                )}
+                {cell.keyDifferences && cell.keyDifferences.length > 0 && (
+                  <div class="mt-2">
+                    <h4 class="text-xs uppercase tracking-wider opacity-60 mb-1">Diferencias</h4>
+                    <ul class="list-disc list-outside pl-4 space-y-0.5 text-sm opacity-80">
+                      {cell.keyDifferences.map((d) => <li>{d}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {cell.fullText && (
+                  <details class="mt-2 text-sm">
+                    <summary class="cursor-pointer opacity-70 hover:opacity-100 hover:text-accent transition-opacity select-none">
+                      Texto completo
+                    </summary>
+                    <p class="mt-2 pl-2 border-l-2 border-border opacity-80 leading-relaxed whitespace-pre-line">
+                      {cell.fullText}
+                    </p>
+                  </details>
+                )}
+              </div>
+            );
+          })}
+        </article>
+      ))}
+    </div>
   </section>
 </BaseLayout>
 
+<style>
+  .comparative-row {
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 768px) {
+    .comparative-row {
+      grid-template-columns: 1.2fr repeat(3, 1fr);
+    }
+  }
+</style>
+
 <script>
   const STORAGE_ID = 'biblia-last-era-id';
-  const STORAGE_NAME = 'biblia-last-era-name';
 
   function applyFilter() {
     const eraId = localStorage.getItem(STORAGE_ID);
-    const eraName = localStorage.getItem(STORAGE_NAME);
-    const banner = document.querySelector<HTMLElement>('[data-era-filter-banner]');
-    const eraLabelEl = document.querySelector<HTMLElement>('[data-era-filter-label]');
     const allItems = document.querySelectorAll<HTMLElement>('[data-era], [data-eras]');
 
     if (!eraId) {
-      // Show everything
-      banner?.classList.add('hidden');
       allItems.forEach((el) => el.classList.remove('hidden'));
       document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((s) => s.classList.remove('hidden'));
       return;
     }
 
-    // Show banner
-    if (banner) banner.classList.remove('hidden');
-    if (eraLabelEl && eraName) eraLabelEl.textContent = eraName;
-
-    // Hide items not belonging to current era
     allItems.forEach((el) => {
       const itemEra = el.getAttribute('data-era');
       const itemEras = el.getAttribute('data-eras');
@@ -86,7 +112,6 @@ const events = (await getCollection('events'))
       el.classList.toggle('hidden', !matches);
     });
 
-    // Hide group sections that have no visible items
     document.querySelectorAll<HTMLElement>('[data-group-section]').forEach((section) => {
       const sectionEra = section.getAttribute('data-section-era');
       if (sectionEra && sectionEra !== eraId) {
@@ -96,13 +121,6 @@ const events = (await getCollection('events'))
       }
     });
   }
-
-  const clearBtn = document.querySelector<HTMLButtonElement>('[data-era-filter-clear]');
-  clearBtn?.addEventListener('click', () => {
-    localStorage.removeItem(STORAGE_ID);
-    localStorage.removeItem(STORAGE_NAME);
-    applyFilter();
-  });
 
   applyFilter();
   document.addEventListener('DOMContentLoaded', applyFilter);

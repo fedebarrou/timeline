@@ -26,12 +26,26 @@
 
 <script>
   import { isPlaying, jumpToEventId } from '../lib/playMode';
+  import { scrollToElement } from '../lib/scrollOffset';
 
   function getScenes(): HTMLElement[] {
     return Array.from(document.querySelectorAll<HTMLElement>('[data-event-scene]'));
   }
 
+  // In fullscreen, viewport-based detection is unreliable because the
+  // .scenes are display:none and scroll position is frozen. Track the
+  // active event id via `biblia:scene-changed` events instead.
+  let activeEventId: string | null = null;
+  window.addEventListener('biblia:scene-changed', (e: Event) => {
+    const id = (e as CustomEvent<{ eventId?: string }>).detail?.eventId;
+    if (id) activeEventId = id;
+  });
+
   function findActiveIndex(scenes: HTMLElement[]): number {
+    if (document.body.classList.contains('map-fullscreen') && activeEventId) {
+      const idx = scenes.findIndex((s) => s.dataset.eventId === activeEventId);
+      if (idx !== -1) return idx;
+    }
     const viewportCenter = window.scrollY + window.innerHeight / 2;
     let best = 0;
     let bestDist = Infinity;
@@ -60,8 +74,14 @@
       jumpToEventId(targetId, (i, total) => {
         if (progress) progress.textContent = `${i}/${total}`;
       });
+    } else if (document.body.classList.contains('map-fullscreen') && targetId) {
+      // In fullscreen, the `.scenes` are display:none and ScrollTriggers
+      // are paused — scrolling does nothing. Dispatch an explicit
+      // request-activate so the map marker / camera / choreography move.
+      window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: targetId } }));
+      window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: targetId } }));
     } else {
-      targetScene.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToElement(targetScene);
     }
   }
 

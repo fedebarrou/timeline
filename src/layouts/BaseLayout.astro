@@ -1,6 +1,7 @@
 ---
 import SiteNav from '../components/SiteNav.astro';
 import EraTheme from '../components/EraTheme.astro';
+import FullscreenSandTrail from '../components/FullscreenSandTrail.astro';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -26,6 +27,12 @@ const allEras = await getCollection('eras');
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content="Federico Barroumeres" />
+    <meta name="copyright" content="© 2026 Federico Barroumeres. All Rights Reserved." />
+    <meta name="robots" content="index, follow, noai, noimageai" />
+    <link rel="author" href="mailto:fbarroumeres@gmail.com" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -33,6 +40,7 @@ const allEras = await getCollection('eras');
   <body data-era={bodyEra}>
     {allEras.map((era) => <EraTheme era={era} />)}
     <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
+    <FullscreenSandTrail />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
   </body>

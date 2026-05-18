@@ -19,14 +19,14 @@ const hasAny = [
 ---
 {hasAny && (
   <details class="deepdive mt-10 border border-border rounded-lg p-5 bg-surface/30">
-    <summary class="cursor-pointer text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100">
+    <summary class="cursor-pointer text-sm tracking-[0.3em] uppercase opacity-70 hover:opacity-100">
       Profundizá en este evento
     </summary>
 
-    <div class="mt-5 space-y-5 text-sm">
+    <div class="mt-5 space-y-5 text-base">
       {deepDive.originalTexts.length > 0 && (
         <div>
-          <h4 class="text-xs tracking-wider opacity-60 mb-2">📖 LEÉ EL TEXTO ORIGINAL</h4>
+          <h4 class="text-sm tracking-wider opacity-60 mb-2">📖 LEÉ EL TEXTO ORIGINAL</h4>
           <ul class="space-y-1">
             {deepDive.originalTexts.map((l) => (
               <li>→ <a href={l.url} target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">{l.label}</a></li>
@@ -36,7 +36,7 @@ const hasAny = [
       )}
       {deepDive.videos.length > 0 && (
         <div>
-          <h4 class="text-xs tracking-wider opacity-60 mb-2">🎥 VIDEOS</h4>
+          <h4 class="text-sm tracking-wider opacity-60 mb-2">🎥 VIDEOS</h4>
           <ul class="space-y-1">
             {deepDive.videos.map((v) => (
               <li>→ <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">"{v.label ?? v.creator}" · {v.creator} ({v.duration})</a></li>
@@ -46,7 +46,7 @@ const hasAny = [
       )}
       {deepDive.academic.length > 0 && (
         <div>
-          <h4 class="text-xs tracking-wider opacity-60 mb-2">🔍 MATERIAL ACADÉMICO</h4>
+          <h4 class="text-sm tracking-wider opacity-60 mb-2">🔍 MATERIAL ACADÉMICO</h4>
           <ul class="space-y-1">
             {deepDive.academic.map((l) => (
               <li>→ <a href={l.url} target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">{l.label}</a></li>
@@ -56,7 +56,7 @@ const hasAny = [
       )}
       {deepDive.archaeology.length > 0 && (
         <div>
-          <h4 class="text-xs tracking-wider opacity-60 mb-2">🏛 ARQUEOLOGÍA Y MUSEOS</h4>
+          <h4 class="text-sm tracking-wider opacity-60 mb-2">🏛 ARQUEOLOGÍA Y MUSEOS</h4>
           <ul class="space-y-1">
             {deepDive.archaeology.map((l) => (
               <li>→ <a href={l.url} target="_blank" rel="noopener" class="underline decoration-dotted hover:text-accent">{l.label}</a></li>

@@ -1,0 +1,103 @@
+---
+/**
+ * Toggles a body-level `map-fullscreen` class. When on:
+ *  - The narrative column hides.
+ *  - The map container expands to fill the viewport (below the SiteNav).
+ *  - The TimelineNav auto-fades after a few seconds of mouse/touch idle.
+ *  - The Play/Voice cluster + map controls stay reachable as floating items.
+ */
+---
+<button
+  type="button"
+  class="map-fullscreen-btn absolute z-[60] top-3 md:top-4 right-3 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center justify-center shadow-xl"
+  data-map-fullscreen-toggle
+  aria-label="Ver mapa en pantalla completa"
+  title="Pantalla completa del mapa"
+>
+  {/* Two-state icon: expand (default) / collapse (when fullscreen). */}
+  <svg class="icon-expand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <polyline points="9 21 3 21 3 15"></polyline>
+    <line x1="21" y1="3" x2="14" y2="10"></line>
+    <line x1="3" y1="21" x2="10" y2="14"></line>
+  </svg>
+  <svg class="icon-collapse hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polyline points="4 14 10 14 10 20"></polyline>
+    <polyline points="20 10 14 10 14 4"></polyline>
+    <line x1="14" y1="10" x2="21" y2="3"></line>
+    <line x1="3" y1="21" x2="10" y2="14"></line>
+  </svg>
+</button>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-map-fullscreen-toggle]');
+  const iconExpand   = btn?.querySelector<HTMLElement>('.icon-expand');
+  const iconCollapse = btn?.querySelector<HTMLElement>('.icon-collapse');
+  if (btn && iconExpand && iconCollapse) {
+    let idleTimer: number | null = null;
+    const IDLE_MS = 2800;
+
+    function activateFullscreen() {
+      document.body.classList.add('map-fullscreen');
+      iconExpand!.classList.add('hidden');
+      iconCollapse!.classList.remove('hidden');
+      btn!.setAttribute('aria-label', 'Salir de pantalla completa');
+      btn!.setAttribute('title', 'Salir de pantalla completa');
+      bindIdle();
+      // Hide the toggle itself in fullscreen — the "Volver" pill replaces it.
+      btn!.style.display = 'none';
+      // Force a quick window resize event so any animated component (canvas,
+      // maplibre via toggleMap, etc.) recomputes its dimensions.
+      window.dispatchEvent(new Event('resize'));
+    }
+    function deactivateFullscreen() {
+      document.body.classList.remove('map-fullscreen', 'map-fullscreen-idle');
+      iconExpand!.classList.remove('hidden');
+      iconCollapse!.classList.add('hidden');
+      btn!.setAttribute('aria-label', 'Ver mapa en pantalla completa');
+      btn!.setAttribute('title', 'Pantalla completa del mapa');
+      unbindIdle();
+      // Restore the toggle visibility when exiting fullscreen.
+      btn!.style.display = '';
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    function resetIdle() {
+      document.body.classList.remove('map-fullscreen-idle');
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(() => {
+        document.body.classList.add('map-fullscreen-idle');
+      }, IDLE_MS);
+    }
+    function bindIdle() {
+      window.addEventListener('mousemove', resetIdle, { passive: true });
+      window.addEventListener('touchstart', resetIdle, { passive: true });
+      window.addEventListener('click', resetIdle, { passive: true });
+      window.addEventListener('keydown', resetIdle, { passive: true });
+      window.addEventListener('biblia:scene-changed', resetIdle as EventListener);
+      resetIdle();
+    }
+    function unbindIdle() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = null;
+      window.removeEventListener('mousemove', resetIdle);
+      window.removeEventListener('touchstart', resetIdle);
+      window.removeEventListener('click', resetIdle);
+      window.removeEventListener('keydown', resetIdle);
+      window.removeEventListener('biblia:scene-changed', resetIdle as EventListener);
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (document.body.classList.contains('map-fullscreen')) deactivateFullscreen();
+      else activateFullscreen();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.body.classList.contains('map-fullscreen')) {
+        deactivateFullscreen();
+      }
+      if (e.key === 'f' || e.key === 'F') btn!.click();
+    });
+  }
+</script>

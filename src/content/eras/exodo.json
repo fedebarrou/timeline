@@ -6,15 +6,15 @@
   "yearRange": { "from": 2400, "to": 2600 },
   "gregorianRange": { "from": -1360, "to": -1160 },
   "palette": {
-    "bg": "#0d2838",
-    "bgGradient": "linear-gradient(180deg,#0d2838 0%,#143a4d 100%)",
-    "surface": "#143a4d",
-    "primary": "#7ad0e0",
-    "secondary": "#3a8090",
-    "accent": "#f0c858",
-    "text": "#c8e0e8",
-    "muted": "rgba(200,224,232,.55)",
-    "border": "rgba(122,208,224,.25)"
+    "bg": "#0c1622",
+    "bgGradient": "linear-gradient(180deg,#0c1622 0%,#162638 60%,#1f3450 100%)",
+    "surface": "#162638",
+    "primary": "#5a8098",
+    "secondary": "#3d5a70",
+    "accent": "#8aa8b8",
+    "text": "#cdd8e0",
+    "muted": "rgba(205,216,224,.50)",
+    "border": "rgba(90,128,152,.22)"
   },
   "typography": {
     "display": "'Cinzel', serif",
@@ -51,5 +51,9 @@
   "transition": {
     "intoNext": "royal-purple-rise",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era del Éxodo. Según los relatos, Moisés escuchó una voz desde una zarza ardiente, desafió al faraón con plagas, abrió las aguas del mar y guió a su pueblo por el desierto. En el monte Sinaí recibió las leyes que regirían a Israel, vio cómo el pueblo adoraba un becerro de oro, hizo brotar agua de una roca, y murió contemplando, desde lejos, la tierra que no llegaría a pisar. Después, Josué cruzó el Jordán, y las murallas de Jericó, dice la tradición, cayeron al sonido de las trompetas.",
+    "nextPreview": "Lo que sigue es la era de Reinos y Exilio. El pueblo pasa de ser guiado por jueces a ser gobernado por reyes: Saúl, David y Salomón levantarán un trono y un gran templo en Jerusalén. Profetas advertirán sobre la corrupción, la nación se partirá en dos, y el imperio de Babilonia arrastrará al pueblo lejos de su tierra. En los ríos del exilio, lejos de casa, aprenderán a cantar de nuevo."
   }
 }

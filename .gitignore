@@ -26,6 +26,7 @@ pnpm-debug.log*
 
 # superpowers / local tooling
 .superpowers/
+.agent-data/
 
 # deployment
 .vercel

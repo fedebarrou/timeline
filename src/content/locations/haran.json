@@ -2,6 +2,7 @@
   "id": "haran",
   "ancientName": "Harán",
   "modernName": "Harran, Turquía",
+  "portrait": "/images/locations/haran.jpg",
   "region": "anatolia",
   "coords": [36.86, 39.03],
   "svgPosition": [600, 245],

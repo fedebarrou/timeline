@@ -1,0 +1,415 @@
+---
+/**
+ * Parchment dialog shown when the era's play mode finishes naturally.
+ *
+ * Listens for `biblia:era-ended` (dispatched by playMode.ts) and reveals
+ * a centered parchment that:
+ *  - recaps the era (`closing.summary` or fallback from tagline)
+ *  - teases the next era (`closing.nextPreview` or fallback)
+ *  - reads the recap aloud via TTS so the user can stay heads-down
+ *  - shows a 10s countdown button → auto-navigates to `/era/{next}?play=1`
+ *
+ * The component is rendered once per era page. Its content is hydrated
+ * from a JSON blob (so we can pull from the eras collection at build time).
+ */
+import { getCollection } from 'astro:content';
+
+interface Props {
+  currentEraId: string;
+}
+const { currentEraId } = Astro.props;
+
+const eras = (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order);
+const current = eras.find((e) => e.data.id === currentEraId);
+const idx = eras.findIndex((e) => e.data.id === currentEraId);
+const next = idx >= 0 && idx < eras.length - 1 ? eras[idx + 1] : null;
+
+const currentName = current?.data.name ?? '';
+const nextName = next?.data.name ?? '';
+const nextId = next?.data.id ?? '';
+
+const summary = current?.data.closing?.summary
+  ?? `Así concluye la era ${currentName}. ${current?.data.tagline ?? ''}.`;
+const nextPreview = current?.data.closing?.nextPreview
+  ?? (next
+    ? `Lo que sigue es la era ${nextName}: ${next.data.tagline}.`
+    : 'Has llegado al final del recorrido. Gracias por acompañarnos.');
+
+// One narration string with a brief pause between summary and preview.
+const narrationText = `${summary} ${nextPreview}`;
+---
+<div
+  class="era-closing"
+  data-era-closing
+  data-current-era={currentEraId}
+  data-next-era={nextId}
+  data-next-name={nextName}
+  aria-hidden="true"
+>
+  <div class="era-closing-backdrop" data-era-closing-backdrop></div>
+  <article class="era-closing-parchment" role="dialog" aria-modal="true" aria-labelledby="era-closing-title">
+    <header class="era-closing-header">
+      <p class="era-closing-eyebrow">Fin de era</p>
+      <h2 class="era-closing-title" id="era-closing-title">{currentName}</h2>
+    </header>
+
+    <div class="era-closing-body">
+      <p data-era-closing-summary>{summary}</p>
+      <div class="era-closing-divider" aria-hidden="true">
+        <svg viewBox="0 0 100 8" preserveAspectRatio="none">
+          <path d="M0 4 Q 25 0 50 4 T 100 4" fill="none" stroke="currentColor" stroke-width="0.6"/>
+        </svg>
+      </div>
+      <p class="era-closing-next-eyebrow">A continuación</p>
+      <h3 class="era-closing-next-title">{nextName || '—'}</h3>
+      <p data-era-closing-preview>{nextPreview}</p>
+    </div>
+
+    <footer class="era-closing-footer">
+      {next ? (
+        <button
+          type="button"
+          class="era-closing-cta"
+          data-era-closing-cta
+          aria-label={`Continuar a la era ${nextName}`}
+        >
+          <span class="era-closing-cta-label">Continuar a {nextName}</span>
+          <span class="era-closing-cta-countdown" data-era-closing-countdown>10</span>
+          <span class="era-closing-cta-ring" aria-hidden="true">
+            <svg viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="16" class="ring-track"/>
+              <circle cx="18" cy="18" r="16" class="ring-fill" data-era-closing-ring/>
+            </svg>
+          </span>
+        </button>
+      ) : (
+        <a href="/" class="era-closing-cta era-closing-cta--end">
+          <span class="era-closing-cta-label">Volver al inicio</span>
+        </a>
+      )}
+      <button type="button" class="era-closing-dismiss" data-era-closing-dismiss aria-label="Cerrar">
+        Cerrar
+      </button>
+    </footer>
+  </article>
+
+  {/* Narration text exposed to the inline script via a JSON island. */}
+  <script type="application/json" data-era-closing-narration set:html={JSON.stringify(narrationText)}></script>
+</div>
+
+<style>
+  .era-closing {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    pointer-events: none;
+  }
+  .era-closing.is-open {
+    display: flex;
+    pointer-events: auto;
+  }
+
+  .era-closing-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 480ms ease;
+  }
+  .era-closing.is-open .era-closing-backdrop { opacity: 1; }
+
+  /* ── Parchment ─────────────────────────────────────────────────────── */
+  .era-closing-parchment {
+    position: relative;
+    max-width: min(680px, 92vw);
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 2.4rem clamp(1.6rem, 4vw, 3rem) 1.8rem;
+    color: #3a261a;
+    font-family: 'EB Garamond', Georgia, serif;
+    line-height: 1.6;
+    background:
+      /* fine grain noise */
+      repeating-linear-gradient(
+        43deg,
+        rgba(120, 80, 40, 0.045) 0px,
+        rgba(120, 80, 40, 0.045) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      /* edge mottling */
+      radial-gradient(ellipse at 20% 10%, rgba(90, 50, 20, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(60, 30, 10, 0.22) 0%, transparent 60%),
+      /* base paper tone */
+      linear-gradient(160deg, #f3e0b8 0%, #ead2a0 50%, #d8b985 100%);
+    border-radius: 6px;
+    box-shadow:
+      0 28px 60px rgba(0, 0, 0, 0.55),
+      inset 0 0 60px rgba(120, 70, 30, 0.25),
+      inset 0 0 0 1px rgba(120, 70, 30, 0.35);
+    transform: translateY(20px) scale(0.96);
+    opacity: 0;
+    transition: opacity 520ms ease, transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    /* Torn / curled top + bottom edges. */
+    mask-image:
+      radial-gradient(120% 8px at 50% 0%, transparent 60%, black 70%),
+      radial-gradient(120% 8px at 50% 100%, transparent 60%, black 70%),
+      linear-gradient(black, black);
+    -webkit-mask-image:
+      radial-gradient(120% 8px at 50% 0%, transparent 60%, black 70%),
+      radial-gradient(120% 8px at 50% 100%, transparent 60%, black 70%),
+      linear-gradient(black, black);
+    mask-composite: intersect;
+    -webkit-mask-composite: source-in;
+    scrollbar-width: thin;
+  }
+  .era-closing.is-open .era-closing-parchment {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .era-closing-header { text-align: center; margin-bottom: 1.25rem; }
+  .era-closing-eyebrow {
+    margin: 0 0 0.4rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(58, 38, 26, 0.6);
+  }
+  .era-closing-title {
+    font-family: 'Cinzel', 'Trajan Pro 3', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0;
+    color: #5a2c10;
+    letter-spacing: 0.04em;
+  }
+
+  .era-closing-body { font-size: clamp(0.95rem, 1.4vw, 1.05rem); }
+  .era-closing-body p { margin: 0 0 1rem; }
+  .era-closing-divider {
+    width: 60%;
+    margin: 1.4rem auto;
+    color: rgba(90, 50, 20, 0.45);
+  }
+  .era-closing-divider svg { width: 100%; height: 8px; display: block; }
+  .era-closing-next-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(58, 38, 26, 0.55);
+    text-align: center;
+    margin-bottom: 0.25rem;
+  }
+  .era-closing-next-title {
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+    margin: 0 0 1rem;
+    color: #5a2c10;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Footer / CTA ──────────────────────────────────────────────────── */
+  .era-closing-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.6rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(90, 50, 20, 0.3);
+  }
+  .era-closing-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1.1rem;
+    background: #5a2c10;
+    color: #f3e0b8;
+    border: 1px solid #3a1808;
+    border-radius: 999px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 200ms ease, transform 150ms ease;
+  }
+  .era-closing-cta:hover { background: #7a3a18; }
+  .era-closing-cta:active { transform: translateY(1px); }
+
+  .era-closing-cta-countdown {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(243, 224, 184, 0.12);
+    font-family: 'EB Garamond', serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  .era-closing-cta-ring {
+    position: absolute;
+    inset: -3px -3px -3px auto;
+    right: 7px;
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+  }
+  .era-closing-cta-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .era-closing-cta-ring .ring-track {
+    fill: none;
+    stroke: rgba(243, 224, 184, 0.18);
+    stroke-width: 2;
+  }
+  .era-closing-cta-ring .ring-fill {
+    fill: none;
+    stroke: #f3e0b8;
+    stroke-width: 2;
+    stroke-dasharray: 100.53;        /* 2 * PI * 16 */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 250ms linear;
+  }
+
+  .era-closing-dismiss {
+    background: transparent;
+    border: none;
+    color: rgba(58, 38, 26, 0.65);
+    font-family: 'Inter', system-ui;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+  }
+  .era-closing-dismiss:hover { color: #5a2c10; }
+</style>
+
+<script>
+  /* Era-closing parchment controller. Single-instance per page.
+     - Listens for `biblia:era-ended` and reveals the parchment.
+     - Reads the recap text aloud via the shared TTS helpers (or audio
+       if a pre-generated file exists — currently we only TTS).
+     - Counts down 10s; on zero or button click → navigates to next era.
+     - Cancels narration + countdown if user dismisses or navigates away. */
+  import { speak, cancelAllNarration, onEnd as onTtsEnd } from '../lib/tts';
+
+  const root = document.querySelector<HTMLElement>('[data-era-closing]');
+  if (root) {
+    const backdrop = root.querySelector<HTMLElement>('[data-era-closing-backdrop]');
+    const cta = root.querySelector<HTMLButtonElement>('[data-era-closing-cta]');
+    const counter = root.querySelector<HTMLElement>('[data-era-closing-countdown]');
+    const ring = root.querySelector<SVGCircleElement>('[data-era-closing-ring]');
+    const dismiss = root.querySelector<HTMLButtonElement>('[data-era-closing-dismiss]');
+    const textScript = root.querySelector<HTMLScriptElement>('[data-era-closing-narration]');
+    const nextEraId = root.dataset.nextEra || '';
+
+    let narrationText = '';
+    try { narrationText = JSON.parse(textScript?.textContent || '""'); } catch {}
+
+    const COUNTDOWN_SECONDS = 10;
+    const RING_CIRCUMFERENCE = 100.53;   // matches CSS dasharray
+    let countdownTimer: number | null = null;
+    let remaining = COUNTDOWN_SECONDS;
+    let open = false;
+
+    function setRing(progress01: number) {
+      if (!ring) return;
+      ring.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - progress01));
+    }
+
+    function startCountdown() {
+      remaining = COUNTDOWN_SECONDS;
+      if (counter) counter.textContent = String(remaining);
+      setRing(0);
+      const startedAt = performance.now();
+      const tick = () => {
+        if (!open) return;
+        const elapsed = (performance.now() - startedAt) / 1000;
+        const r = Math.max(0, COUNTDOWN_SECONDS - elapsed);
+        const newWhole = Math.ceil(r);
+        if (counter && counter.textContent !== String(newWhole)) {
+          counter.textContent = String(newWhole);
+        }
+        setRing(Math.min(1, elapsed / COUNTDOWN_SECONDS));
+        if (r <= 0) {
+          stopCountdown();
+          advance();
+          return;
+        }
+        countdownTimer = window.setTimeout(tick, 100);
+      };
+      countdownTimer = window.setTimeout(tick, 100);
+    }
+
+    function stopCountdown() {
+      if (countdownTimer !== null) {
+        clearTimeout(countdownTimer);
+        countdownTimer = null;
+      }
+    }
+
+    function advance() {
+      cancelAllNarration();
+      if (!nextEraId) {
+        close();
+        return;
+      }
+      // Carry ?play=1 so the next era page auto-starts narration on load.
+      window.location.href = `/era/${nextEraId}?play=1`;
+    }
+
+    function open_() {
+      if (open) return;
+      open = true;
+      root!.classList.add('is-open');
+      root!.setAttribute('aria-hidden', 'false');
+      // Slight delay before narration so the parchment finishes fading in
+      // and the user isn't startled by a voice cutting through the silence.
+      setTimeout(() => {
+        if (!open) return;
+        if (narrationText) speak(narrationText);
+      }, 700);
+      startCountdown();
+    }
+
+    function close() {
+      if (!open) return;
+      open = false;
+      root!.classList.remove('is-open');
+      root!.setAttribute('aria-hidden', 'true');
+      stopCountdown();
+      cancelAllNarration();
+    }
+
+    cta?.addEventListener('click', () => { stopCountdown(); advance(); });
+    dismiss?.addEventListener('click', close);
+    backdrop?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (!open) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopCountdown(); advance(); }
+    });
+
+    // Re-arm countdown if TTS narration finishes early — if narration was
+    // shorter than the countdown, the user has already heard everything and
+    // the original 10s timer is still ticking. Nothing to do here, just
+    // letting the unused import note: onTtsEnd reserved for future polish.
+    void onTtsEnd;
+
+    window.addEventListener('biblia:era-ended', () => {
+      open_();
+    });
+  }
+</script>

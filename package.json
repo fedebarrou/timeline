@@ -2,6 +2,13 @@
   "name": "biblia",
   "type": "module",
   "version": "0.0.1",
+  "description": "Línea de tiempo bíblica comparada (Torá · Biblia · Corán) — Adán a Mahoma. Scrollytelling con mapa antiguo, narración text-driven y animaciones figurativas.",
+  "author": {
+    "name": "Federico Barroumeres",
+    "email": "fbarroumeres@gmail.com"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "engines": {
     "node": ">=22.12.0"
   },
@@ -13,7 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "verify": "tsx scripts/verify-citations.ts && tsx scripts/verify-licenses.ts"
+    "verify": "tsx scripts/verify-citations.ts && tsx scripts/verify-licenses.ts",
+    "generate-narrations": "node scripts/generate-narrations.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.6",
@@ -35,6 +43,7 @@
     "fast-glob": "^3.3.3",
     "gray-matter": "^4.0.3",
     "happy-dom": "^20.9.0",
+    "msedge-tts": "^2.0.5",
     "postcss": "^8.5.14",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.22.0",

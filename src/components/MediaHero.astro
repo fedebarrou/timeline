@@ -12,22 +12,24 @@ const { media } = Astro.props;
 ---
 {media && (
   <figure class="media-hero mb-8" data-media-hero>
-    <div class="relative w-full aspect-[3/2] rounded-lg overflow-hidden bg-surface border border-border">
+    {/* Inline-block: container shrinks to the natural size of the image,
+        so there is NEVER a letterbox/blur strip on the sides or bottom.
+        Capped at max-h-[55vh] so very tall vertical paintings don't
+        dominate the scene. */}
+    <div class="inline-block w-auto max-w-full rounded-lg overflow-hidden bg-surface border border-border">
       <img
         src={media.src}
         alt={media.caption ?? ''}
         loading="lazy"
-        class="w-full h-full object-cover ken-burns"
+        class="block w-auto h-auto max-w-full max-h-[55vh] ken-burns"
         data-img
       />
-      <div class="placeholder absolute inset-0 flex items-center justify-center text-center px-6 opacity-0" data-placeholder>
-        <div>
-          <p class="font-display text-2xl italic opacity-70">{media.caption ?? ''}</p>
-          <p class="text-xs opacity-50 mt-3">{media.credit}</p>
-        </div>
-      </div>
     </div>
-    <figcaption class="mt-2 text-xs opacity-60 flex flex-wrap gap-3">
+    <div class="placeholder hidden mt-2 text-center px-6 py-12 rounded-lg bg-surface border border-border" data-placeholder>
+      <p class="font-display text-2xl italic opacity-70">{media.caption ?? ''}</p>
+      <p class="text-sm opacity-50 mt-3">{media.credit}</p>
+    </div>
+    <figcaption class="mt-2 text-sm opacity-60 flex flex-wrap gap-3">
       <span>{media.credit}</span>
       <span class="opacity-60">·</span>
       <span class="opacity-60">{media.license}</span>
@@ -43,19 +45,21 @@ const { media } = Astro.props;
     if (!img || !placeholder) return;
     img.addEventListener('error', () => {
       img.style.display = 'none';
-      placeholder.style.opacity = '1';
+      placeholder.classList.remove('hidden');
     });
   });
 </script>
 
 <style>
+  /* Subtle ken-burns — no positional drift since the image is object-contain
+     (so it's already letterboxed). A gentle scale only. */
   .ken-burns {
-    animation: ken-burns 20s ease-in-out infinite alternate;
+    animation: ken-burns 24s ease-in-out infinite alternate;
     transform-origin: center;
   }
   @keyframes ken-burns {
-    from { transform: scale(1) translate(0, 0); }
-    to { transform: scale(1.1) translate(-2%, -2%); }
+    from { transform: scale(1); }
+    to   { transform: scale(1.04); }
   }
   @media (prefers-reduced-motion: reduce) {
     .ken-burns { animation: none; }

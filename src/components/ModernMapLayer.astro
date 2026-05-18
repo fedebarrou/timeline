@@ -1,19 +1,96 @@
 ---
 ---
-<div class="modern-map-wrapper hidden absolute inset-0" data-modern-map-wrapper>
-  <div data-modern-map class="w-full h-full"></div>
+{/* Modern basemap sits BEHIND the manuscript SVG so SVG markers/animations
+    can stay on top. Visibility is toggled via [data-map-mode] on the
+    parent .map-container — see mapToggle.ts.
+
+    Note: we use explicit is-hidden / is-visible classes instead of relying
+    purely on Tailwind's opacity utilities so the toggle is fully predictable
+    regardless of class-vs-inline-style precedence. */}
+<div
+  class="modern-map-wrapper is-hidden absolute inset-0 transition-opacity duration-500"
+  data-modern-map-wrapper
+>
+  <div data-modern-map class="modern-map-inner"></div>
 </div>
 
 <style>
+  /* Markers shown on the modern map. SVG marker positions are in viewport
+     units (1000×600), which don't align with maplibre's geographic
+     projection — so when modern mode is active we hide the SVG markers
+     entirely and rely on these native maplibre markers (positioned by
+     real lat/lng) instead. */
+  .modern-marker {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+  }
   .modern-marker .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--era-accent);
-    box-shadow: 0 0 12px var(--era-accent);
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--era-accent, #d4a574);
+    box-shadow:
+      0 0 0 2px var(--era-bg, #1a0f0a),
+      0 0 12px var(--era-accent, #d4a574),
+      0 0 24px var(--era-accent, #d4a574);
   }
   .modern-marker .ring {
-    position: absolute; inset: -6px; border-radius: 50%;
-    border: 1px solid var(--era-primary); opacity: 0.4;
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--era-primary, #c89858);
+    opacity: 0.55;
+    animation: modern-marker-pulse 2.4s ease-out infinite;
+  }
+  @keyframes modern-marker-pulse {
+    0%   { transform: scale(0.6); opacity: 0.65; }
+    100% { transform: scale(1.8); opacity: 0;    }
+  }
+
+  /* The wrapper sits behind the SVG (z-index 0); SVG has z-index 1.
+     Explicit width/height — maplibre creates a 0×0 canvas if either is 0. */
+  .modern-map-wrapper {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  .modern-map-inner {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Predictable visibility states — class wins over Tailwind's opacity-0. */
+  .modern-map-wrapper.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .modern-map-wrapper.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* maplibre canvas must be block-level so it actually occupies space. */
+  .modern-map-wrapper .maplibregl-canvas,
+  .modern-map-wrapper .maplibregl-map {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
   }
 </style>
 
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
+{/* Maplibre as a CDN <script> — exposes `window.maplibregl`. Synchronous
+    load (no `defer`) so by the time the user can click the toggle button,
+    `window.maplibregl` is guaranteed to be present. Avoids Vite's UMD/ESM
+    conversion entirely. */}
+<script is:inline src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script is:inline>
+  // Quick sanity check in console — confirms the CDN bundle landed.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('[modern-map] window.maplibregl =', typeof window.maplibregl === 'object' ? 'LOADED ✓' : 'MISSING ✗');
+    });
+  }
+</script>

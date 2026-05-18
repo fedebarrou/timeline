@@ -2,6 +2,7 @@
   "id": "nazaret",
   "ancientName": "Nazaret",
   "modernName": "Nazaret, norte de Israel",
+  "portrait": "/images/locations/nazaret.jpg",
   "region": "levante",
   "coords": [32.70, 35.30],
   "svgPosition": [579, 353],

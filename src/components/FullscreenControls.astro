@@ -1,0 +1,113 @@
+---
+/**
+ * Floating controls that appear ONLY when `body.map-fullscreen` is active.
+ *  - Top-LEFT: a single "Volver" pill that clicks the canonical
+ *    `[data-map-fullscreen-toggle]` so all its teardown bookkeeping runs.
+ *
+ * The Play and Restart buttons live in TimelineNav now (the Restart pill
+ * only appears in fullscreen, see `.restart-btn` rules there).
+ *
+ * Hidden by default (`display: none`) — only flipped on when the body has
+ * `.map-fullscreen`. Fades with TimelineNav on idle.
+ */
+---
+<div class="fullscreen-controls" data-fullscreen-controls aria-hidden="true">
+  {/* TOP-LEFT — Volver */}
+  <button
+    type="button"
+    class="fs-exit-btn fs-exit-pos pointer-events-auto inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors text-xs md:text-sm font-medium tracking-wide uppercase shadow-xl"
+    data-fullscreen-exit
+    aria-label="Salir de pantalla completa"
+    title="Volver (Esc)"
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    <span>Volver</span>
+  </button>
+
+  {/* TOP-RIGHT — Play / Stop */}
+  <button
+    type="button"
+    class="fs-play-btn fs-play-pos pointer-events-auto inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors text-xs md:text-sm font-medium tracking-wide uppercase shadow-xl"
+    data-fullscreen-play
+    aria-label="Reproducir era"
+    title="Reproducir era"
+  >
+    <span class="fs-play-icon" data-state="paused">▶</span>
+    <span class="fs-play-label">Reproducir</span>
+  </button>
+</div>
+
+<style>
+  .fullscreen-controls {
+    display: none;
+    pointer-events: none;
+  }
+  body.map-fullscreen .fullscreen-controls { display: block; }
+
+  .fs-exit-pos,
+  .fs-play-pos {
+    position: fixed;
+    /* Sit BELOW the navbar so they never overlap the brand/menu. */
+    top: calc(var(--site-nav-h, 3.5rem) + 0.5rem);
+    z-index: 55;
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+  .fs-exit-pos { left: 0.75rem; }
+  .fs-play-pos { right: 0.75rem; }
+
+  @media (min-width: 768px) {
+    .fs-exit-pos { left: 1rem; }
+    .fs-play-pos { right: 1rem; }
+  }
+
+  body.map-fullscreen.map-fullscreen-idle .fs-exit-pos,
+  body.map-fullscreen.map-fullscreen-idle .fs-play-pos {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import { startPlay, stopPlay, isPlaying, restartPlay } from '../lib/playMode';
+
+  // Exit button — defer to the canonical fullscreen toggle so its full
+  // teardown (icon swap, idle unbind, resize event) runs intact.
+  const exitBtn = document.querySelector<HTMLButtonElement>('[data-fullscreen-exit]');
+  exitBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const toggle = document.querySelector<HTMLButtonElement>('[data-map-fullscreen-toggle]');
+    if (toggle && document.body.classList.contains('map-fullscreen')) toggle.click();
+  });
+
+  // Floating Play / Stop button — independent of TimelineNav's PlayButton so
+  // it stays visible in fullscreen even when the popup pill hides the rest.
+  const playBtn = document.querySelector<HTMLButtonElement>('[data-fullscreen-play]');
+  const playIcon = playBtn?.querySelector<HTMLElement>('.fs-play-icon');
+  const playLabel = playBtn?.querySelector<HTMLElement>('.fs-play-label');
+  if (playBtn && playIcon && playLabel) {
+    function setPlayingUI() {
+      playIcon!.textContent = '■';
+      playIcon!.dataset.state = 'playing';
+      playLabel!.textContent = 'Detener';
+    }
+    function setIdleUI() {
+      playIcon!.textContent = '▶';
+      playIcon!.dataset.state = 'paused';
+      playLabel!.textContent = 'Reproducir';
+    }
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isPlaying()) {
+        stopPlay();
+        setIdleUI();
+        return;
+      }
+      setPlayingUI();
+      startPlay().finally(setIdleUI);
+    });
+  }
+</script>

@@ -2,6 +2,7 @@
   "id": "medina",
   "ancientName": "Yathrib / Madīna",
   "modernName": "Medina, Arabia Saudita",
+  "portrait": "/images/locations/medina.jpg",
   "region": "arabia",
   "coords": [24.47, 39.61],
   "svgPosition": [620, 440],

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LogoParticles from '../components/LogoParticles.astro';
 import { getCollection } from 'astro:content';
 
 const eras = (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order);
@@ -10,7 +11,33 @@ events.forEach((e) => {
 });
 ---
 <BaseLayout title="Línea de Tiempo · Adán → Mahoma">
-  <section class="hero min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+  {/* Hero: single full-bleed canvas. Logo 1 (apple) lives at top-left,
+       logo 2 at bottom-right. Both assemble, then their particles mix
+       together in the centre, then they reassemble at their anchors.
+       Slow & premium — full cycle ~26s. */}
+  <section class="hero relative min-h-[80vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+    <div
+      class="hero-bg absolute inset-0 -z-10 pointer-events-none"
+      style="background: var(--era-bg-gradient, var(--era-bg));"
+    >
+      <LogoParticles
+        src="/images/logo.png"
+        src2="/images/logo2.png"
+        step={10}
+        dotRadius={1.1}
+        dotOpacity={0.78}
+        lineOpacity={0.25}
+        linkDistance={18}
+        maxLinksPerParticle={2}
+        anchor1={[0.25, 0.40]}
+        anchor2={[0.75, 0.60]}
+        silhouetteScale={0.88}
+        cycleSeconds={32}
+        windStrength={1.5}
+        class="absolute inset-0"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg/95"></div>
+    </div>
     <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-6">Línea de tiempo</p>
     <h1 class="font-display text-5xl md:text-7xl mb-4">Adán → Mahoma</h1>
     <p class="max-w-2xl text-lg opacity-80 leading-relaxed">

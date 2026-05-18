@@ -2,6 +2,7 @@
   "id": "meca",
   "ancientName": "Meca antigua / Bakkah",
   "modernName": "La Meca, Arabia Saudita",
+  "portrait": "/images/locations/meca.jpg",
   "region": "arabia",
   "coords": [21.42, 39.83],
   "svgPosition": [625, 460],

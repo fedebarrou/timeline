@@ -2,6 +2,7 @@
   "id": "camino-a-damasco",
   "ancientName": "Camino a Damasco",
   "modernName": "Carretera Jerusalén-Damasco",
+  "portrait": "/images/locations/camino-a-damasco.jpg",
   "region": "levante",
   "coords": [33.51, 36.30],
   "svgPosition": [590, 345],

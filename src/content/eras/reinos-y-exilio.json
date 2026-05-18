@@ -6,15 +6,15 @@
   "yearRange": { "from": 2900, "to": 3500 },
   "gregorianRange": { "from": -860, "to": -260 },
   "palette": {
-    "bg": "#3a1530",
-    "bgGradient": "linear-gradient(180deg,#3a1530 0%,#552248 100%)",
-    "surface": "#552248",
-    "primary": "#e8a8d0",
-    "secondary": "#a05080",
-    "accent": "#ffd848",
-    "text": "#f0d8e8",
-    "muted": "rgba(240,216,232,.55)",
-    "border": "rgba(232,168,208,.25)"
+    "bg": "#1a0d1a",
+    "bgGradient": "linear-gradient(180deg,#1a0d1a 0%,#261627 60%,#332033 100%)",
+    "surface": "#261627",
+    "primary": "#8a4a78",
+    "secondary": "#5e3052",
+    "accent": "#a87858",
+    "text": "#e0d0d8",
+    "muted": "rgba(224,208,216,.50)",
+    "border": "rgba(138,74,120,.22)"
   },
   "typography": {
     "display": "'Trajan Pro 3', 'Cinzel', serif",
@@ -51,5 +51,9 @@
   "transition": {
     "intoNext": "olive-dawn",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era de Reinos y Exilio. Saúl reinó y cayó, David venció al gigante Goliat y bailó ante el arca sagrada, y su hijo Salomón construyó un gran templo en Jerusalén y dejó libros de sabiduría. A su muerte, el reino se partió en dos. Según los relatos, el profeta Elías retó a los sacerdotes de Baal y ascendió al cielo en un carro de fuego. Otros profetas anunciaron castigo y consuelo. El imperio de Babilonia se llevó al pueblo de Judá al destierro, pero, años después, permitió el regreso.",
+    "nextPreview": "Lo que sigue es la era del Evangelio. Bajo la dominación del imperio romano, un niño nace en el pequeño pueblo de Belén. Será bautizado en el río Jordán, predicará a las multitudes, hablará en parábolas y, según los relatos, sanará enfermos. Acabará juzgado y crucificado, y sus discípulos afirmarán haberlo visto vivo al tercer día. Doce hombres llevarán esa noticia hasta los confines del mundo conocido."
   }
 }

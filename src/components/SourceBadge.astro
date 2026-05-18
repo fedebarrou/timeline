@@ -18,16 +18,16 @@ const cfg = map[source.type];
 ---
 <div class="source-badge grid grid-cols-[auto_1fr] gap-x-3 items-baseline py-2.5 border-b border-border/40 last:border-b-0">
   <span
-    class="badge inline-flex items-center gap-1.5 text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-full border whitespace-nowrap self-start mt-0.5"
+    class="badge inline-flex items-center gap-1.5 text-[11px] tracking-wider uppercase px-2 py-0.5 rounded-full border whitespace-nowrap self-start mt-0.5"
     style={`border-color: ${cfg.color}66; color: ${cfg.color}`}
   >
     <span class="inline-block w-2 h-2 rounded-full" style={`background: ${cfg.color}`}></span>
     {cfg.label}
   </span>
   <div class="info flex flex-col gap-1">
-    <span class="title text-base leading-snug">{source.title}</span>
+    <span class="title text-lg leading-snug">{source.title}</span>
     {source.note && (
-      <span class="note text-sm opacity-65 leading-snug">{source.note}</span>
+      <span class="note text-base opacity-65 leading-snug">{source.note}</span>
     )}
   </div>
 </div>

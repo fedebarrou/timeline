@@ -6,7 +6,8 @@ const raw = await fs.readFile('public/maps/ancient-world.geojson', 'utf-8');
 const geojson = JSON.parse(raw);
 const paths = geoJsonToPath(geojson);
 
-const STATIC_LABELS = [
+/* Ancient world labels — manuscript / biblical-era toponyms. */
+const ANCIENT_LABELS = [
   // Countries (uppercase, large)
   { name: 'MESOPOTAMIA',    x: 620, y: 290, size: 11, weight: 'country' },
   { name: 'ANATOLIA',       x: 540, y: 200, size: 11, weight: 'country' },
@@ -32,6 +33,48 @@ const STATIC_LABELS = [
   { name: 'Tigris',           x: 645, y: 280, size: 6, weight: 'water' },
   { name: 'Éufrates',         x: 620, y: 295, size: 6, weight: 'water' },
 ];
+
+/* Modern-day labels at the same SVG positions. Same coastlines (they
+   haven't changed since antiquity), only the toponyms switch. This is
+   served from the same SVG so the camera animations, markers and
+   character pin choreographies all "just work" with the modern view. */
+const MODERN_LABELS = [
+  // Modern countries
+  { name: 'IRAK',           x: 660, y: 295, size: 11, weight: 'country' },
+  { name: 'TURQUÍA',        x: 540, y: 200, size: 11, weight: 'country' },
+  { name: 'EGIPTO',         x: 470, y: 410, size: 11, weight: 'country' },
+  { name: 'SIRIA',          x: 590, y: 290, size: 9,  weight: 'country' },
+  { name: 'JORDANIA',       x: 575, y: 360, size: 8,  weight: 'country' },
+  { name: 'ISRAEL',         x: 558, y: 348, size: 8,  weight: 'country' },
+  { name: 'LÍBANO',         x: 568, y: 325, size: 7,  weight: 'country' },
+  { name: 'ARABIA SAUDÍ',   x: 620, y: 430, size: 11, weight: 'country' },
+  { name: 'IRÁN',           x: 730, y: 320, size: 11, weight: 'country' },
+  { name: 'GRECIA',         x: 440, y: 270, size: 9,  weight: 'country' },
+  { name: 'ITALIA',         x: 380, y: 270, size: 9,  weight: 'country' },
+  { name: 'YEMEN',          x: 660, y: 480, size: 8,  weight: 'country' },
+  // Modern cities (smaller, italic)
+  { name: 'Bagdad',         x: 650, y: 320, size: 7,  weight: 'city' },
+  { name: 'Mosul',          x: 620, y: 295, size: 6,  weight: 'city' },
+  { name: 'Şanlıurfa',      x: 580, y: 245, size: 6,  weight: 'city' },
+  { name: 'Estambul',       x: 510, y: 200, size: 7,  weight: 'city' },
+  { name: 'Damasco',        x: 575, y: 320, size: 7,  weight: 'city' },
+  { name: 'Beirut',         x: 568, y: 333, size: 6,  weight: 'city' },
+  { name: 'Jerusalén',      x: 560, y: 355, size: 7,  weight: 'city' },
+  { name: 'Amán',           x: 575, y: 365, size: 6,  weight: 'city' },
+  { name: 'El Cairo',       x: 485, y: 410, size: 7,  weight: 'city' },
+  { name: 'Alejandría',     x: 490, y: 380, size: 6,  weight: 'city' },
+  { name: 'La Meca',        x: 605, y: 440, size: 7,  weight: 'city' },
+  { name: 'Medina',         x: 600, y: 420, size: 7,  weight: 'city' },
+  { name: 'Yeda',           x: 600, y: 445, size: 6,  weight: 'city' },
+  { name: 'Atenas',         x: 440, y: 280, size: 6,  weight: 'city' },
+  { name: 'Roma',           x: 380, y: 275, size: 6,  weight: 'city' },
+  // Bodies of water — same names today
+  { name: 'Mar Mediterráneo', x: 470, y: 320, size: 8, weight: 'water' },
+  { name: 'Mar Rojo',         x: 555, y: 425, size: 8, weight: 'water' },
+  { name: 'Golfo Pérsico',    x: 700, y: 380, size: 7, weight: 'water' },
+  { name: 'Tigris',           x: 645, y: 280, size: 6, weight: 'water' },
+  { name: 'Éufrates',         x: 620, y: 295, size: 6, weight: 'water' },
+];
 ---
 <svg
   class="manuscript-map w-full h-full"
@@ -46,9 +89,12 @@ const STATIC_LABELS = [
     </pattern>
   </defs>
 
-  <rect width="100%" height="100%" fill="url(#paper)" />
+  {/* Background — paper pattern (manuscript) vs. solid era-bg (modern). */}
+  <rect class="bg-paper"  width="100%" height="100%" fill="url(#paper)" />
+  <rect class="bg-modern" width="100%" height="100%" fill="var(--era-bg)" />
 
-  <g class="land" data-layer="land">
+  {/* Land coastlines — same paths, different stroke style per mode. */}
+  <g class="land land-ancient" data-layer="land">
     {paths.map((d) => (
       <path
         d={d}
@@ -59,9 +105,21 @@ const STATIC_LABELS = [
       />
     ))}
   </g>
+  <g class="land land-modern" data-layer="land-modern">
+    {paths.map((d) => (
+      <path
+        d={d}
+        fill="var(--era-surface)"
+        stroke="var(--era-primary)"
+        stroke-width="0.5"
+        opacity="0.55"
+      />
+    ))}
+  </g>
 
-  <g class="static-labels" data-layer="static-labels">
-    {STATIC_LABELS.map((l) => (
+  {/* Static labels — ancient toponyms vs modern toponyms. */}
+  <g class="static-labels labels-ancient" data-layer="static-labels">
+    {ANCIENT_LABELS.map((l) => (
       <text
         x={l.x}
         y={l.y}
@@ -77,6 +135,24 @@ const STATIC_LABELS = [
       </text>
     ))}
   </g>
+  <g class="static-labels labels-modern" data-layer="static-labels-modern">
+    {MODERN_LABELS.map((l) => (
+      <text
+        x={l.x}
+        y={l.y}
+        text-anchor="middle"
+        font-family="'Inter', system-ui, sans-serif"
+        font-size={l.size}
+        fill={l.weight === 'water' ? 'var(--era-secondary)' : 'var(--era-text)'}
+        opacity={l.weight === 'country' ? '0.85' : l.weight === 'city' ? '0.7' : '0.55'}
+        font-style={l.weight === 'water' || l.weight === 'city' ? 'italic' : 'normal'}
+        letter-spacing={l.weight === 'country' ? '1.5' : '0'}
+        font-weight={l.weight === 'country' ? '600' : '400'}
+      >
+        {l.name}
+      </text>
+    ))}
+  </g>
 
   <g class="scene-objects" data-layer="scene-objects"></g>
   <g class="markers" data-layer="markers"></g>
@@ -85,5 +161,38 @@ const STATIC_LABELS = [
 </svg>
 
 <style>
-  .manuscript-map { background: var(--era-bg-gradient); }
+  .manuscript-map { background: var(--era-bg); display: block; position: relative; z-index: 1; }
+
+  /* Mode switch driven by `[data-map-mode]` on the .map-container parent.
+     The `:global()` lifts the selector out of Astro's component-scope so
+     it matches the ancestor `.map-container` defined in era/[id].astro.
+
+     Default state = manuscript: hide all modern layers.
+     `data-map-mode="modern"`: hide all ancient layers, show modern.
+
+     `display: revert` (not `inline`) restores the SVG element's intrinsic
+     default display value reliably across browsers. */
+  .bg-modern,
+  .land-modern,
+  .labels-modern {
+    display: none !important;
+  }
+  :global(.map-container[data-map-mode="modern"]) .bg-paper,
+  :global(.map-container[data-map-mode="modern"]) .land-ancient,
+  :global(.map-container[data-map-mode="modern"]) .labels-ancient {
+    display: none !important;
+  }
+  :global(.map-container[data-map-mode="modern"]) .bg-modern,
+  :global(.map-container[data-map-mode="modern"]) .land-modern,
+  :global(.map-container[data-map-mode="modern"]) .labels-modern {
+    display: revert !important;
+  }
+
+  /* Inside marker location-portraits: swap the ancient/modern name caption
+     so we never see both at once. Selectors must reach into the dynamic
+     SVG content via :global since those nodes are created by mapMarkers.ts
+     at runtime, not by this Astro component. */
+  :global(.map-container[data-map-mode="manuscript"] [data-loc-name-modern]) { display: none !important; }
+  :global(.map-container[data-map-mode="modern"]    [data-loc-name-ancient]) { display: none !important; }
+  :global(.map-container[data-map-mode="modern"]    [data-loc-name-modern]) { display: block !important; }
 </style>

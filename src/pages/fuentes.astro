@@ -23,7 +23,7 @@ const typeLabels: Record<string, string> = {
     <p class="opacity-70 mb-6">Índice de todas las referencias consultadas.</p>
 
     <div class="era-filter-banner hidden flex items-center justify-between gap-4 mb-8 px-5 py-3 rounded-lg border border-accent/40 bg-surface/40" data-era-filter-banner>
-      <p class="text-sm">
+      <p class="text-base">
         <span class="opacity-70">Mostrando solo</span>
         <span class="font-display text-base mx-1">fuentes</span>
         <span class="opacity-70">de</span>
@@ -31,7 +31,7 @@ const typeLabels: Record<string, string> = {
       </p>
       <button
         type="button"
-        class="text-xs tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        class="text-sm tracking-wider uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
         data-era-filter-clear
       >
         Ver todas las eras →
@@ -40,8 +40,8 @@ const typeLabels: Record<string, string> = {
 
     {[...byType.entries()].map(([type, items]) => (
       <div class="mb-10" data-group-section data-section-era="">
-        <h2 class="text-sm tracking-[0.3em] uppercase opacity-70 mb-4">{typeLabels[type]}</h2>
-        <ul class="space-y-2 text-sm">
+        <h2 class="text-base tracking-[0.3em] uppercase opacity-70 mb-4">{typeLabels[type]}</h2>
+        <ul class="space-y-2 text-base">
           {items.map((s) => (
             <li data-era={s.eventEra}>
               <strong>{s.title}</strong>

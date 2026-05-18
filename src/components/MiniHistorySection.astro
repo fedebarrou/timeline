@@ -1,0 +1,125 @@
+---
+interface Props {
+  eventId: string;
+  eventTitle: string;
+  eventSubtitle?: string;
+}
+const { eventId, eventTitle, eventSubtitle } = Astro.props;
+---
+<section
+  class="mini-history mt-10"
+  data-mini-history
+  data-event-id={eventId}
+  aria-labelledby={`mini-history-${eventId}`}
+>
+  <p class="mini-history-label text-sm tracking-[0.3em] uppercase opacity-60 mb-2">
+    Mini historia
+  </p>
+  <h3
+    id={`mini-history-${eventId}`}
+    class="mini-history-title text-2xl lg:text-3xl mb-2"
+  >
+    Una mini historia animada de este evento
+  </h3>
+  <p class="mini-history-desc text-base opacity-75 mb-5 max-w-prose">
+    Un cortometraje narrado que reconstruye los acontecimientos clave de
+    {eventSubtitle ? `"${eventTitle}: ${eventSubtitle}"` : `"${eventTitle}"`}.
+    Próximamente.
+  </p>
+
+  <div
+    class="mini-history-card relative w-full overflow-hidden rounded-lg border"
+    aria-disabled="true"
+    role="img"
+    aria-label={`Mini historia animada de ${eventTitle} — próximamente`}
+  >
+    <div class="shimmer" aria-hidden="true"></div>
+    <div class="card-inner absolute inset-0 flex flex-col items-center justify-center gap-3">
+      <div class="play-icon-wrap flex items-center justify-center rounded-full">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="44"
+          height="44"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M8 5.5v13a.75.75 0 0 0 1.14.64l11-6.5a.75.75 0 0 0 0-1.29l-11-6.5A.75.75 0 0 0 8 5.5Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <p class="mini-history-caption text-xs tracking-[0.35em] uppercase opacity-70">
+        Próximamente
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .mini-history-label,
+  .mini-history-title,
+  .mini-history-caption {
+    font-family: var(--era-display);
+  }
+  .mini-history-label {
+    color: var(--era-text);
+    opacity: 0.6;
+  }
+  .mini-history-title {
+    color: var(--era-text);
+  }
+  .mini-history-desc {
+    color: var(--era-text);
+  }
+
+  .mini-history-card {
+    aspect-ratio: 16 / 9;
+    background: var(--era-surface);
+    border-color: var(--era-border);
+    color: var(--era-primary);
+  }
+
+  .play-icon-wrap {
+    width: 80px;
+    height: 80px;
+    background: color-mix(in srgb, var(--era-primary) 14%, transparent);
+    border: 1px solid var(--era-border);
+    color: var(--era-accent);
+    transition: transform 600ms ease;
+  }
+
+  .mini-history-card:hover .play-icon-wrap {
+    transform: scale(1.03);
+  }
+
+  .mini-history-caption {
+    color: var(--era-accent);
+  }
+
+  /* Subtle slow diagonal shimmer overlay */
+  .shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      color-mix(in srgb, var(--era-primary) 8%, transparent) 50%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    animation: mini-history-shimmer 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes mini-history-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer { animation: none; }
+    .play-icon-wrap { transition: none; }
+  }
+</style>

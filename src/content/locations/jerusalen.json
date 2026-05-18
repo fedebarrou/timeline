@@ -2,6 +2,7 @@
   "id": "jerusalen",
   "ancientName": "Jerusalén / Salem",
   "modernName": "Jerusalén, Israel/Palestina",
+  "portrait": "/images/locations/jerusalen.jpg",
   "region": "levante",
   "coords": [31.78, 35.22],
   "svgPosition": [582, 363],

@@ -6,15 +6,15 @@
   "yearRange": { "from": 1657, "to": 2300 },
   "gregorianRange": { "from": -2103, "to": -1500 },
   "palette": {
-    "bg": "#4d3520",
-    "bgGradient": "linear-gradient(180deg,#4d3520 0%,#6a4a2e 100%)",
-    "surface": "#6a4a2e",
-    "primary": "#ffd870",
-    "secondary": "#c89858",
-    "accent": "#ffe898",
-    "text": "#fff0c8",
-    "muted": "rgba(255,240,200,.55)",
-    "border": "rgba(255,216,112,.25)"
+    "bg": "#1f0d10",
+    "bgGradient": "linear-gradient(180deg,#1f0d10 0%,#2e1418 60%,#3a1a1e 100%)",
+    "surface": "#2e1418",
+    "primary": "#a04048",
+    "secondary": "#7a3038",
+    "accent": "#b86058",
+    "text": "#e8d4c8",
+    "muted": "rgba(232,212,200,.50)",
+    "border": "rgba(160,64,72,.22)"
   },
   "typography": {
     "display": "'Trajan Pro 3', 'Cinzel', serif",
@@ -51,5 +51,9 @@
   "transition": {
     "intoNext": "sunrise-egypt",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era Patriarcal. Abraham, padre de un nuevo pueblo, dejó atrás Ur y atravesó desiertos guiado, según los relatos, por una voz divina. Selló una alianza, es decir, un acuerdo sagrado, que aún resuena en tres religiones. Isaac fue atado al altar y devuelto a su padre. Jacob luchó con un ángel y soñó una escalera entre el cielo y la tierra. Y José, vendido por sus hermanos, terminó gobernando Egipto. Un linaje frágil sobrevivió a la hambruna, la traición y el reencuentro.",
+    "nextPreview": "Lo que sigue es la era del Éxodo: Egipto y la liberación. Los descendientes de Jacob se han multiplicado bajo el dominio del faraón. La tradición narra que un niño hebreo será rescatado de las aguas, escuchará una zarza que arde sin consumirse y enfrentará al imperio con diez plagas. El mar se abrirá, y un pueblo entero cruzará el desierto en busca de una tierra prometida."
   }
 }

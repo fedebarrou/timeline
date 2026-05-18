@@ -2,6 +2,7 @@
   "id": "roma-antigua",
   "ancientName": "Roma imperial",
   "modernName": "Roma, Italia",
+  "portrait": "/images/locations/roma-antigua.jpg",
   "region": "romano",
   "coords": [41.90, 12.50],
   "svgPosition": [430, 290],

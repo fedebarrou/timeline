@@ -19,41 +19,52 @@ const eventsHere = events.filter((e) => data.events?.includes(e.data.id));
   <TranslucentBackdrop src={data.portrait} alt={data.ancientName} />
 
   <article class="relative z-10 px-6 py-16 max-w-4xl mx-auto">
-    <a href="/lugares" class="back-link inline-flex items-center gap-2 text-xs tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity mb-8">
+    <a href="/lugares" class="back-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity mb-8">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
       Volver a lugares
     </a>
     <header class="mb-10">
-      <p class="text-xs tracking-[0.4em] uppercase opacity-60 mb-2">Lugar · {data.region}</p>
+      <p class="text-sm tracking-[0.4em] uppercase opacity-60 mb-2">Lugar · {data.region}</p>
       <h1 class="font-display text-5xl">{data.ancientName}</h1>
       {data.modernName && (
         <p class="text-base md:text-lg opacity-70 mt-2 italic font-display">{data.modernName}</p>
       )}
       {data.disputed && (
-        <span class="inline-block mt-4 text-[10px] px-2 py-1 border border-yellow-500/50 rounded">
-          Localización disputada
-        </span>
+        <div class="disputed-badge mt-5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 9v4"></path>
+            <path d="M12 17h.01"></path>
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          </svg>
+          <span>Localización disputada</span>
+        </div>
       )}
     </header>
 
     <section class="mb-10">
-      <p class="text-base leading-relaxed opacity-90">{data.description}</p>
+      <p class="text-lg leading-relaxed opacity-90">{data.description}</p>
     </section>
 
     {data.proposedLocations && data.proposedLocations.length > 0 && (
       <section class="mb-10">
-        <h2 class="font-display text-2xl mb-4">Localizaciones propuestas</h2>
-        <ul class="space-y-3">
-          {data.proposedLocations.map((p: any) => (
-            <li class="border border-border rounded-lg p-4">
-              <h3 class="font-display text-lg">{p.name}</h3>
-              <p class="text-sm opacity-70 mt-1">{p.support}</p>
-              <p class="text-xs opacity-50 mt-2">Coords: {p.coords.join(', ')}</p>
+        <div class="proposals-header">
+          <h2 class="font-display text-2xl">Localizaciones propuestas</h2>
+          <p class="proposals-sub">{data.proposedLocations.length} {data.proposedLocations.length === 1 ? 'hipótesis' : 'hipótesis'} según fuentes y tradiciones distintas</p>
+        </div>
+        <ol class="proposals-list">
+          {data.proposedLocations.map((p: any, idx: number) => (
+            <li class="proposal-item">
+              <span class="proposal-number">{idx + 1}</span>
+              <div class="proposal-body">
+                <h3 class="font-display text-lg proposal-name">{p.name}</h3>
+                <p class="text-base opacity-80 mt-1 leading-relaxed">{p.support}</p>
+                <p class="text-xs opacity-50 mt-2 tracking-wider uppercase">Coords · {p.coords.join(', ')}</p>
+              </div>
             </li>
           ))}
-        </ul>
+        </ol>
       </section>
     )}
 
@@ -63,9 +74,9 @@ const eventsHere = events.filter((e) => data.events?.includes(e.data.id));
         <ul class="space-y-2">
           {eventsHere.map((e) => (
             <li>
-              <a href={`/era/${e.data.era}#event-${e.data.id}`} class="inline-flex items-center gap-2 text-sm hover:text-accent">
+              <a href={`/era/${e.data.era}#event-${e.data.id}`} class="inline-flex items-center gap-2 text-base hover:text-accent">
                 → <span class="font-display">{e.data.title}</span>
-                <span class="opacity-50 text-xs">· año {e.data.biblicalYear}</span>
+                <span class="opacity-50 text-sm">· año {e.data.biblicalYear}</span>
               </a>
             </li>
           ))}
@@ -74,3 +85,76 @@ const eventsHere = events.filter((e) => data.events?.includes(e.data.id));
     )}
   </article>
 </BaseLayout>
+
+<style>
+  .disputed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--era-accent, #f59e0b);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--era-accent, #f59e0b) 14%, transparent);
+    color: var(--era-accent, #f59e0b);
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    box-shadow: 0 2px 14px color-mix(in srgb, var(--era-accent, #f59e0b) 22%, transparent);
+  }
+  .disputed-badge svg { flex-shrink: 0; }
+
+  .proposals-header { margin-bottom: 18px; }
+  .proposals-sub {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .proposals-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    counter-reset: proposal;
+  }
+
+  .proposal-item {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--era-border);
+    border-left: 3px solid var(--era-accent, #f59e0b);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--era-surface, #1a1a1a) 70%, transparent);
+    transition: border-color 200ms ease, transform 200ms ease;
+  }
+  .proposal-item:hover {
+    border-color: var(--era-accent, #f59e0b);
+    transform: translateX(2px);
+  }
+
+  .proposal-number {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--era-accent, #f59e0b) 18%, transparent);
+    color: var(--era-accent, #f59e0b);
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--era-accent, #f59e0b);
+  }
+
+  .proposal-body { flex: 1; min-width: 0; }
+  .proposal-name { color: var(--era-primary); }
+</style>

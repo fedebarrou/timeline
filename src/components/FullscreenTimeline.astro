@@ -1,0 +1,352 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  events: CollectionEntry<'events'>[];
+}
+const { events } = Astro.props;
+
+const minYear = Math.min(...events.map((e) => e.data.biblicalYear));
+const maxYear = Math.max(...events.map((e) => e.data.biblicalYear));
+const span = (maxYear - minYear) || 1;
+function pct(y: number) { return ((y - minYear) / span) * 100; }
+
+const MIN_GAP_PCT = 4;
+const sortedEvents = [...events].sort((a, b) => a.data.biblicalYear - b.data.biblicalYear);
+const N = sortedEvents.length;
+const positions: number[] = sortedEvents.map((e) => pct(e.data.biblicalYear));
+for (let i = 1; i < N; i++) {
+  if (positions[i] - positions[i - 1] < MIN_GAP_PCT) {
+    positions[i] = positions[i - 1] + MIN_GAP_PCT;
+  }
+}
+if (N > 0 && positions[N - 1] > 100) {
+  positions[N - 1] = 100;
+  for (let i = N - 2; i >= 0; i--) {
+    if (positions[i + 1] - positions[i] < MIN_GAP_PCT) {
+      positions[i] = positions[i + 1] - MIN_GAP_PCT;
+    }
+  }
+}
+---
+<div class="fs-timeline" data-fs-timeline aria-hidden="true">
+  <button
+    type="button"
+    class="fs-timeline-arrow fs-timeline-arrow-prev"
+    data-fs-step="prev"
+    aria-label="Evento anterior"
+    title="Evento anterior"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <div class="fs-timeline-track">
+    <div class="fs-timeline-line"></div>
+    {sortedEvents.map((e, i) => (
+      <a
+        href={`#event-${e.data.id}`}
+        class="fs-timeline-dot"
+        style={`left: ${positions[i]}%`}
+        data-fs-marker={e.data.id}
+        data-fs-title={e.data.title}
+        data-fs-year={e.data.biblicalYear}
+      >
+        <span class="fs-timeline-year">{e.data.biblicalYear}</span>
+      </a>
+    ))}
+    <div class="fs-timeline-active" data-fs-active style="left: 0%;"></div>
+  </div>
+  <button
+    type="button"
+    class="fs-timeline-arrow fs-timeline-arrow-next"
+    data-fs-step="next"
+    aria-label="Evento siguiente"
+    title="Evento siguiente"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+</div>
+
+<style>
+  /* The pill stays HIDDEN until a scene change fires (or the user moves the
+     mouse). When it appears it gives a brief "attention flash" so the user
+     actually notices that the year/event just shifted. Styling pulls from
+     the era's CSS variables so the look adapts to each era's palette. */
+  .fs-timeline {
+    display: none;
+    position: fixed;
+    /* Sit BELOW the row of Volver / Reproducir buttons (which live at
+       site-nav-h + 0.5rem and are ~2.5rem tall). The extra offset gives
+       a clear vertical gap between the buttons and the pill. */
+    top: calc(var(--site-nav-h, 3.5rem) + 3.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    /* Cap width tighter so even on narrow viewports there's horizontal
+       breathing room between the side buttons and the pill edges. */
+    width: min(54vw, 640px);
+    /* Flex row: [← prev] [───track───] [next →]. The track stretches. */
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.85rem;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--era-bg) 92%, transparent) 0%,
+      color-mix(in srgb, var(--era-surface) 85%, transparent) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--era-primary) 45%, transparent);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.45),
+      0 0 0 1px color-mix(in srgb, var(--era-accent) 12%, transparent);
+    z-index: 55;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 360ms ease, transform 360ms ease, box-shadow 360ms ease;
+    font-family: var(--era-display, 'Cinzel', serif);
+  }
+  body.map-fullscreen .fs-timeline { display: flex; }
+
+  /* `.is-active` is toggled by JS for ~3.5s after each scene change, and
+     by the global idle reset. */
+  body.map-fullscreen .fs-timeline.is-active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Attention flash on each year change — glow only, no scale. */
+  @keyframes fs-tl-flash {
+    0%   { transform: translateX(-50%) translateY(0); box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 0 var(--era-accent); }
+    35%  { transform: translateX(-50%) translateY(0); box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 24px 4px color-mix(in srgb, var(--era-accent) 55%, transparent); }
+    100% { transform: translateX(-50%) translateY(0); box-shadow: 0 10px 30px rgba(0,0,0,0.45), 0 0 0 1px color-mix(in srgb, var(--era-accent) 12%, transparent); }
+  }
+  body.map-fullscreen .fs-timeline.is-flashing { animation: fs-tl-flash 1.2s ease-out; }
+
+  /* Idle / no recent activity → hide. */
+  body.map-fullscreen.map-fullscreen-idle .fs-timeline:not(.is-active) {
+    opacity: 0;
+  }
+
+  .fs-timeline-track {
+    position: relative;
+    height: 1.6rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* Prev / next arrow buttons living inside the pill. They dispatch
+     `biblia:request-activate` so the marker/camera actually move (in
+     fullscreen, scroll-based navigation is dead because the .scenes
+     container is display:none and the ScrollTriggers are paused). */
+  .fs-timeline-arrow {
+    flex: 0 0 auto;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--era-primary) 45%, transparent);
+    background: color-mix(in srgb, var(--era-bg) 80%, transparent);
+    color: var(--era-primary);
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease, transform 120ms ease, opacity 180ms ease;
+    pointer-events: auto;
+  }
+  .fs-timeline-arrow:hover {
+    background: color-mix(in srgb, var(--era-accent) 30%, var(--era-bg));
+    border-color: var(--era-accent);
+  }
+  .fs-timeline-arrow:active { transform: scale(0.94); }
+  .fs-timeline-arrow[disabled] {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .fs-timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: color-mix(in srgb, var(--era-primary) 35%, transparent);
+    transform: translateY(-50%);
+  }
+  .fs-timeline-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--era-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--era-bg) 80%, transparent);
+    transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  }
+  .fs-timeline-dot:hover {
+    transform: translate(-50%, -50%) scale(1.6);
+    background: var(--era-accent);
+    box-shadow: 0 0 12px var(--era-accent);
+  }
+  .fs-timeline-year {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-family: var(--era-display, 'Cinzel', serif);
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    white-space: nowrap;
+    pointer-events: none;
+    color: var(--era-primary);
+  }
+  .fs-timeline-active {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--era-accent);
+    background: var(--era-bg);
+    box-shadow:
+      0 0 12px var(--era-accent),
+      0 0 0 4px color-mix(in srgb, var(--era-accent) 18%, transparent);
+    transition: left 500ms ease, box-shadow 360ms ease;
+    pointer-events: none;
+  }
+  /* Pulse on the active dot every time it moves (sync with `is-flashing`). */
+  @keyframes fs-tl-active-pulse {
+    0%   { box-shadow: 0 0 12px var(--era-accent), 0 0 0 4px  color-mix(in srgb, var(--era-accent) 18%, transparent); }
+    50%  { box-shadow: 0 0 26px var(--era-accent), 0 0 0 10px color-mix(in srgb, var(--era-accent) 28%, transparent); }
+    100% { box-shadow: 0 0 12px var(--era-accent), 0 0 0 4px  color-mix(in srgb, var(--era-accent) 18%, transparent); }
+  }
+  .fs-timeline.is-flashing .fs-timeline-active { animation: fs-tl-active-pulse 1.2s ease-out; }
+</style>
+
+<script>
+  /* The pill is hidden by default; we toggle `.is-active` to show it and
+     `.is-flashing` for a one-shot attention animation on every scene
+     change. Auto-hides after 3.5s of no further changes (or 2s if the
+     idle-class fades it via the global idle timer). */
+  const pill = document.querySelector<HTMLElement>('[data-fs-timeline]');
+  const active = document.querySelector<HTMLElement>('[data-fs-active]');
+  let hideTimer: number | null = null;
+  const SHOW_MS = 3500;
+
+  let hoverLock = false;
+
+  function flashAndShow(opts: { skipFlash?: boolean } = {}) {
+    if (!pill) return;
+    pill.classList.add('is-active');
+    if (!opts.skipFlash && !hoverLock) {
+      pill.classList.remove('is-flashing');
+      // Force reflow so the animation restarts even when class is re-applied
+      // within the same tick (CSS animations don't replay on add-add otherwise).
+      void pill.offsetWidth;
+      pill.classList.add('is-flashing');
+    }
+    scheduleAutoHide();
+  }
+
+  function scheduleAutoHide() {
+    if (hideTimer) clearTimeout(hideTimer);
+    if (hoverLock) return; // don't auto-hide while the mouse is on the pill
+    hideTimer = window.setTimeout(() => {
+      pill?.classList.remove('is-active', 'is-flashing');
+    }, SHOW_MS);
+  }
+
+  // While hovering the pill we LOCK it open so the user can comfortably
+  // click any dot without the pill jumping around or fading mid-gesture.
+  if (pill) {
+    pill.addEventListener('mouseenter', () => {
+      hoverLock = true;
+      if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      pill.classList.remove('is-flashing'); // stop any in-flight flash
+      pill.classList.add('is-active');
+    });
+    pill.addEventListener('mouseleave', () => {
+      hoverLock = false;
+      scheduleAutoHide();
+    });
+  }
+
+  function updateActive(eventId: string) {
+    if (!active) return;
+    const marker = document.querySelector<HTMLAnchorElement>(`[data-fs-marker="${eventId}"]`);
+    if (marker) active.style.left = marker.style.left;
+  }
+
+  window.addEventListener('biblia:scene-changed', (e) => {
+    const id = (e as CustomEvent).detail?.eventId;
+    if (!id) return;
+    updateActive(id);
+    if (document.body.classList.contains('map-fullscreen')) flashAndShow();
+  });
+
+  // Show on user gesture too — mousemove / click — so the user can summon
+  // the pill on demand even when no scene is changing.
+  ['mousemove', 'click', 'touchstart', 'keydown'].forEach((ev) => {
+    window.addEventListener(ev, () => {
+      if (!document.body.classList.contains('map-fullscreen')) return;
+      flashAndShow();
+    }, { passive: true });
+  });
+
+  // Clicking a dot jumps to that event.
+  document.querySelectorAll<HTMLAnchorElement>('[data-fs-marker]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = el.dataset.fsMarker;
+      if (!id) return;
+      window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: id } }));
+      window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: id } }));
+    });
+  });
+
+  // Prev / next arrows on the pill ends. They look up the markers in DOM
+  // order, find the currently-active one (via `[data-fs-active]`'s left%),
+  // and jump to the neighbour. Disables itself at the edges.
+  const orderedMarkers = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-fs-marker]'));
+  const prevBtn = document.querySelector<HTMLButtonElement>('[data-fs-step="prev"]');
+  const nextBtn = document.querySelector<HTMLButtonElement>('[data-fs-step="next"]');
+
+  function currentIndex(): number {
+    if (!active) return 0;
+    const leftStr = active.style.left || '0%';
+    const leftPct = parseFloat(leftStr);
+    let best = 0;
+    let bestDist = Infinity;
+    orderedMarkers.forEach((m, i) => {
+      const mPct = parseFloat(m.style.left || '0');
+      const d = Math.abs(mPct - leftPct);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+  function jumpTo(idx: number) {
+    if (idx < 0 || idx >= orderedMarkers.length) return;
+    const id = orderedMarkers[idx].dataset.fsMarker;
+    if (!id) return;
+    window.dispatchEvent(new CustomEvent('biblia:scene-changed', { detail: { eventId: id } }));
+    window.dispatchEvent(new CustomEvent('biblia:request-activate', { detail: { eventId: id } }));
+  }
+  function refreshArrowsEnabled() {
+    const idx = currentIndex();
+    if (prevBtn) prevBtn.toggleAttribute('disabled', idx <= 0);
+    if (nextBtn) nextBtn.toggleAttribute('disabled', idx >= orderedMarkers.length - 1);
+  }
+  prevBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    jumpTo(currentIndex() - 1);
+  });
+  nextBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    jumpTo(currentIndex() + 1);
+  });
+  // Re-evaluate disabled state every time the active dot moves.
+  window.addEventListener('biblia:scene-changed', refreshArrowsEnabled);
+  refreshArrowsEnabled();
+</script>

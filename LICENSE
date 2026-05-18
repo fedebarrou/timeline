@@ -1,0 +1,76 @@
+Copyright © 2026 Federico Barroumeres. All Rights Reserved.
+
+This project — including its source code, content (texts, narrations,
+animations, illustrations, audio), design and overall presentation — is
+the original work of Federico Barroumeres (fbarroumeres@gmail.com).
+
+PUBLIC SOURCE, NOT OPEN SOURCE
+==============================
+
+The repository is publicly visible for transparency, study and personal
+reference. Public visibility does NOT grant any of the rights typically
+associated with open-source software.
+
+PERMITTED USES (no prior permission required)
+---------------------------------------------
+
+1. Reading, studying and analysing the code for personal educational
+   purposes.
+2. Running the code locally on your own machine, strictly for personal
+   non-commercial experimentation.
+3. Citing or quoting short excerpts (with attribution) in academic or
+   journalistic contexts under fair-use principles.
+
+PROHIBITED WITHOUT EXPLICIT WRITTEN PERMISSION FROM THE AUTHOR
+--------------------------------------------------------------
+
+The following are RESERVED and require prior, signed, written
+authorisation from Federico Barroumeres:
+
+  - Redistribution of the source code, in whole or in part.
+  - Hosting, deploying or making the project (or any derivative)
+    publicly accessible over a network (Internet, intranet, etc.).
+  - Selling, licensing, sublicensing, or otherwise commercialising the
+    project, any derivative work, or any portion of its content.
+  - Incorporating the code or content into a commercial product or
+    service, paid or free, that generates revenue, advertising income,
+    user data, or any other commercial advantage.
+  - Creating derivative works (forks, modifications, adaptations,
+    translations) that are then distributed, hosted, or otherwise
+    made available beyond your own private use.
+  - Training machine learning / AI models on this repository's content
+    for purposes that would re-emit, paraphrase or compete with this
+    work.
+  - Removing, hiding or altering copyright notices, attribution or this
+    LICENSE file.
+
+ATTRIBUTION
+-----------
+
+Any permitted use that surfaces this work to other people MUST visibly
+credit the author as:
+
+    Federico Barroumeres — https://github.com/<your-handle>/biblia
+
+(Replace the URL with the canonical repository or personal site once
+established.)
+
+ENFORCEMENT
+-----------
+
+Unauthorised commercial use, redistribution or derivative deployment
+constitutes copyright infringement and may be pursued through any
+available legal remedy. The public commit history on GitHub serves as
+timestamped evidence of authorship.
+
+The author may grant individual licenses (commercial, educational,
+collaborative) on request. Contact: fbarroumeres@gmail.com
+
+NO WARRANTY
+-----------
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT
+SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE WORK OR ITS USE.

@@ -20,6 +20,15 @@ const eras = defineCollection({
       text: z.string(),
       muted: z.string(),
       border: z.string(),
+      /**
+       * Optional override for text rendered OVER dark overlays (e.g. the
+       * caption masks on map location thumbnails / character pin name labels).
+       * Light-themed eras like Revelación whose `primary` is a dark brown
+       * become unreadable on the dark `rgba(0,0,0,0.45)` mask; in those
+       * cases set a high-luminance value here. When omitted the caption
+       * falls back to `--era-primary` (correct for the dark-themed eras).
+       */
+      labelOnDark: z.string().optional(),
     }),
     typography: z.object({
       display: z.string(),
@@ -57,6 +66,16 @@ const eras = defineCollection({
       intoNext: z.string(),
       duration: z.number(),
     }),
+    /**
+     * Optional closing parchment shown when the era's play mode finishes.
+     * - `summary`: a paragraph that recaps the era's arc.
+     * - `nextPreview`: a paragraph teasing what the next era brings.
+     * Eras without these fields get a generated fallback from `tagline`.
+     */
+    closing: z.object({
+      summary: z.string().optional(),
+      nextPreview: z.string().optional(),
+    }).optional(),
   }),
 });
 
@@ -208,16 +227,40 @@ const characters = defineCollection({
       'vigilantes',
       'descendientes-cain',
       'linaje-set',
-      // Era Patriarcal
+      // Era Patriarcal (legacy single-bucket — kept for backward compatibility)
       'patriarcal',
-      // Era Éxodo
+      // Era Patriarcal (fine-grained subgroups)
+      'patriarcas-padres-fundadores',
+      'patriarcas-madres-fundadoras',
+      'patriarcas-hijos-tribus',
+      'patriarcas-vinculados',
+      // Era Éxodo (legacy single-bucket)
       'exodo',
-      // Era Reinos y Exilio
+      // Era Éxodo (fine-grained subgroups)
+      'exodo-liberadores',
+      'exodo-faraones-y-egipcios',
+      'exodo-generacion-desierto',
+      'exodo-conquista-canaan',
+      // Era Reinos y Exilio (legacy single-bucket)
       'reinos-y-exilio',
+      // Era Reinos y Exilio (fine-grained subgroups)
+      'reinos-jueces',
+      'reinos-reyes',
+      'reinos-profetas',
+      'reinos-exilio-y-retorno',
       // Era Evangelio
-      'evangelio',
-      // Era Revelación
+      'evangelio-familia',
+      'evangelio-magos',
+      'evangelio-apostoles',
+      'evangelio-primeros-cristianos',
+      // Era Revelación (legacy single-bucket)
       'revelacion',
+      // Era Revelación (fine-grained subgroups)
+      'revelacion-familia-mahoma',
+      'revelacion-companeros',
+      'revelacion-opresores-meca',
+      'revelacion-ansar-medina',
+      'revelacion-otros',
     ]).optional(),
     portrait: z.string().optional(),
     avatar: z.string().optional(),
@@ -243,6 +286,13 @@ const characters = defineCollection({
       source: z.string(),
       summary: z.string(),
     })).default([]),
+    /**
+     * Hand-set override for the character's canonicity tier. When absent it
+     * is derived automatically from `mentions` / `extraBiblical` by
+     * `src/lib/canonicity.ts`. Used to colour the map pin border and the
+     * hover-card badge.
+     */
+    canonicity: z.enum(['canonical', 'apocryphal', 'traditional', 'unknown']).optional(),
     roles: z.array(z.string()).default([]),
     titles: z.array(z.object({
       tradition: z.string(),

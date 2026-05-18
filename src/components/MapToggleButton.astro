@@ -1,36 +1,54 @@
 <button
   type="button"
-  class="map-toggle-btn fixed z-[60] right-4 top-[7.5rem] md:top-auto md:bottom-[5.5rem] md:right-6 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
+  class="map-toggle-btn absolute z-[60] bottom-4 right-4 md:bottom-5 md:right-5 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
   data-map-toggle
   aria-label="Cambiar entre mapa antiguo y mapa actual"
   title="Cambiar mapa"
 >
-  <span class="icon" data-state="manuscript">▣</span>
-  <span class="label hidden sm:inline">Mapa actual</span>
+  {/* Universal "swap / repeat" icon — two arrows that loop back, semantics:
+      "switch between two views". Lucide / Feather "repeat" glyph inlined. */}
+  <svg
+    class="swap-icon"
+    width="14" height="14" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2.4"
+    stroke-linecap="round" stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="17 1 21 5 17 9"></polyline>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+    <polyline points="7 23 3 19 7 15"></polyline>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+  </svg>
+  {/* Label names the CURRENT map (not the destination) so the user always
+      knows which view they're looking at. Initial = "Mapa antiguo"
+      (we start in manuscript mode). The click handler updates it. */}
+  <span class="label hidden sm:inline" data-state="manuscript">Mapa antiguo</span>
 </button>
 
 <script>
   import { toggleMap } from '../lib/mapToggle';
   const btn = document.querySelector<HTMLButtonElement>('[data-map-toggle]');
-  const icon = btn?.querySelector<HTMLElement>('.icon');
   const label = btn?.querySelector<HTMLElement>('.label');
-  if (btn && icon && label) {
+  if (btn && label) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      const currentState = label.dataset.state ?? 'manuscript';
+      console.log('[map-toggle-btn] click — current state:', currentState);
       try {
         toggleMap();
-        const isModern = icon.dataset.state === 'manuscript';
-        icon.dataset.state = isModern ? 'modern' : 'manuscript';
-        icon.textContent = isModern ? '⌘' : '▣';
-        label.textContent = isModern ? 'Mapa antiguo' : 'Mapa actual';
+        // Label always says the name of the CURRENTLY DISPLAYED map.
+        const nowModern = currentState === 'manuscript'; // we just flipped
+        label.dataset.state = nowModern ? 'modern' : 'manuscript';
+        label.textContent = nowModern ? 'Mapa actual' : 'Mapa antiguo';
+        console.log('[map-toggle-btn] new state:', label.dataset.state);
       } catch (err) {
-        console.error('map toggle failed', err);
+        console.error('[map-toggle-btn] toggleMap threw', err);
       }
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'm' || e.key === 'M') btn.click();
     });
   } else {
-    console.warn('MapToggleButton: required elements not found', { btn, icon, label });
+    console.warn('MapToggleButton: required elements not found', { btn, label });
   }
 </script>

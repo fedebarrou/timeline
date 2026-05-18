@@ -2,6 +2,7 @@
   "id": "egipto-antiguo",
   "ancientName": "Egipto faraónico",
   "modernName": "Egipto (zona del Delta y Heliópolis)",
+  "portrait": "/images/locations/egipto-antiguo.jpg",
   "region": "egipto",
   "coords": [30.05, 31.23],
   "svgPosition": [510, 410],

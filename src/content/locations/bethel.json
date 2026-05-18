@@ -2,6 +2,7 @@
   "id": "bethel",
   "ancientName": "Betel",
   "modernName": "Beitin, Cisjordania",
+  "portrait": "/images/locations/bethel.jpg",
   "region": "levante",
   "coords": [31.93, 35.23],
   "svgPosition": [581, 358],

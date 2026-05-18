@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 interface Props {
   currentEraId?: string;
   currentEraName?: string;
@@ -14,28 +15,60 @@ const links = [
   { href: '/fuentes',     label: 'Fuentes' },
   { href: '/sobre',       label: 'Sobre' },
 ];
+
+// On the home route, the right side of the nav lists ALL eras so the user
+// can jump straight to any one. The currently-active era (server-known or
+// later refined from localStorage) gets highlighted.
+const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '';
+const allEras = isHome
+  ? (await getCollection('eras')).sort((a, b) => a.data.order - b.data.order)
+  : [];
+const allEvents = isHome ? await getCollection('events') : [];
+const eraHasEvents = (id: string) => allEvents.some((e) => e.data.era === id);
 ---
 <nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg">
-  <a href="/" class="font-display text-sm tracking-[0.3em] uppercase hover:text-accent" title="Ir al selector de eras">
-    Adán → Mahoma
+  <a href="/" class="site-brand font-display text-sm tracking-[0.3em] uppercase hover:text-accent inline-flex items-center gap-2.5" title="Ir al selector de eras">
+    <img src="/images/logo2.png" alt="" aria-hidden="true" class="site-brand__mark h-8 w-auto md:h-9" />
+    <span>Adán &rarr; Mahoma</span>
   </a>
 
   {/* Desktop nav */}
-  <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70 items-center">
-    <li data-era-nav-item>
-      <a
-        href={`/era/${eraId}`}
-        class="hover:opacity-100 hover:text-accent text-accent"
-        data-era-link
-        data-era-id={eraId}
-      >
-        <span data-era-nav-label>Era · {eraName}</span>
-      </a>
-    </li>
-    {links.map((l) => (
-      <li><a href={l.href} class="hover:opacity-100 hover:text-accent">{l.label}</a></li>
-    ))}
-  </ul>
+  {isHome ? (
+    <ul class="hidden md:flex gap-5 lg:gap-7 text-[10px] lg:text-xs tracking-wider uppercase opacity-70 items-center" data-home-era-nav>
+      {allEras.map((era) => {
+        const has = eraHasEvents(era.data.id);
+        return (
+          <li>
+            <a
+              href={has ? `/era/${era.data.id}` : undefined}
+              class={`hover:opacity-100 transition-opacity whitespace-nowrap ${has ? 'hover:text-accent' : 'opacity-40 cursor-not-allowed'}`}
+              data-home-era-link
+              data-era-id={era.data.id}
+              aria-disabled={has ? undefined : 'true'}
+            >
+              {era.data.name}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  ) : (
+    <ul class="hidden md:flex gap-6 text-xs tracking-wider uppercase opacity-70 items-center">
+      <li data-era-nav-item>
+        <a
+          href={`/era/${eraId}`}
+          class="hover:opacity-100 hover:text-accent text-accent"
+          data-era-link
+          data-era-id={eraId}
+        >
+          <span data-era-nav-label>Era · {eraName}</span>
+        </a>
+      </li>
+      {links.map((l) => (
+        <li><a href={l.href} class="hover:opacity-100 hover:text-accent">{l.label}</a></li>
+      ))}
+    </ul>
+  )}
 
   {/* Mobile hamburger */}
   <button
@@ -57,23 +90,44 @@ const links = [
     class="mobile-menu md:hidden hidden absolute top-full right-0 mt-1 mr-4 w-56 rounded-lg border border-border bg-bg shadow-2xl overflow-hidden"
     data-mobile-menu
   >
-    <ul class="divide-y divide-border/40">
-      <li>
-        <a
-          href={`/era/${eraId}`}
-          class="block px-5 py-3 text-xs tracking-wider uppercase text-accent hover:bg-surface"
-          data-era-link-mobile
-          data-era-id={eraId}
-        >
-          <span data-era-nav-label-mobile>Era · {eraName}</span>
-        </a>
-      </li>
-      {links.map((l) => (
+    {isHome ? (
+      <ul class="divide-y divide-border/40" data-home-era-nav-mobile>
+        {allEras.map((era) => {
+          const has = eraHasEvents(era.data.id);
+          return (
+            <li>
+              <a
+                href={has ? `/era/${era.data.id}` : undefined}
+                class={`block px-5 py-3 text-xs tracking-wider uppercase ${has ? 'hover:bg-surface hover:text-accent' : 'opacity-40 cursor-not-allowed'}`}
+                data-home-era-link-mobile
+                data-era-id={era.data.id}
+                aria-disabled={has ? undefined : 'true'}
+              >
+                {era.data.name}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    ) : (
+      <ul class="divide-y divide-border/40">
         <li>
-          <a href={l.href} class="block px-5 py-3 text-xs tracking-wider uppercase hover:bg-surface hover:text-accent">{l.label}</a>
+          <a
+            href={`/era/${eraId}`}
+            class="block px-5 py-3 text-xs tracking-wider uppercase text-accent hover:bg-surface"
+            data-era-link-mobile
+            data-era-id={eraId}
+          >
+            <span data-era-nav-label-mobile>Era · {eraName}</span>
+          </a>
         </li>
-      ))}
-    </ul>
+        {links.map((l) => (
+          <li>
+            <a href={l.href} class="block px-5 py-3 text-xs tracking-wider uppercase hover:bg-surface hover:text-accent">{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    )}
   </div>
 </nav>
 
@@ -102,17 +156,29 @@ const links = [
   const DEFAULT_ID = 'primordial';
   const DEFAULT_NAME = 'Primordial';
 
+  function highlightHomeEra(activeId: string | null) {
+    const links = document.querySelectorAll<HTMLAnchorElement>('[data-home-era-link], [data-home-era-link-mobile]');
+    links.forEach((a) => {
+      const id = a.getAttribute('data-era-id');
+      if (id && id === activeId) {
+        a.classList.add('text-accent', 'opacity-100');
+      } else {
+        a.classList.remove('text-accent', 'opacity-100');
+      }
+    });
+  }
+
   function sync() {
     const path = window.location.pathname;
     const onEra = path.startsWith('/era/');
+    const onHome = path === '/' || path === '';
 
     const desktopLink = document.querySelector<HTMLAnchorElement>('[data-era-link]');
     const desktopLabel = document.querySelector<HTMLElement>('[data-era-nav-label]');
     const mobileLink = document.querySelector<HTMLAnchorElement>('[data-era-link-mobile]');
     const mobileLabel = document.querySelector<HTMLElement>('[data-era-nav-label-mobile]');
-    if (!desktopLink || !desktopLabel) return;
 
-    if (onEra) {
+    if (onEra && desktopLink && desktopLabel) {
       const serverId = desktopLink.getAttribute('data-era-id') || DEFAULT_ID;
       const serverName = (desktopLabel.textContent ?? '').replace(/^Era · /, '') || DEFAULT_NAME;
       try {
@@ -122,32 +188,48 @@ const links = [
       return;
     }
 
+    // Read the last-viewed era from localStorage
+    let storedId: string | null = null;
+    let storedName: string | null = null;
     try {
-      const id = localStorage.getItem(STORAGE_ID);
-      const name = localStorage.getItem(STORAGE_NAME);
-      if (id && name) {
-        desktopLink.setAttribute('href', `/era/${id}`);
-        desktopLink.setAttribute('data-era-id', id);
-        desktopLabel.textContent = `Era · ${name}`;
-        if (mobileLink && mobileLabel) {
-          mobileLink.setAttribute('href', `/era/${id}`);
-          mobileLink.setAttribute('data-era-id', id);
-          mobileLabel.textContent = `Era · ${name}`;
-        }
-      }
+      storedId = localStorage.getItem(STORAGE_ID);
+      storedName = localStorage.getItem(STORAGE_NAME);
     } catch {}
 
-    // Update body data-era so CSS variables follow the user's current era context
-    try {
-      const storedId = localStorage.getItem(STORAGE_ID);
-      if (storedId) {
-        document.body.dataset.era = storedId;
-      } else {
-        document.body.dataset.era = 'primordial';
+    if (onHome) {
+      // Highlight the era the user was last on
+      highlightHomeEra(storedId);
+    } else if (desktopLink && desktopLabel) {
+      // Other pages: keep the "Era · X" link in sync with localStorage
+      if (storedId && storedName) {
+        desktopLink.setAttribute('href', `/era/${storedId}`);
+        desktopLink.setAttribute('data-era-id', storedId);
+        desktopLabel.textContent = `Era · ${storedName}`;
+        if (mobileLink && mobileLabel) {
+          mobileLink.setAttribute('href', `/era/${storedId}`);
+          mobileLink.setAttribute('data-era-id', storedId);
+          mobileLabel.textContent = `Era · ${storedName}`;
+        }
       }
+    }
+
+    // Body data-era follows the user's current era context (drives CSS vars)
+    try {
+      document.body.dataset.era = storedId || 'primordial';
     } catch {}
   }
 
   sync();
   document.addEventListener('DOMContentLoaded', sync);
 </script>
+
+<style>
+  .site-brand__mark {
+    flex-shrink: 0;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+  .site-brand:hover .site-brand__mark {
+    transform: scale(1.06);
+    opacity: 0.95;
+  }
+</style>

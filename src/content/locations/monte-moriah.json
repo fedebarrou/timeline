@@ -1,11 +1,29 @@
 {
   "id": "monte-moriah",
   "ancientName": "Monte Moriah",
-  "modernName": "Jerusalén, Monte del Templo / Haram al-Sharif",
+  "modernName": "Monte del Templo / Haram al-Sharif, Jerusalén (identificación judía y musulmana)",
   "region": "levante",
-  "coords": [31.78, 35.24],
-  "svgPosition": [582, 360],
-  "disputed": false,
-  "description": "Elevación rocosa identificada por Génesis 22:2 como el sitio donde Abraham debía ofrecer a su hijo. La tradición judía (2 Crónicas 3:1) la equipara con la cima donde Salomón edificó el Primer Templo. La tradición islámica venera el mismo afloramiento rocoso, hoy bajo la Cúpula de la Roca, como el lugar de la ofrenda (ligada en su mayoría a Ismael) y del viaje nocturno (Isra) del profeta Muhammad. Es uno de los espacios más cargados del mundo abrahámico.",
+  "disputed": true,
+  "proposedLocations": [
+    {
+      "name": "Monte del Templo, Jerusalén",
+      "coords": [31.78, 35.24],
+      "svgPosition": [582, 360],
+      "support": "Identificación de la tradición judía (2 Crónicas 3:1 equipara explícitamente Moriah con la cima donde Salomón edifica el Primer Templo) y de la tradición islámica, que venera la roca bajo la Cúpula de la Roca como lugar de la ofrenda (ligada en su mayoría a Ismael) y del viaje nocturno (Isra) del profeta Muhammad."
+    },
+    {
+      "name": "Monte Gerizim, cerca de Siquem (Nablus)",
+      "coords": [32.20, 35.27],
+      "svgPosition": [585, 354],
+      "support": "Identificación de la tradición samaritana, que lee 'tierra de Moreh' (Génesis 12:6) en lugar de 'Moriah' y sitúa el Akedah en el monte que también identifica como lugar legítimo del culto. El Pentateuco samaritano presenta variantes textuales que apoyan esta lectura."
+    },
+    {
+      "name": "Otro monte de la región de Moriah (hipótesis académica)",
+      "coords": [31.85, 35.30],
+      "svgPosition": [583, 358],
+      "support": "Algunos estudios críticos consideran que 'tierra de Moriah' (Génesis 22:2) era originalmente una región imprecisa y que su identificación con el monte del Templo es un desarrollo tardío de la teología deuteronomista, vinculando el lugar de Abraham con el santuario de Jerusalén."
+    }
+  ],
+  "description": "Elevación rocosa identificada por Génesis 22:2 como el sitio donde Abraham debía ofrecer a su hijo. La tradición judía (2 Crónicas 3:1) y la tradición islámica lo identifican con el Monte del Templo en Jerusalén; la tradición samaritana lo sitúa en el Monte Gerizim. Es uno de los espacios más cargados del mundo abrahámico y su identificación geográfica precisa es disputada entre tradiciones.",
   "events": ["akedah-sacrificio-isaac"]
 }

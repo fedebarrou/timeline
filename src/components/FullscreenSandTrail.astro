@@ -1,0 +1,289 @@
+---
+/**
+ * Mouse-driven sand trail — active SITEWIDE on every page.
+ *
+ * Every pointer move emits a small burst of sand particles. Particles
+ * drift on a turbulent wind field (hero-style), with `stormIntensity`
+ * scaling emission / wind / size when the cursor is shaken aggressively.
+ *
+ * Pulls --era-primary / --era-accent from the active era theme so the
+ * sand colour matches the page palette.
+ */
+---
+<canvas
+  class="fs-sand-trail"
+  data-fs-sand-trail
+  aria-hidden="true"
+></canvas>
+
+<style>
+  .fs-sand-trail {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    /* Above body content but below modals/dialogs (parchment is z-80). */
+    z-index: 56;
+  }
+</style>
+
+<script>
+  type SandP = {
+    x: number; y: number;
+    vx: number; vy: number;
+    r: number;
+    life: number;     // current age in seconds
+    maxLife: number;  // total lifespan in seconds
+    hue: 0 | 1;       // 0 = primary, 1 = accent (subtle variation)
+    phase: number;    // wind-noise phase
+  };
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-fs-sand-trail]');
+  if (canvas) {
+    const cv: HTMLCanvasElement = canvas;
+    const ctx = cv.getContext('2d', { alpha: true });
+    if (ctx) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let W = 0, H = 0;
+      let particles: SandP[] = [];
+      let raf = 0;
+      let lastT = performance.now() / 1000;
+      let lastMouseT = 0;
+      let lastMx = 0, lastMy = 0;
+      let mvx = 0, mvy = 0;           // smoothed mouse velocity (px / frame)
+      let active = true;              // always-on sitewide
+      let primaryRGB = '212, 165, 116';
+      let accentRGB = '232, 196, 138';
+
+      // Cap particle count so heavy mouse drags don't tank framerate.
+      const MAX_PARTICLES = 560;
+      // Sub-emission budget so a single fast pointermove (which may
+      // arrive at sub-frame intervals) doesn't dump a cloud at once.
+      let emitDebt = 0;
+
+      // Storm intensification: rises while the user shakes the cursor
+      // (sustained smoothed-speed above SPEED_ON), decays when the cursor
+      // slows below SPEED_OFF. ~0.4s to build, ~1.5s to drain back.
+      let stormIntensity = 0;
+      const STORM_SPEED_ON = 2.2;     // px/frame smoothed speed to start ramping up
+      const STORM_SPEED_OFF = 1.0;    // below this, intensity decays
+      const STORM_RAMP_UP = 2.5;      // units/sec → reaches 1.0 after ~0.4s of fast motion
+      const STORM_RAMP_DOWN = 0.67;   // units/sec → drains 1.0 → 0 in ~1.5s
+
+      function fit() {
+        W = window.innerWidth;
+        H = window.innerHeight;
+        cv.width = Math.floor(W * dpr);
+        cv.height = Math.floor(H * dpr);
+        cv.style.width = W + 'px';
+        cv.style.height = H + 'px';
+        ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function parseRGB(cssColor: string, fallback: string): string {
+        const v = (cssColor || '').trim();
+        if (!v) return fallback;
+        // Accept #rrggbb, rgb(), rgba(), oklch()/hsl(). Cheapest path is to
+        // ask the browser to resolve it via a temp element + getComputedStyle.
+        const probe = document.createElement('span');
+        probe.style.color = v;
+        probe.style.display = 'none';
+        document.body.appendChild(probe);
+        const resolved = getComputedStyle(probe).color; // rgb(r, g, b) or rgba(...)
+        probe.remove();
+        const m = resolved.match(/\d+(\.\d+)?/g);
+        if (!m || m.length < 3) return fallback;
+        return `${Math.round(+m[0])}, ${Math.round(+m[1])}, ${Math.round(+m[2])}`;
+      }
+
+      function refreshColors() {
+        const cs = getComputedStyle(document.body);
+        primaryRGB = parseRGB(cs.getPropertyValue('--era-primary'), '212, 165, 116');
+        accentRGB = parseRGB(cs.getPropertyValue('--era-accent'), '232, 196, 138');
+      }
+
+      function emit(x: number, y: number) {
+        // Subtle: emission is gated by cursor speed AND budgeted by
+        // fractional debt so even fast swipes only leave a thin veil
+        // rather than a plume. Slow / stationary cursor → zero output.
+        const speed = Math.hypot(mvx, mvy);
+        if (speed < 0.6) return;
+        // Storm-driven emission multiplier: 1x at calm, ~7x at full storm.
+        const si = stormIntensity;
+        const emitMul = 1 + si * 6;
+        // Average ~0.4 particles per move at slow speeds, ~2 at fast.
+        // Sub-1 budgets accumulate via emitDebt so trails stay continuous.
+        const rate = Math.min(2.2 + si * 6, (0.15 + speed * 0.18) * emitMul);
+        emitDebt += rate;
+        // Radius range expands with storm: 0.35–1.0 px calm → 0.45–1.8 px peak.
+        const rBase = 0.35 + si * 0.10;
+        const rSpan = 0.65 + si * 0.70;
+        // Lifespan grows a touch so the storm hangs in the air.
+        const lifeBase = 1.6 + si * 0.4;
+        const lifeSpan = 1.4 + si * 0.8;
+        // Accent hue creep — 0% at calm, ~15% at full storm.
+        const accentChance = si * 0.15;
+        while (emitDebt >= 1) {
+          emitDebt -= 1;
+          if (particles.length >= MAX_PARTICLES) { emitDebt = 0; break; }
+          // Small origin jitter — wider than before so the trail reads as
+          // diffuse dust, not a tight bead.
+          const jr = Math.random() * (10 + si * 6);
+          const jt = Math.random() * Math.PI * 2;
+          const ox = x + Math.cos(jt) * jr;
+          const oy = y + Math.sin(jt) * jr;
+          // Inherit only a sliver of cursor velocity + tiny radial splay.
+          // No downward bias — the hero feel is wind, not gravity.
+          const splayAng = Math.random() * Math.PI * 2;
+          const splayMag = Math.random() * (0.25 + si * 0.6);
+          particles.push({
+            x: ox,
+            y: oy,
+            vx: mvx * (0.08 + si * 0.08) + Math.cos(splayAng) * splayMag,
+            vy: mvy * (0.08 + si * 0.08) + Math.sin(splayAng) * splayMag,
+            r: rBase + Math.random() * rSpan,
+            life: 0,
+            maxLife: lifeBase + Math.random() * lifeSpan,
+            hue: Math.random() < accentChance ? 1 : 0,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+
+      function step(t: number) {
+        const now = t / 1000;
+        const dt = Math.min(0.05, now - lastT); // clamp huge dt (tab blur)
+        lastT = now;
+
+        ctx!.clearRect(0, 0, W, H);
+        if (!active) {
+          // Drain any in-flight particles when leaving fullscreen, then idle.
+          if (particles.length === 0) { raf = 0; return; }
+        }
+
+        // Update storm intensity from sustained smoothed cursor speed.
+        // Sampled here (not in onMove) so a stopped cursor still decays.
+        const speed = Math.hypot(mvx, mvy);
+        if (speed > STORM_SPEED_ON) {
+          stormIntensity = Math.min(1, stormIntensity + STORM_RAMP_UP * dt);
+        } else if (speed < STORM_SPEED_OFF) {
+          stormIntensity = Math.max(0, stormIntensity - STORM_RAMP_DOWN * dt);
+        }
+        // Between OFF and ON: hold — gives the storm a brief plateau.
+
+        // Hero-style wind only — no gravity. Turbulent sin/cos noise +
+        // a slow rotating directional drift, heavy damping so initial
+        // velocity bleeds off quickly and grains "settle" into the wind.
+        const drag = 0.93;             // per-frame velocity multiplier — strong
+        // Wind amp scales 4.5 → ~16 (≈3.5x) with storm intensity.
+        const windAmp = 4.5 * (1 + stormIntensity * 2.5);
+        // Alpha cap scales 0.35 → ~0.6 with storm intensity.
+        const alphaCap = 0.35 + stormIntensity * 0.25;
+        const driftAng = now * 0.06;
+        const driftX = Math.cos(driftAng);
+        const driftY = Math.sin(driftAng) * 0.55;
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.life += dt;
+          if (p.life >= p.maxLife) {
+            particles.splice(i, 1);
+            continue;
+          }
+          // Two-axis turbulence sampled at the particle's position so
+          // nearby grains move together (forms wispy streams instead of
+          // isotropic noise). Same shape as LogoParticles' wind field.
+          const wx = Math.sin(p.y * 0.012 + now * 0.6 + p.phase) * windAmp
+                   + Math.cos(p.x * 0.008 - now * 0.4) * windAmp * 0.55
+                   + driftX * windAmp * 0.5;
+          const wy = Math.cos(p.x * 0.011 + now * 0.7 + p.phase * 1.3) * windAmp * 0.65
+                   + Math.sin(p.y * 0.009 + now * 0.5) * windAmp * 0.45
+                   + driftY * windAmp * 0.5;
+          p.vx = p.vx * drag + wx * dt;
+          p.vy = p.vy * drag + wy * dt;
+          p.x += p.vx * dt * 60;
+          p.y += p.vy * dt * 60;
+
+          // Cull if drifted way offscreen — saves cycles.
+          if (p.y - p.r > H + 40 || p.y + p.r < -40 || p.x < -40 || p.x > W + 40) {
+            particles.splice(i, 1);
+            continue;
+          }
+
+          // Long fade-in (no sharp pop), long fade-out — bell-shape curve.
+          const lt = p.life / p.maxLife;
+          const fadeIn = Math.min(1, lt / 0.25);
+          const fadeOut = 1 - Math.max(0, (lt - 0.4) / 0.6);
+          // Max alpha capped — 0.35 at calm, up to ~0.6 at full storm.
+          const alpha = fadeIn * fadeOut * alphaCap;
+          if (alpha < 0.01) continue;
+
+          const rgb = p.hue === 0 ? primaryRGB : accentRGB;
+          ctx!.fillStyle = `rgba(${rgb}, ${alpha.toFixed(3)})`;
+          ctx!.beginPath();
+          ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+
+        // Decay smoothed mouse velocity so the next emit gets a believable
+        // value even if the user pauses for a frame mid-stroke.
+        mvx *= 0.86;
+        mvy *= 0.86;
+
+        raf = requestAnimationFrame(step);
+      }
+
+      function ensureLoop() {
+        if (!raf) {
+          lastT = performance.now() / 1000;
+          raf = requestAnimationFrame(step);
+        }
+      }
+
+      function onMove(e: MouseEvent | PointerEvent) {
+        if (!active) return;
+        const now = performance.now() / 1000;
+        const x = e.clientX;
+        const y = e.clientY;
+        const dt = Math.max(1 / 240, now - lastMouseT);
+        // Px/frame (~60fps reference) instantaneous velocity, smoothed
+        // exponentially so single jittery samples don't blow up emission.
+        const ivx = (x - lastMx) / (dt * 60);
+        const ivy = (y - lastMy) / (dt * 60);
+        mvx = mvx * 0.55 + ivx * 0.45;
+        mvy = mvy * 0.55 + ivy * 0.45;
+        lastMx = x;
+        lastMy = y;
+        lastMouseT = now;
+        emit(x, y);
+        ensureLoop();
+      }
+
+      function bootstrap() {
+        refreshColors();
+        fit();
+        ensureLoop();
+      }
+
+      window.addEventListener('resize', () => {
+        if (active) fit();
+      });
+
+      // Pointer events cover mouse + pen + touch (touch is throttled by the
+      // browser but still produces a trail under finger drags).
+      window.addEventListener('pointermove', onMove, { passive: true });
+
+      // Refresh era colours if the body's `data-era` attribute changes
+      // (era navigation changes the active theme variables).
+      const mo = new MutationObserver(refreshColors);
+      mo.observe(document.body, { attributes: true, attributeFilter: ['data-era'] });
+      bootstrap();
+
+      // Refresh era colours when the theme variables change (e.g. era nav).
+      window.addEventListener('biblia:scene-changed', () => {
+        if (active) refreshColors();
+      });
+    }
+  }
+</script>

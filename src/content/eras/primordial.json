@@ -51,5 +51,9 @@
   "transition": {
     "intoNext": "dawn-warming",
     "duration": 2000
+  },
+  "closing": {
+    "summary": "Así concluye la era Primordial. Según los relatos antiguos, del polvo emergió Adán, el primer hombre, y a su lado apareció Eva. La sangre de Abel manchó la tierra a manos de su hermano Caín, y de aquel primer crimen floreció un linaje inquieto. La tradición narra que el cielo descendió sobre los hombres, y que un gran Diluvio borró el mundo. Sólo Noé y su arca sobrevivieron, y de sus hijos brotaron las naciones. Babel quiso tocar el cielo, y el cielo dispersó sus lenguas.",
+    "nextPreview": "Lo que sigue es la era Patriarcal: el nacimiento de un linaje. Un hombre llamado Abram saldrá de la ciudad de Ur, recibirá un nombre nuevo y una promesa difícil de creer. Tres grandes tradiciones, la judía, la cristiana y la musulmana, lo reclamarán como padre. Veremos promesas, sacrificios postergados, hijos disputados, y escaleras que tocan el cielo sin caer."
   }
 }
