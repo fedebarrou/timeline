@@ -37,11 +37,20 @@
     btn.addEventListener('click', () => {
       if (isPlaying()) {
         stopPlay();
-        resetUI();
         return;
       }
-      setPlayingUI();
-      startPlay(progressUpdater).finally(resetUI);
+      startPlay(progressUpdater);
+    });
+
+    // Sync to the global play singleton. Both the click handler above and
+    // any external trigger (FullscreenControls, restart pill, ?play=1
+    // auto-start) flow through playMode.ts, which now broadcasts
+    // `timeline:play-state-changed`. Listening here means we never end up
+    // with the button label out of sync with the actual engine state.
+    if (isPlaying()) setPlayingUI();
+    window.addEventListener('timeline:play-state-changed', (e) => {
+      if ((e as CustomEvent).detail?.playing) setPlayingUI();
+      else resetUI();
     });
   }
 </script>

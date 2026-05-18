@@ -2,7 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { render, getEntry } from 'astro:content';
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import ComparativeBlock from './ComparativeBlock.astro';
 import SourceBadge from './SourceBadge.astro';
 import DeepDive from './DeepDive.astro';
@@ -22,8 +22,12 @@ const primaryLocation = data.locations[0];
 // Build-time detection: is there a pre-generated narration MP3 for this event?
 // File path resolved relative to project root (this .astro file lives in
 // src/components, public/ is two levels up).
+// Resolve via process.cwd() — `import.meta.url` is unreliable here because
+// Astro bundles components into `dist/.prerender/chunks/*.mjs` during build,
+// so the relative `../../public` would land at `dist/public` (missing) and
+// every event silently fell back to Web Speech instead of using the MP3.
 const audioRelPath = `/audio/${data.id}.mp3`;
-const audioAbsPath = fileURLToPath(new URL(`../../public${audioRelPath}`, import.meta.url));
+const audioAbsPath = join(process.cwd(), 'public', 'audio', `${data.id}.mp3`);
 const audioSrc: string | null = existsSync(audioAbsPath) ? audioRelPath : null;
 
 // Build narration text from body MDX + comparative.

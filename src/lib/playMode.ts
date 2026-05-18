@@ -8,6 +8,23 @@ let jumpRequested = false;
 let onIndexChange: ((i: number, total: number) => void) | null = null;
 
 /**
+ * Broadcast play-state transitions so every "Reproducir" button on the page
+ * (PlayButton in TimelineNav, FullscreenControls' floating button, future
+ * additions) can keep its UI in sync with the singleton play state. Without
+ * this, switching to fullscreen mid-playback left the fullscreen button
+ * stuck on "▶ Reproducir" even though the engine was actively reading.
+ */
+function setPlaying(next: boolean) {
+  if (playing === next) return;
+  playing = next;
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('timeline:play-state-changed', { detail: { playing: next } }));
+    } catch {}
+  }
+}
+
+/**
  * Tracks the last event id activated by sceneController. This is the source
  * of truth for "which scene is currently active" — works in both normal
  * mode (scroll-driven) and fullscreen mode (where `.scenes` are display:none
@@ -154,7 +171,7 @@ export async function startPlay(updateUI?: (i: number, total: number) => void) {
   if (playing) return;
   refreshScenes();
   if (scenes.length === 0) return;
-  playing = true;
+  setPlaying(true);
   onIndexChange = updateUI ?? null;
   // Prefer the event-driven active id (works in fullscreen too, where
   // `.scenes` are display:none and viewport detection collapses to 0).
@@ -185,7 +202,7 @@ export async function startPlay(updateUI?: (i: number, total: number) => void) {
     }
     currentIndex++;
   }
-  playing = false;
+  setPlaying(false);
   onIndexChange = null;
   if (reachedEnd) emitEraEnded();
 }
@@ -203,7 +220,7 @@ function emitEraEnded() {
 }
 
 export function stopPlay() {
-  playing = false;
+  setPlaying(false);
   jumpRequested = false;
   // Invalidate any in-flight playOne callbacks — they capture this
   // token in closure and bail when it changes.
@@ -232,7 +249,7 @@ export function jumpToEventId(eventId: string, updateUI?: (i: number, total: num
   }
 
   // Not playing — start from this event
-  playing = true;
+  setPlaying(true);
   currentIndex = idx;
   onIndexChange = updateUI ?? null;
   (async () => {
@@ -248,7 +265,7 @@ export function jumpToEventId(eventId: string, updateUI?: (i: number, total: num
       if (jumpRequested) { jumpRequested = false; continue; }
       currentIndex++;
     }
-    playing = false;
+    setPlaying(false);
     onIndexChange = null;
     if (reachedEnd) emitEraEnded();
   })();
@@ -293,7 +310,7 @@ export async function restartPlay(updateUI?: (i: number, total: number) => void)
   }
   refreshScenes();
   if (scenes.length === 0) return;
-  playing = true;
+  setPlaying(true);
   onIndexChange = updateUI ?? null;
   currentIndex = 0;
   let reachedEnd = false;
@@ -308,7 +325,7 @@ export async function restartPlay(updateUI?: (i: number, total: number) => void)
     if (jumpRequested) { jumpRequested = false; continue; }
     currentIndex++;
   }
-  playing = false;
+  setPlaying(false);
   onIndexChange = null;
   if (reachedEnd) emitEraEnded();
 }

@@ -85,6 +85,11 @@
 
   // Floating Play / Stop button — independent of TimelineNav's PlayButton so
   // it stays visible in fullscreen even when the popup pill hides the rest.
+  // Both buttons drive the same playMode singleton, so we sync this one's
+  // label off `timeline:play-state-changed` instead of toggling locally —
+  // otherwise the user who hit "Reproducir" in normal mode and entered
+  // fullscreen would still see a ▶ button here even though the era is
+  // actively playing.
   const playBtn = document.querySelector<HTMLButtonElement>('[data-fullscreen-play]');
   const playIcon = playBtn?.querySelector<HTMLElement>('.fs-play-icon');
   const playLabel = playBtn?.querySelector<HTMLElement>('.fs-play-label');
@@ -103,11 +108,15 @@
       e.stopPropagation();
       if (isPlaying()) {
         stopPlay();
-        setIdleUI();
         return;
       }
-      setPlayingUI();
-      startPlay().finally(setIdleUI);
+      startPlay();
+    });
+
+    if (isPlaying()) setPlayingUI();
+    window.addEventListener('timeline:play-state-changed', (e) => {
+      if ((e as CustomEvent).detail?.playing) setPlayingUI();
+      else setIdleUI();
     });
   }
 </script>

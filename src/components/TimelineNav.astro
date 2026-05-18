@@ -184,26 +184,15 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   import { isPlaying, jumpToEventId, restartPlay } from '../lib/playMode';
   import { scrollToElement } from '../lib/scrollOffset';
 
-  // Restart pill (only visible in fullscreen via CSS) — mirrors PlayButton UI.
+  // Restart pill (only visible in fullscreen via CSS). PlayButton listens
+  // to `timeline:play-state-changed` and syncs its own UI, so we only kick
+  // off the engine here and pipe progress to the existing counter.
   const restartBtn = document.querySelector<HTMLButtonElement>('[data-timeline-restart]');
   restartBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     const playBtn = document.querySelector<HTMLElement>('[data-play-mode]');
-    const icon = playBtn?.querySelector<HTMLElement>('.play-icon');
-    const label = playBtn?.querySelector<HTMLElement>('.play-label');
     const progress = playBtn?.querySelector<HTMLElement>('[data-play-progress]');
-    function setPlayingUI() {
-      progress?.classList.remove('hidden');
-      if (icon) { icon.textContent = '■'; icon.dataset.state = 'playing'; }
-      if (label) label.textContent = 'Detener';
-    }
-    function resetUI() {
-      if (icon) { icon.textContent = '▶'; icon.dataset.state = 'paused'; }
-      if (label) label.textContent = 'Reproducir era';
-      progress?.classList.add('hidden');
-    }
-    setPlayingUI();
-    restartPlay((i, total) => { if (progress) progress.textContent = `${i}/${total}`; }).finally(resetUI);
+    restartPlay((i, total) => { if (progress) progress.textContent = `${i}/${total}`; });
   });
 
   function updateActive(eventId: string) {

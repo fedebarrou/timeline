@@ -306,7 +306,59 @@ const tokens = tokenize(narrationText);
     // audio.play() directly from playMode.ts) also fires timeline:narration-*
     // events. The function is idempotent.
     if (useAudio) bindAudioOnce();
+
+    /*
+     * Cross-scene narration mutex.
+     *  - Scrolling / clicking the timeline dot / arrow keys to a different
+     *    event must stop the still-running narration of the event the user
+     *    just left. Without this, "Escuchar" on A + scroll to B leaves
+     *    A's voice droning over B's content.
+     *  - On the FLIP side, when "Reproducir era" advances to OUR scene,
+     *    playMode plays our <audio> directly but never opens our
+     *    `[data-narration-display]` panel — so the per-word highlight is
+     *    happening on a hidden panel and the user perceives "no color
+     *    change". Force-show the panel when the active scene matches.
+     */
+    window.addEventListener('timeline:scene-changed', (e) => {
+      const newId = (e as CustomEvent).detail?.eventId;
+      if (!newId) return;
+      if (newId !== id) {
+        // A different scene is now active. If WE were reading, stop.
+        if (icon!.dataset.state === 'playing') stop();
+        // Either way, collapse our display so only the active scene's
+        // panel is on screen at a time.
+        display?.classList.add('hidden');
+        progressWrap?.classList.add('hidden');
+        resetWords();
+      } else {
+        // OUR scene is active. If global era-play is running, reveal the
+        // display so the word-by-word highlight is visible during the
+        // playMode-driven audio playback.
+        const eraPlayActive = document
+          .querySelector<HTMLElement>('[data-play-mode] .play-icon')
+          ?.dataset.state === 'playing';
+        if (eraPlayActive) {
+          display?.classList.remove('hidden');
+          progressWrap?.classList.remove('hidden');
+        }
+      }
+    });
   });
+
+  /* Page navigation safety net — Web Speech doesn't always stop on
+     unload (crbug.com/717541 and friends), and the era nav on this site
+     is a full page navigation between /era/X and /era/Y. Cancel any
+     in-flight narration before the browser tears down the document. */
+  if (typeof window !== 'undefined') {
+    const stopAll = () => {
+      try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch {}
+      document.querySelectorAll<HTMLAudioElement>('audio[data-narrator-audio]').forEach((a) => {
+        try { if (!a.paused) { a.pause(); a.currentTime = 0; } } catch {}
+      });
+    };
+    window.addEventListener('pagehide', stopAll);
+    window.addEventListener('beforeunload', stopAll);
+  }
 </script>
 
 <style>
