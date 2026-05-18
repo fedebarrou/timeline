@@ -182,7 +182,7 @@ const events = defineCollection({
       unified: z.string(),
       divergent: z.boolean().default(false),
       tora: traditionMention.optional(),
-      timeline: traditionMention.optional(),
+      biblia: traditionMention.optional(),
       coran: traditionMention.optional(),
     }),
     sources: z.array(sourceSchema).default([]),
@@ -279,9 +279,9 @@ const characters = defineCollection({
     events: z.array(z.string()).default([]),
     mentions: z.object({
       tora: z.array(traditionRefSchema).default([]),
-      timeline: z.array(traditionRefSchema).default([]),
+      biblia: z.array(traditionRefSchema).default([]),
       coran: z.array(traditionRefSchema).default([]),
-    }).default({ tora: [], timeline: [], coran: [] }),
+    }).default({ tora: [], biblia: [], coran: [] }),
     extraBiblical: z.array(z.object({
       source: z.string(),
       summary: z.string(),
