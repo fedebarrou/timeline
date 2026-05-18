@@ -91,31 +91,48 @@ const eventCharacters = events.map((e) => {
     position: fixed;
     top: var(--fs-panel-top, 7rem);
     right: var(--fs-col-left, 1.5rem);
-    /* Horizontal card geometry — slightly narrower than before since the
-       inner layout is now portrait-left + text-right. */
     width: clamp(260px, 26vw, 330px);
     max-height: 70vh;
-    /* Generous left padding so the gradient fade on the LEFT edge never
-       eats into readable content (foto + texto sit well inside the
-       opaque zone). Right side hugs the viewport edge so the panel
-       reads as anchored to the screen, not floating. */
-    padding: 0.95rem 1.1rem 0.95rem 1.8rem;
+    padding: 1rem 1.15rem 1rem 1.3rem;
     overflow-y: auto;
     z-index: 53;
-    /* Soft fade toward the map (LEFT side) so the panel dissolves into
-       the manuscript rather than sitting as a hard rectangle. No mask
-       on the inner content — only the background gradient fades, so
-       text/portrait remain crisp at any padding. */
-    background: linear-gradient(
-      to left,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(0, 0, 0, 0.5) 60%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    border-radius: 8px;
-    backdrop-filter: blur(6px);
+    /* ── Papyrus background ─────────────────────────────────────────────
+       The era's `--era-text` is a warm cream/beige across every theme
+       (e.g. patriarcal #e8d4c8, evangelio is similar). We use it as the
+       parchment base and blend a faint stripe gradient + an inline
+       fractal-noise SVG for the fiber/grain feel. The grain is multiplied
+       so the warm base shows through; without `background-blend-mode:
+       multiply` the texture sits ON TOP and reads as dirty greys. */
+    background-color: color-mix(in srgb, var(--era-text) 96%, var(--era-bg) 4%);
+    background-image:
+      /* Subtle warm vignette: edges slightly darker so the centre reads
+         as a faintly lit scroll. */
+      radial-gradient(
+        ellipse at center,
+        transparent 55%,
+        color-mix(in srgb, var(--era-primary) 16%, transparent) 100%
+      ),
+      /* Paper grain via feTurbulence — fractal noise scaled small and
+         tiled. Matrix lifts the noise into a soft dark tone so it reads
+         as fibers, not random pixels. */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0.18 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+    background-size: cover, 220px 220px;
+    background-blend-mode: multiply, multiply;
+    border: 1px solid color-mix(in srgb, var(--era-primary) 38%, transparent);
+    border-radius: 4px;
+    /* Layered shadow: inner glow tinted by the era so the scroll feels
+       lit from above + outer drop for elevation off the map. */
+    box-shadow:
+      inset 0 0 18px color-mix(in srgb, var(--era-primary) 14%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--era-text) 70%, transparent),
+      0 8px 22px rgba(0, 0, 0, 0.45);
     font-family: var(--era-body, 'EB Garamond', Georgia, serif);
-    color: var(--era-text);
+    /* Text DARK ink on the light parchment — earlier mix at 55 % primary
+       washed out too much on most eras. Going hard charcoal with a tiny
+       warm bias so it still feels "ink on aged paper" instead of
+       generic black-on-white. Body copy now reads at full strength
+       across every theme. */
+    color: #1a0f08;
     transition: opacity 360ms ease, transform 360ms ease;
     opacity: 0;
     transform: translateX(10px);
@@ -143,6 +160,13 @@ const eventCharacters = events.map((e) => {
     display: block;
     opacity: 0.92;
     transform: translateX(0);
+    /* Re-enable pointer events so the prev/next arrows + scroll work
+       in fullscreen. The base `pointer-events: none` was meant to let
+       clicks fall through to the map underneath, but it also killed
+       the panel's own buttons. The transparent gradient edge on the
+       left already lets users grab the map there; on the opaque
+       parchment area, interactions belong to the panel. */
+    pointer-events: auto;
   }
   body.map-fullscreen.map-fullscreen-idle .character-info-panel {
     opacity: 0 !important;
@@ -169,26 +193,24 @@ const eventCharacters = events.map((e) => {
          below isn't fighting them. */
       top: auto;
       right: 0.75rem;
-      /* Above the MapToggleButton (bottom: 1rem md:bottom-5 = 1.25rem,
-         button height ~2.5rem + a gap so the card never touches the
-         button). 5rem clears everything with a visible breathing line. */
       bottom: 5rem;
       width: clamp(180px, 17vw, 230px);
-      /* Panel grows UPWARD from the bottom anchor — cap so it never
-         hits the timeline arrow / play button band at the top. */
       max-height: 60vh;
-      padding: 0.7rem 0.85rem 0.7rem 1.2rem;
-      background: linear-gradient(
-        to left,
-        rgba(0, 0, 0, 0.7) 0%,
-        rgba(0, 0, 0, 0.55) 65%,
-        rgba(0, 0, 0, 0.05) 100%
-      );
+      padding: 0.75rem 0.95rem 0.75rem 1.1rem;
+      /* Normal-mode keeps the same parchment treatment defined on the
+         base rule above — we DO NOT re-declare `background` here so the
+         multi-layer (color + vignette + grain) survives. Just toughen
+         the drop-shadow because the panel sits on a varied map texture
+         and needs sharper separation. */
+      box-shadow:
+        inset 0 0 14px color-mix(in srgb, var(--era-primary) 14%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--era-text) 70%, transparent),
+        0 6px 18px rgba(0, 0, 0, 0.55);
       pointer-events: auto;
     }
     body:not(.map-fullscreen) .character-info-panel.is-active {
       display: block;
-      opacity: 0.94;
+      opacity: 0.97;
       transform: translateX(0);
     }
   }
@@ -197,9 +219,9 @@ const eventCharacters = events.map((e) => {
      meaning 12→11, body 12→11, gap tightens. */
   @media (min-width: 768px) {
     body:not(.map-fullscreen) .character-info-panel .cip-portrait {
-      flex: 0 0 76px;
-      width: 76px;
-      height: 76px;
+      flex: 0 0 100px;
+      width: 100px;
+      height: 100px;
     }
     body:not(.map-fullscreen) .character-info-panel .cip-row { gap: 0.55rem; }
     body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 13px; }
@@ -211,25 +233,18 @@ const eventCharacters = events.map((e) => {
   }
 
   .character-info-panel .cip-portrait {
-    flex: 0 0 100px;
-    width: 100px;
-    height: 100px;
+    /* Bigger portrait — rectangular form with wispy nebula edges
+       instead of a circular oval. The mask is a ROUNDED RECTANGLE
+       passed through feDisplacementMap + feGaussianBlur so the
+       straight edges dissolve into clouds (no visible corners). This
+       lets way more of the character's body show — the previous
+       ellipse cropped sides aggressively. */
+    flex: 0 0 130px;
+    width: 130px;
+    height: 130px;
     margin: 0;
-    /* Asymmetric nebula mask: top / bottom / right keep the original soft
-       turbulence-displaced ellipse, but the LEFT edge fades to transparent
-       so the portrait "dissolves" toward the gradient-faded panel margin.
-       Done in a single SVG via:
-         (a) a horizontal linearGradient fill on the outer (filtered)
-             ellipse — the displacement filter now operates on an alpha
-             ramp instead of solid black, producing wispier strands the
-             closer we get to the left edge;
-         (b) shifting the inner solid ellipse to cx=56 + narrowing it to
-             rx=30 so the "hard core" of the portrait sits on the right
-             half, leaving the left to rely purely on the wispy outer
-             gradient. Top/bottom/right edges share the original ellipse
-             geometry so their look is preserved. */
-    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.22' stop-color='black' stop-opacity='0.6'/><stop offset='0.44' stop-color='black' stop-opacity='1'/></linearGradient></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='url(%23lg)' filter='url(%23c)'/><ellipse cx='56' cy='48' rx='30' ry='32' fill='black'/></svg>");
-            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-20' y='-20' width='140' height='140' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.5'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.22' stop-color='black' stop-opacity='0.6'/><stop offset='0.44' stop-color='black' stop-opacity='1'/></linearGradient></defs><ellipse cx='50' cy='50' rx='44' ry='44' fill='url(%23lg)' filter='url(%23c)'/><ellipse cx='56' cy='48' rx='30' ry='32' fill='black'/></svg>");
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-25' y='-25' width='150' height='150' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.2'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.18' stop-color='black' stop-opacity='0.65'/><stop offset='0.36' stop-color='black' stop-opacity='1'/></linearGradient></defs><rect x='4' y='6' width='92' height='88' rx='10' ry='10' fill='url(%23lg)' filter='url(%23c)'/><rect x='8' y='10' width='86' height='80' rx='6' ry='6' fill='black'/></svg>");
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><filter id='c' x='-25' y='-25' width='150' height='150' filterUnits='userSpaceOnUse'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='5' result='n'/><feDisplacementMap in='SourceGraphic' in2='n' scale='16'/><feGaussianBlur stdDeviation='3.2'/></filter><linearGradient id='lg' x1='0' y1='0.5' x2='1' y2='0.5'><stop offset='0' stop-color='black' stop-opacity='0'/><stop offset='0.18' stop-color='black' stop-opacity='0.65'/><stop offset='0.36' stop-color='black' stop-opacity='1'/></linearGradient></defs><rect x='4' y='6' width='92' height='88' rx='10' ry='10' fill='url(%23lg)' filter='url(%23c)'/><rect x='8' y='10' width='86' height='80' rx='6' ry='6' fill='black'/></svg>");
     -webkit-mask-size: 100% 100%;
             mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat;
@@ -249,7 +264,10 @@ const eventCharacters = events.map((e) => {
     margin-bottom: 4px;
   }
   .character-info-panel .cip-kind {
-    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.55;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    /* Darken the kicker — 0.55 was unreadable on the warm parchment. */
+    opacity: 0.85;
+    color: color-mix(in srgb, var(--era-primary) 60%, #1a0f08);
   }
   .character-info-panel .cip-canonicity {
     display: none; align-items: center; gap: 5px;
@@ -268,15 +286,22 @@ const eventCharacters = events.map((e) => {
   }
   .character-info-panel .cip-meaning {
     display: none;
-    font-style: italic; font-size: 12px; opacity: 0.78; margin-top: 3px;
+    font-style: italic; font-size: 12px; opacity: 0.95; margin-top: 3px;
   }
   .character-info-panel .cip-meaning.has-text { display: block; }
   .character-info-panel .cip-role {
     display: none;
     margin-top: 8px;
     font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-    padding: 2px 7px; border: 1px solid var(--era-border); border-radius: 999px;
-    opacity: 0.85; width: fit-content;
+    font-weight: 600;
+    padding: 3px 8px;
+    /* Strong border + darker text so the role pill reads as a stamp,
+       not a faint outline. */
+    border: 1.5px solid color-mix(in srgb, var(--era-primary) 75%, #1a0f08);
+    border-radius: 999px;
+    color: color-mix(in srgb, var(--era-primary) 80%, #1a0f08);
+    background: color-mix(in srgb, var(--era-text) 50%, transparent);
+    width: fit-content;
   }
   .character-info-panel .cip-role.has-text { display: inline-block; }
   /* Body sits below the full portrait+text row so it can use the entire
@@ -285,12 +310,14 @@ const eventCharacters = events.map((e) => {
   .character-info-panel .cip-body {
     display: none;
     font-size: 12px; line-height: 1.5; margin-top: 0.25rem;
-    opacity: 0.88; white-space: pre-line;
+    opacity: 1; white-space: pre-line;
   }
   .character-info-panel .cip-body.has-text { display: block; }
   /* Bottom controls row: prev arrow · dots · next arrow. Only rendered
      when the active event has more than one character (the JS hides the
-     whole row otherwise via `.has-multi`). */
+     whole row otherwise via `.has-multi`). Divider tinted to read on
+     the parchment — a darkened era-primary rather than the transparent
+     line we'd use on a dark background. */
   .character-info-panel .cip-controls {
     display: none;
     align-items: center;
@@ -298,26 +325,30 @@ const eventCharacters = events.map((e) => {
     gap: 0.55rem;
     margin-top: 0.9rem;
     padding-top: 0.55rem;
-    border-top: 1px solid color-mix(in srgb, var(--era-primary) 18%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--era-primary) 28%, var(--era-text));
   }
   .character-info-panel .cip-controls.has-multi { display: flex; }
   .character-info-panel .cip-arrow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     padding: 0;
-    border: 1px solid color-mix(in srgb, var(--era-primary) 35%, transparent);
+    /* Solid darker border + ink-coloured stroke so the arrows actually
+       read as buttons on the cream parchment. The previous semi-
+       transparent treatment dissolved into the paper. */
+    border: 1.5px solid color-mix(in srgb, var(--era-primary) 75%, #1a0f08);
     border-radius: 50%;
-    background: color-mix(in srgb, var(--era-surface) 60%, transparent);
-    color: var(--era-primary);
+    background: color-mix(in srgb, var(--era-text) 95%, transparent);
+    color: color-mix(in srgb, var(--era-primary) 80%, #1a0f08);
     cursor: pointer;
     transition: background 160ms ease, border-color 160ms ease, transform 100ms ease;
   }
   .character-info-panel .cip-arrow:hover {
-    background: color-mix(in srgb, var(--era-accent) 25%, var(--era-surface));
+    background: color-mix(in srgb, var(--era-accent) 45%, var(--era-text));
     border-color: var(--era-accent);
+    color: #1a0f08;
   }
   .character-info-panel .cip-arrow:active { transform: scale(0.92); }
   .character-info-panel .cip-dots {
