@@ -62,12 +62,13 @@ const narrationParts = [
 const narrationText = narrationParts.filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
 
 const charactersInEvent = await Promise.all(
-  (data.characters ?? []).map(async (c: { id: string; role: string }) => {
+  (data.characters ?? []).map(async (c: { id: string; role: string; lore?: string }) => {
     const ch = await getEntry('characters', c.id);
     if (!ch) return null;
     return {
       id: c.id,
       role: c.role,
+      lore: c.lore,
       name: ch.data.name,
       portrait: ch.data.portrait,
       avatar: ch.data.avatar,
@@ -75,6 +76,7 @@ const charactersInEvent = await Promise.all(
       birthYear: ch.data.birthYear,
       deathYear: ch.data.deathYear,
       significance: ch.data.significance,
+      trivia: ch.data.trivia,
     };
   })
 ).then((arr) => arr.filter(Boolean) as Array<NonNullable<typeof arr[0]>>);
@@ -119,18 +121,25 @@ const charactersInEvent = await Promise.all(
                 <span class="text-base font-display">{c.name}</span>
                 <span class="text-[11px] tracking-wider uppercase opacity-60">{c.role.replace(/-/g, ' ')}</span>
 
-                <div class="tooltip absolute left-0 top-full mt-2 z-30 w-72 p-4 rounded-lg border border-border bg-bg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none transition-all duration-200">
-                  <div class="font-display text-lg">{c.name}</div>
-                  {c.meaning && <div class="text-sm italic opacity-70 mt-1">"{c.meaning}"</div>}
-                  {(c.birthYear !== undefined || c.deathYear !== undefined) && (
-                    <div class="text-sm opacity-70 mt-1">
-                      {c.birthYear !== undefined && `Año ${c.birthYear}`}{c.deathYear !== undefined && ` — ${c.deathYear}`}
+                <div class="tooltip absolute left-0 top-full z-30 w-80 p-3 rounded-lg border border-border bg-bg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none group-hover:pointer-events-auto transition-all duration-200 flex gap-3">
+                  {(c.portrait || c.avatar) && (
+                    <div class="w-20 h-28 flex-shrink-0 rounded border border-border/60 bg-surface/40 overflow-hidden">
+                      <img src={c.portrait ?? c.avatar} alt={c.name} loading="lazy" class="w-full h-full object-cover object-top" />
                     </div>
                   )}
-                  <div class="text-[11px] tracking-wider uppercase opacity-60 mt-2">Rol: {c.role.replace(/-/g, ' ')}</div>
-                  {c.significance && (
-                    <p class="text-sm opacity-80 mt-3 leading-snug" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">{c.significance.slice(0, 200)}{c.significance.length > 200 ? '…' : ''}</p>
-                  )}
+                  <div class="flex-1 min-w-0">
+                    <div class="font-display text-base leading-tight">{c.name}</div>
+                    {c.meaning && <div class="text-[11px] italic opacity-70 leading-snug">"{c.meaning}"</div>}
+                    <div class="text-[10px] tracking-[0.15em] uppercase opacity-60 mt-1">{c.role.replace(/-/g, ' ')}</div>
+                    {c.lore ? (
+                      <p class="text-[12px] opacity-90 mt-2 leading-snug max-h-28 overflow-y-auto pr-1 whitespace-pre-line">{c.lore}</p>
+                    ) : c.significance && (
+                      <p class="text-[12px] opacity-85 mt-2 leading-snug max-h-28 overflow-y-auto pr-1">{c.significance.slice(0, 160)}{c.significance.length > 160 ? '…' : ''}</p>
+                    )}
+                    {c.trivia && c.trivia.length > 0 && (
+                      <p class="text-[11px] opacity-70 mt-2 italic leading-snug border-t border-border/40 pt-1.5">{c.trivia[0]}</p>
+                    )}
+                  </div>
                 </div>
               </a>
             ))}

@@ -1,16 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <style>
-    :root { color: #1a1a1a; }
+    .apple { fill: #c0392b; }
+    .leaf { fill: #2e8b57; }
+    .stem { fill: #5a3a1e; }
+    .shine { fill: #ffffff; opacity: 0.25; }
     @media (prefers-color-scheme: dark) {
-      :root { color: #f5e9c8; }
+      .apple { fill: #e85a4f; }
+      .leaf { fill: #4caf6a; }
     }
   </style>
-  <path d="M6 42 Q32 16 58 42" opacity="0.85" />
-  <path d="M22 50 Q32 30 32 22" opacity="0.55" />
-  <path d="M32 50 L32 22" opacity="0.55" />
-  <path d="M42 50 Q32 30 32 22" opacity="0.55" />
-  <circle cx="6" cy="42" r="2.6" fill="currentColor" stroke="none" />
-  <path d="M2.5 38.5 L9.5 45.5 M9.5 38.5 L2.5 45.5" opacity="0.55" stroke-width="1.4" />
-  <path d="M61 42 A6.5 6.5 0 1 1 54.5 42 A4.8 4.8 0 1 0 61 42 Z" fill="currentColor" stroke="none" opacity="0.95" />
-  <circle cx="32" cy="22" r="2" fill="currentColor" stroke="none" />
+  <!-- Apple body: two-lobed silhouette -->
+  <path class="apple" d="M32 22c-4-2-7-3-11-3-8 0-13 7-13 17 0 13 8 24 15 24 4 0 6-2 9-2s5 2 9 2c7 0 15-11 15-24 0-10-5-17-13-17-4 0-7 1-11 3z" />
+  <!-- Stem -->
+  <path class="stem" d="M32 22c-1-2-2-4-2-7l2 0c0 3 1 5 2 7z" />
+  <!-- Leaf -->
+  <path class="leaf" d="M32 18c2-5 7-8 13-8-1 7-6 11-13 11z" />
+  <!-- Shine highlight -->
+  <ellipse class="shine" cx="20" cy="32" rx="4" ry="7" transform="rotate(-25 20 32)" />
 </svg>

@@ -17,9 +17,9 @@ function pct(y: number) { return ((y - min) / span) * 100; }
     </div>
   ))}
   {birthYear !== undefined && (
-    <div class="absolute top-1/2 -translate-y-1/2 left-0 text-[10px] opacity-60">{birthYear}</div>
+    <div class="absolute top-0 left-0 text-[10px] opacity-60 bg-bg/80 px-1 rounded">{birthYear}</div>
   )}
   {deathYear !== undefined && (
-    <div class="absolute top-1/2 -translate-y-1/2 right-0 text-[10px] opacity-60">{deathYear}</div>
+    <div class="absolute top-0 right-0 text-[10px] opacity-60 bg-bg/80 px-1 rounded">{deathYear}</div>
   )}
 </div>
