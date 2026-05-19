@@ -56,7 +56,6 @@ const eventCharacters = events.map((e) => {
       </div>
       <div class="cip-name" data-cip-name></div>
       <div class="cip-meaning" data-cip-meaning></div>
-      <div class="cip-role" data-cip-role></div>
     </div>
   </div>
   <div class="cip-body" data-cip-body></div>
@@ -225,7 +224,6 @@ const eventCharacters = events.map((e) => {
     body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 14.5px; }
     body:not(.map-fullscreen) .character-info-panel .cip-meaning { font-size: 12px; }
     body:not(.map-fullscreen) .character-info-panel .cip-body { font-size: 12.5px; line-height: 1.5; }
-    body:not(.map-fullscreen) .character-info-panel .cip-role { font-size: 9px; padding: 2px 7px; }
     body:not(.map-fullscreen) .character-info-panel .cip-canonicity { font-size: 9px; padding: 2px 7px; }
     body:not(.map-fullscreen) .character-info-panel .cip-kind { font-size: 9.5px; }
   }
@@ -290,21 +288,6 @@ const eventCharacters = events.map((e) => {
     font-style: italic; font-size: 13.5px; opacity: 0.95; margin-top: 2px;
   }
   .character-info-panel .cip-meaning.has-text { display: block; }
-  .character-info-panel .cip-role {
-    display: none;
-    margin-top: 5px;
-    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-    font-weight: 600;
-    padding: 3px 8px;
-    /* Strong border + darker text so the role pill reads as a stamp,
-       not a faint outline. */
-    border: 1.5px solid color-mix(in srgb, var(--era-primary) 75%, #1a0f08);
-    border-radius: 999px;
-    color: color-mix(in srgb, var(--era-primary) 80%, #1a0f08);
-    background: color-mix(in srgb, var(--era-text) 50%, transparent);
-    width: fit-content;
-  }
-  .character-info-panel .cip-role.has-text { display: inline-block; }
   /* Body sits below the full portrait+text row so it can use the entire
      panel width — better reading line length for the longer lore/significance
      paragraph than if it were squeezed into the narrow right column. */
@@ -375,7 +358,6 @@ const eventCharacters = events.map((e) => {
   .character-info-panel.cip-fade .cip-portrait,
   .character-info-panel.cip-fade .cip-name,
   .character-info-panel.cip-fade .cip-meaning,
-  .character-info-panel.cip-fade .cip-role,
   .character-info-panel.cip-fade .cip-body,
   .character-info-panel.cip-fade .cip-canonicity {
     animation: cip-fade-in 320ms ease;
@@ -409,7 +391,6 @@ const eventCharacters = events.map((e) => {
     const canonicityEl = panel.querySelector<HTMLElement>('[data-cip-canonicity]');
     const nameEl = panel.querySelector<HTMLElement>('[data-cip-name]');
     const meaningEl = panel.querySelector<HTMLElement>('[data-cip-meaning]');
-    const roleEl = panel.querySelector<HTMLElement>('[data-cip-role]');
     const bodyEl = panel.querySelector<HTMLElement>('[data-cip-body]');
     const dotsEl = panel.querySelector<HTMLElement>('[data-cip-dots]');
     const controlsEl = panel.querySelector<HTMLElement>('[data-cip-controls]');
@@ -501,7 +482,6 @@ const eventCharacters = events.map((e) => {
       }
       setText(nameEl, c.name);
       setText(meaningEl, c.meaning);
-      setText(roleEl, c.role);
       // Prefer event-specific lore; fall back to the character's general significance.
       setText(bodyEl, c.lore ?? c.significance);
       if (canonicityEl) {
