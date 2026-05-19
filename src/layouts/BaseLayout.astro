@@ -57,6 +57,10 @@ const allEras = await getCollection('eras');
     </script>
   </head>
   <body data-era={bodyEra}>
+    <script>
+      import { applyBootClasses } from '../lib/bootClasses';
+      applyBootClasses(navigator, document);
+    </script>
     {allEras.map((era) => <EraTheme era={era} />)}
     <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
     <FullscreenSandTrail />
