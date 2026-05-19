@@ -94,25 +94,27 @@
     position: relative;
     max-width: 540px;
     width: 100%;
-    /* Same papyrus treatment as the CharacterInfoPanel so the
-       disclaimer reads as part of the same world. */
-    background-color: color-mix(in srgb, var(--era-text, #e8d4c8) 96%, var(--era-bg, #1a0f08) 4%);
+    /* FIXED parchment palette — independent of era theme.
+       Earlier we drove the modal off --era-text + --era-primary, which
+       broke on eras where either is too light (primordial primary
+       #e8c898 ≈ cream → invisible title) or where text is dark
+       (revelacion text #2e2418 → black parchment). Since this is a
+       system disclaimer that must read regardless of era, lock the
+       canvas + ink colours here. Only the border / inner glow keep
+       a soft era tint as a subtle handshake with the active palette. */
+    background-color: #ead9b9;
     background-image:
-      radial-gradient(
-        ellipse at center,
-        transparent 55%,
-        color-mix(in srgb, var(--era-primary, #a04048) 14%, transparent) 100%
-      ),
+      radial-gradient(ellipse at center, transparent 55%, rgba(60, 32, 18, 0.18) 100%),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
     background-size: cover, 220px 220px;
     background-blend-mode: multiply, multiply;
-    border: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 50%, transparent);
+    border: 1.5px solid #6e3a32;
     border-radius: 6px;
     color: #1a0f08;
     padding: 1.5rem 1.6rem 1.3rem;
     box-shadow:
-      inset 0 0 24px color-mix(in srgb, var(--era-primary, #a04048) 14%, transparent),
-      inset 0 0 0 1px color-mix(in srgb, var(--era-text, #e8d4c8) 70%, transparent),
+      inset 0 0 24px rgba(110, 58, 50, 0.18),
+      inset 0 0 0 1px rgba(234, 217, 185, 0.7),
       0 16px 40px rgba(0, 0, 0, 0.6);
     font-family: var(--era-body, 'EB Garamond', Georgia, serif);
     animation: introCard 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -122,13 +124,16 @@
     to   { opacity: 1; transform: translateY(0)    scale(1); }
   }
 
+  /* All text colours below are FIXED — not derived from the era palette
+     — so the disclaimer is legible on every page regardless of which
+     theme is active. */
   .intro-modal-kicker {
     display: block;
     font-size: 10px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    opacity: 0.7;
-    color: color-mix(in srgb, var(--era-primary, #a04048) 65%, #1a0f08);
+    opacity: 0.75;
+    color: #6e3a32;
     margin-bottom: 0.35rem;
   }
   .intro-modal-card h2 {
@@ -137,24 +142,28 @@
     font-size: clamp(1.3rem, 2.4vw, 1.7rem);
     line-height: 1.15;
     letter-spacing: 0.02em;
-    color: var(--era-primary, #a04048);
+    /* Locked deep maroon so the title always contrasts against the
+       cream parchment background. */
+    color: #4a1c18;
   }
   .intro-modal-body p {
     margin: 0 0 0.75rem;
     font-size: 14.5px;
     line-height: 1.55;
+    color: #1a0f08;
   }
   .intro-modal-body p:last-child { margin-bottom: 0; }
   .intro-modal-body strong {
-    color: color-mix(in srgb, var(--era-primary, #a04048) 80%, #1a0f08);
+    color: #4a1c18;
   }
   .intro-modal-warning {
     margin-top: 1rem !important;
     padding: 0.65rem 0.85rem;
-    background: color-mix(in srgb, var(--era-primary, #a04048) 8%, transparent);
-    border-left: 3px solid color-mix(in srgb, var(--era-primary, #a04048) 60%, #1a0f08);
+    background: rgba(110, 58, 50, 0.10);
+    border-left: 3px solid #6e3a32;
     font-size: 13px !important;
     font-style: italic;
+    color: #2a1208;
   }
 
   .intro-modal-card footer {
@@ -167,14 +176,16 @@
     font-size: 12px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--era-text, #e8d4c8) 96%, transparent);
-    background: color-mix(in srgb, var(--era-primary, #a04048) 80%, #1a0f08);
-    border: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 90%, #1a0f08);
+    /* Solid colours — cream text on deep maroon. Tested against every
+       era palette via PR review; reads consistently. */
+    color: #ead9b9;
+    background: #6e3a32;
+    border: 1.5px solid #4a1c18;
     border-radius: 999px;
     cursor: pointer;
     transition: background 180ms ease, transform 100ms ease;
   }
-  .intro-modal-cta:hover { background: color-mix(in srgb, var(--era-accent, #b86058) 85%, #1a0f08); }
+  .intro-modal-cta:hover { background: #4a1c18; }
   .intro-modal-cta:active { transform: scale(0.97); }
 
   /* Floating "?" pill — bottom-right, subtle so it doesn't fight the
