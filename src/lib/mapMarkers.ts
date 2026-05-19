@@ -1,6 +1,6 @@
 import { gsap } from './scrollytelling';
 import { showPreview, movePreview, hidePreview } from './mapHoverPreview';
-import { showQuote, moveQuote, hideQuote } from './mapQuoteTooltip';
+import { showQuote, moveQuote, hideQuote, installQuoteSceneGuard } from './mapQuoteTooltip';
 import { CANONICITY_COLORS, type Canonicity } from './canonicity';
 
 /**
@@ -436,6 +436,12 @@ export function activateMarker(svgRoot: SVGSVGElement, id: string) {
   // does NOT fire automatically when pointer-events flips to 'none' on the
   // previously-hovered pin (which happens below), so we force-hide here.
   hidePreview();
+  // Same problem for the per-pin quote tooltip — the cursor stays where
+  // it is but the underlying pin loses pointer-events, leaving the bubble
+  // stuck visible. Force-hide on every marker switch.
+  hideQuote();
+  // Idempotent install of the scene-change + escape-hatch guard.
+  installQuoteSceneGuard();
   // Hide all markers
   const all = svgRoot.querySelectorAll<SVGGElement>('[data-marker]');
   all.forEach((m) => {

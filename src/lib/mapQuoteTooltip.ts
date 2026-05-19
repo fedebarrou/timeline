@@ -124,6 +124,44 @@ export function hideQuote(): void {
   bubble.classList.remove('is-visible');
 }
 
+/**
+ * Force-hide on scene/marker change. The marker switch may flip a pin's
+ * pointer-events to 'none' BEFORE the cursor leaves it, in which case
+ * `mouseleave` never fires and the bubble stays pinned — install once.
+ */
+let sceneGuardInstalled = false;
+export function installQuoteSceneGuard(): void {
+  if (sceneGuardInstalled || typeof window === 'undefined') return;
+  sceneGuardInstalled = true;
+  window.addEventListener('timeline:scene-changed', hideQuote);
+  // Fallback: if the cursor leaves the document entirely, drop any bubble.
+  document.addEventListener('mouseleave', hideQuote);
+  // Hard safety net: any click anywhere dismisses a lingering tooltip
+  // (the user clearly moved on).
+  document.addEventListener('mousedown', hideQuote, { capture: true });
+  // Heartbeat: every 250ms verify the tooltip is still over its anchor.
+  // Reads dataset.lastClientX/Y set by positionBubble; if the cursor
+  // has moved more than 80px since the last move event, hide.
+  setInterval(() => {
+    if (!bubble || !bubble.classList.contains('is-visible')) return;
+    const lx = parseFloat(bubble.dataset.lastClientX ?? '');
+    const ly = parseFloat(bubble.dataset.lastClientY ?? '');
+    const cx = lastMouseClientX;
+    const cy = lastMouseClientY;
+    if (!Number.isNaN(lx) && (Math.abs(cx - lx) > 80 || Math.abs(cy - ly) > 80)) {
+      hideQuote();
+    }
+  }, 250);
+  // Track every mousemove so the heartbeat can compare positions.
+  document.addEventListener('mousemove', (e) => {
+    lastMouseClientX = e.clientX;
+    lastMouseClientY = e.clientY;
+  }, { passive: true });
+}
+
+let lastMouseClientX = 0;
+let lastMouseClientY = 0;
+
 function positionBubble(e: MouseEvent): void {
   if (!bubble) return;
   const pad = 14;
@@ -141,4 +179,6 @@ function positionBubble(e: MouseEvent): void {
   if (y < 8) y = 8;
   bubble.style.left = `${x}px`;
   bubble.style.top = `${y}px`;
+  bubble.dataset.lastClientX = String(e.clientX);
+  bubble.dataset.lastClientY = String(e.clientY);
 }
