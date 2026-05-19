@@ -142,14 +142,15 @@ Mood de cada era (lo aplica el agente en color picks dentro del rango era):
 
 ### C) Catálogo extendido de primitivas
 
-El Director agrega ~15-25 primitivas nuevas a `narrationFx.ts`. La pieza clave:
+El Director agrega ~50-70 primitivas nuevas a `narrationFx.ts`, organizadas en 4 categorías. La pieza clave de la categoría figurativa:
 
 ```
-fx:animate-scene-object       — kind: 'drift' | 'pulse' | 'shake' | 'march' | 'sway'
+fx:animate-scene-object       — kind: 'drift' | 'pulse' | 'shake' | 'march' | 'sway' |
+                                       'rock' | 'burn' | 'glow' | 'wobble' | 'rise'
                                 target id (estable, ej. 'arca'), duration?
 ```
 
-Otras primitivas estimadas (lista guía, el Director ajusta según gaps reales):
+#### C.1) Figurativas adicionales (objetos / animales / criaturas nombradas)
 
 ```
 fx:caravan                    fx:throne                   fx:crown-descent
@@ -158,9 +159,77 @@ fx:angel-formation            fx:tablets-shatter          fx:moon-split
 fx:kaaba-pulse                fx:tongue-of-flame          fx:crown-of-thorns
 fx:fish-school                fx:plague-locust            fx:plague-frogs
 fx:plague-darkness            fx:rolling-stone            fx:tomb-empty
-fx:resurrection-light         fx:hailstorm                fx:eclipse
-fx:meteor-strike              fx:dust-pillar              fx:divine-hand
+fx:resurrection-light         fx:divine-hand              fx:sword-clash
+fx:lion-roar                  fx:wolf-prowl               fx:eagle-soar
+fx:raven-flight               fx:horse-gallop             fx:camel-train
+fx:goat-herd                  fx:donkey-walk              fx:locust-cloud
+fx:frog-rain                  fx:scorpion-skitter         fx:whale-breach
 ```
+
+#### C.2) Atmosféricos one-shot (disparados por narración)
+
+```
+fx:dawn-break                 — barrido cálido de horizonte hacia arriba
+fx:dusk-fall                  — barrido naranja-violeta descendente
+fx:night-fall                 — cielo se oscurece, aparecen estrellas
+fx:starfield-shimmer          — capa de estrellas titilando arriba del mapa
+fx:starfield-rotate           — rotación lenta del campo estelar (proyección épica)
+fx:eclipse-darken             — disco solar tapado, halo dorado, luz cae al 30%
+fx:moon-bloodred              — luna roja sangrienta (apocalíptico)
+fx:storm-clouds               — nubarrones avanzan desde un borde
+fx:hailstorm                  — granizo cayendo + impactos al suelo
+fx:rain-sheet                 — lluvia densa (no gotas sueltas) con escurrimiento
+fx:fog-roll                   — niebla entrando desde un borde
+fx:mist-rise                  — niebla saliendo del suelo (lagos, ríos)
+fx:wind-streaks               — líneas blancas indicando viento fuerte
+fx:sandstorm-major            — versión escalada del shake-to-sandstorm existente
+fx:heat-shimmer               — distorsión de calor (filter SVG turbulence)
+fx:meteor-strike              — meteoro cae diagonalmente con cola
+fx:meteor-shower              — múltiples meteoros simultáneos
+fx:lightning-storm            — múltiples rayos en cascada
+fx:thunder-flash              — flash blanco con shake leve
+fx:earthquake-major           — shake intenso de todo el SVG
+fx:divine-light-beam          — columna de luz dorada del cielo a un punto
+fx:incense-spiral             — espiral de humo subiendo
+fx:tongue-of-flame             — llamas pequeñas sobre múltiples cabezas (Pentecostés)
+fx:smoke-column               — columna de humo gruesa (sacrificio, batalla, ruina)
+fx:dust-pillar                — pilar de polvo (columna divina del Éxodo: día)
+fx:cloud-pillar               — pilar de nube (columna divina: noche, opacidad alta)
+fx:plague-darkness            — toda la pantalla en sombra densa
+```
+
+#### C.3) Ambient per-era (capa continua, intensidad baja)
+
+Cada era activa una capa ambiente de fondo cuando entrás a sus escenas, persistente mientras estás en eventos de esa era. Se desactiva al cambiar de era. Implementación: un loop GSAP que vive en `<g data-layer="era-ambient">` independiente del layer narration-fx.
+
+```
+primordial          — partículas doradas flotando (dust motes), wash dorado suave
+patriarcal          — heat shimmer leve sobre horizonte, dust devils ocasionales lejanos
+exodo               — ceniza cayendo intermitente, sand-laden wind streaks
+reinos-y-exilio     — columnas de humo de incienso lejanas, beams de luz tipo vitral
+evangelio           — golden hour beams a través de nubes, dove silhouettes ocasionales
+revelacion          — viento de desierto, starfield shimmer arriba, geometría sutil
+```
+
+#### C.4) Cinematográficos (composición de cámara y transiciones de escena)
+
+```
+fx:vignette-pulse             — oscurece bordes para enfocar centro
+fx:flash-white                — flash blanco corto (revelaciones, milagros)
+fx:fade-to-black              — fundido a negro (muertes, finales de era)
+fx:fade-from-black            — fundido desde negro (nacimientos, despertares)
+fx:zoom-pulse                 — leve zoom-in-zoom-out sobre marker activo
+fx:slow-motion                — ralentiza GSAP timeScale del SVG por N segundos
+fx:silhouette-horizon         — silueta lejana apareciendo en el horizonte
+fx:radial-bloom               — destello radial centrado (epifanía)
+fx:shockwave                  — onda expansiva (terremoto, explosión simbólica)
+```
+
+#### C.5) Política de uso
+
+- **Atmosféricos one-shot**: usados liberalmente por agentes-era cuando el texto narra fenómenos meteorológicos / temporales. Sustantivos como "noche", "amanecer", "tormenta", "rayo", "viento" disparan estos automáticamente vía `nounDictionary`.
+- **Ambient per-era**: activado por `EraTheme.astro` al montar; NO se invoca por evento. Los agentes-era no lo tocan.
+- **Cinematográficos**: reservados para eventos cumbre (crucifixión → `fx:fade-to-black`, anunciación → `fx:radial-bloom`, hégira → `fx:zoom-pulse`). 1-3 por evento cumbre máximo, cero en eventos menores.
 
 ### D) Diccionario noun → FX — `src/lib/cues/nounDictionary.ts`
 
@@ -195,6 +264,14 @@ NATURALES / METEOROLÓGICOS (primitiva)
 DIVINOS
   ángel, querubín, serafín, halo, gloria-shekiná, mano-divina,
   voz-del-cielo, columna-fuego, columna-nube.
+
+TEMPORALES (disparan atmosféricos C.2)
+  amaneció, anocheció, noche, día, alba, crepúsculo, tres días,
+  cuarenta días, cuarenta noches, séptimo día, sábado.
+
+CINEMATOGRÁFICOS (disparan C.4, solo en cumbres)
+  expiró, murió, resucitó, ascendió, descendió, se reveló,
+  fue arrebatado, se transfiguró.
 ```
 
 Cada entrada puede tener variantes por era:
@@ -474,6 +551,7 @@ const QUIESCENCE_TIMEOUT_MS   = 12000;  // hard ceiling para no colgar
 - `src/lib/cues/nounDictionary.ts`
 - `src/lib/dialogTypes.ts`
 - `src/lib/eraEndGuard.ts`
+- `src/lib/eraAmbient.ts` *(capa ambient C.3 que se monta una vez por era)*
 - `src/lib/sceneObjects/index.ts`
 - `src/lib/sceneObjects/animator.ts`
 - `src/lib/sceneObjects/{primordial,patriarcal,exodo,reinos-y-exilio,evangelio,revelacion}.ts`
