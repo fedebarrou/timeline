@@ -67,9 +67,9 @@ function installStyles(): void {
     [data-speech-bubble] {
       position: fixed;
       z-index: 70;
-      max-width: 320px;
-      min-width: 160px;
-      padding: 0.65rem 0.95rem 0.7rem;
+      max-width: 380px;
+      min-width: 180px;
+      padding: 0.8rem 1.1rem 0.85rem;
       pointer-events: none;
       opacity: 0;
       transform: translateY(6px) scale(0.96);
@@ -91,8 +91,8 @@ function installStyles(): void {
         0 8px 22px rgba(0, 0, 0, 0.5);
       color: #1a0f08;
       font-family: var(--era-body, 'EB Garamond', Georgia, serif);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 16.5px;
+      line-height: 1.5;
     }
     [data-speech-bubble].is-visible {
       opacity: 1;
@@ -107,8 +107,8 @@ function installStyles(): void {
     [data-speech-bubble] .sb-quote::before { content: '“'; margin-right: 2px; }
     [data-speech-bubble] .sb-quote::after  { content: '”'; margin-left: 2px; }
     [data-speech-bubble] .sb-attrib {
-      margin-top: 0.35rem;
-      font-size: 10px;
+      margin-top: 0.4rem;
+      font-size: 11.5px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       opacity: 0.72;

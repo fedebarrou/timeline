@@ -172,6 +172,25 @@ const allMarkers = events.map((e) => {
       background: transparent !important;
       background-color: transparent !important;
     }
+    /* Soft fade on the LEFT edge of the map so the paper-pattern texture
+       doesn't draw a visible vertical seam against the body bg.
+       Hidden in fullscreen (the map fills the viewport, no seam exists). */
+    @media (min-width: 768px) {
+      body:not(.map-fullscreen) .map-container {
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent 0px,
+          black 36px,
+          black 100%
+        );
+                mask-image: linear-gradient(
+          to right,
+          transparent 0px,
+          black 36px,
+          black 100%
+        );
+      }
+    }
 
     /* ─── Map fullscreen mode ──────────────────────────────────────────── */
     /* Triggered by body.map-fullscreen (set by MapFullscreenButton). */
