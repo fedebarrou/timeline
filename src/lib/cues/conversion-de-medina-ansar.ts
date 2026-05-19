@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /conversi[oó]n masiva|abrazan el Islam|conversi[oó]n.{0,15}Yathrib|preparaci[oó]n.{0,15}H[ée]gira/i, cueId: 'fx:glow-pulse', data: { pinIdx: 1, color: '#ffd27a' } },
   // Polvo de los peregrinos en al-ʿAqaba
   { match: /Monte [ʿ']?Aqaba|peregrinaci[oó]n meccana|delegaci[oó]n nocturna|encuentro nocturno/i, cueId: 'fx:dust-burst', data: { position: [625, 460] } },
+  // Noche del segundo pacto — starfield bajo el monte
+  { match: /noche.{0,15}pacto|encuentro nocturno|segundo pacto.{0,15}noche|setenta y tres|veteranos juran/i, cueId: 'fx:starfield-shimmer' },
+  // Caravana de regreso a Yathrib — traza
+  { match: /vuelven a Yathrib|regresan a Medina|caravana de regreso|preparan la llegada/i, cueId: 'fx:journey-trace', data: { from: [625, 460], to: [620, 440] } },
 ];
 
 export default CUES;

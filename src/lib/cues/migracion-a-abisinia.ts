@@ -19,6 +19,8 @@ const CUES: Cue[] = [
   { match: /Sura Maryam|recitaci[oó]n.{0,15}Mar[ií]a|Jes[úu]s.{0,10}coránico|escucha la recitaci[óo]n/i, cueId: 'fx:scroll-unfurl', data: { position: [600, 500] } },
   // Halo divino — protección cristiana sobre los musulmanes perseguidos
   { match: /protecci[oó]n|asilo cristiano|signos|providencia|primera H[ée]gira/i, cueId: 'fx:halo-divine', data: { pinIdx: 1 } },
+  // Lágrimas del Negus al escuchar la sura — emotional glow
+  { match: /Negus llora|lágrimas|Bar[áa]ja .{0,8}mismas fuentes|hu[íi]a la luz/i, cueId: 'fx:glow-pulse', data: { pinIdx: 2, color: '#cfe6c8' } },
 ];
 
 export default CUES;

@@ -19,6 +19,8 @@ const CUES: Cue[] = [
   { match: /agua.{0,15}sali[óo]|sale agua|brota.{0,10}agua/i, cueId: 'fx:water-wave', data: { position: [565, 405] } },
   // Sentencia divina: no entrarán a la tierra
   { match: /no.{0,10}entrar[áa]n|no meter[ée]is.{0,15}tierra|excluy[óo].{0,15}tierra prometida|no creísteis en m[íi]/i, cueId: 'fx:character-recede', data: { pinIdx: 0 } },
+  // Aaron también queda excluido
+  { match: /Aar[óo]n.{0,15}tampoco|Aar[óo]n.{0,15}exclu|H[āa]r[ūu]n.{0,15}castigad|no entrará Aar[óo]n/i, cueId: 'fx:character-recede', data: { pinIdx: 1 } },
 ];
 
 export default CUES;

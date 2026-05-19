@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /Sura 28:56|t[úu] no gu[íi]as a quien quieres|providencia|consuelo divino/i, cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
   // Apedreado en Ṭāʾif — humillaciones
   { match: /[ṬT][āa][ʾ']?if|apedread|humillaciones|barro en la cara|piedras lanzadas/i, cueId: 'fx:dust-burst', data: { position: [625, 460] } },
+  // Ángel del monte ofrece destruir Ṭāʾif — Mahoma rehúsa
+  { match: /[áa]ngel del monte|ofrece destruir|Mahoma .{0,15}reh[úu]sa|ten misericordia|que su descendencia/i, cueId: 'fx:angel-descent', data: { position: [625, 460] } },
+  // Atardecer del año — fade to dusk
+  { match: /A[ñn]o de la Tristeza|terrible a[ñn]o|fin del a[ñn]o|noche m[áa]s oscura/i, cueId: 'fx:dusk-fall' },
 ];
 
 export default CUES;

@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /Ab[ūu] Sufy[āa]n|líder Quraysh|responsable.{0,15}tratado.{0,15}meccana/i, cueId: 'fx:character-emerge', data: { pinIdx: 1 } },
   // Polvo del campamento en al-Ḥudaybiyya
   { match: /al-[ḤH]udaybiyya|Hudaibiya|campamento|borde del territorio sagrado|territorio sagrado/i, cueId: 'fx:dust-burst', data: { position: [625, 460] } },
+  // ʿUthmān como emisario a La Meca — traza
+  { match: /[ʿ']?Uthm[āa]n|emisario.{0,15}Meca|envía emisario|negociador/i, cueId: 'fx:journey-trace', data: { from: [625, 460], to: [625, 465] } },
+  // Sacrificio de los animales — ram (cordero)
+  { match: /sacrificio.{0,15}animales|degollar.{0,15}camellos|setenta camellos|hady|ofrenda|sacrificarse/i, cueId: 'fx:ram', data: { position: [625, 460] } },
 ];
 
 export default CUES;

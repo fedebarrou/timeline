@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /termitas|carcomid|nombre de Dios|fin del boicot|deja solo el nombre de All[āa]h/i, cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
   // Polvo del valle / desolación
   { match: /valle|shi[ʿ']?b|adyacente a La Meca|desolaci[oó]n|tres a[ñn]os de exilio/i, cueId: 'fx:dust-burst', data: { position: [625, 460] } },
+  // Hambre asoladora — bowing crowd como gesto de súplica
+  { match: /llantos.{0,15}ni[ñn]os|comer.{0,15}hojas|hojas de [áa]rbol|miseria extrema/i, cueId: 'fx:bowing-crowd', data: { position: [625, 460] } },
+  // Halo de victoria al romperse el pacto — divine light
+  { match: /se rompe el pacto|fin del boicot|invalidado.{0,10}pacto|aboliciones unilaterales/i, cueId: 'fx:divine-light-beam', data: { position: [625, 460] } },
 ];
 
 export default CUES;

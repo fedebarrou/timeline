@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /caravana|comercio a Siria|caravan[áa] hacia el norte|ruta caravanera/i, cueId: 'fx:journey-trace', data: { from: [625, 460], to: [592, 358] } },
   // Vínculo conyugal — confidente y sost[éé]n
   { match: /confidente|sostén|amor|fiel|sost[ée]n econ[óo]mico|veinticinco a[ñn]os juntos/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0, color: '#ffe6a0' } },
+  // Hijos de Khadīja con Mahoma — descendencia
+  { match: /F[āa][ṭt]ima|Zaynab|Ruqayya|Umm Kulth[ūu]m|al-Q[āa]sim|cuatro hijas|hijos de Khad/i, cueId: 'fx:character-emerge', data: { pinIdx: 1 } },
+  // Anillo de bodas / amanecer doméstico
+  { match: /matrimonio feliz|hogar feliz|paz del hogar|prosperidad doméstica/i, cueId: 'fx:dawn-break' },
 ];
 
 export default CUES;

@@ -17,6 +17,10 @@ const CUES: Cue[] = [
   { match: /Mezquita del Profeta|construye.{0,15}mezquita|primera mezquita|levantar la mezquita|adobes/i, cueId: 'fx:dust-burst', data: { position: [620, 440] } },
   // Resplandor de la fundación
   { match: /Yathrib pasa a llamarse Medina|fundaci[oó]n|comunidad pol[ií]tica|comunidad religiosa|convivencia con jud[íi]os/i, cueId: 'fx:glow-pulse', data: { position: [620, 440], color: '#ffd27a' } },
+  // Adhán — primera llamada a la oración (trumpet/shofar como proxy)
+  { match: /adh[āa]n|primera llamada a la oraci[oó]n|Bil[āa]l|Allahu Akbar|llamado al rezo/i, cueId: 'fx:trumpet-blast', data: { position: [620, 440] } },
+  // Aposento del Profeta — palmera de Medina (ambient)
+  { match: /palmas datileras|hojas de palma|oasis de Medina|jard[ií]n del Profeta/i, cueId: 'fx:dawn-break' },
 ];
 
 export default CUES;

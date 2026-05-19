@@ -19,6 +19,8 @@ const CUES: Cue[] = [
   { match: /treinta d[íi]as|30 d[íi]as|duelo|llor[óo] el pueblo|hicieron duelo/i, cueId: 'fx:smoke-rise', data: { position: [575, 410] } },
   // Halo divino sobre el sacerdocio
   { match: /sumo sacerdocio|kohanim|dinastía sacerdotal|sucesi[óo]n sacerdotal/i, cueId: 'fx:halo-divine', data: { pinIdx: 2 } },
+  // Atardecer en la cima — fade visual al duelo
+  { match: /Aar[óo]n.{0,15}muri[óo]|baj[óo].{0,15}solo|al atardecer|descendi[óo] Mois[ée]s solo/i, cueId: 'fx:dusk-fall' },
 ];
 
 export default CUES;
