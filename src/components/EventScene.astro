@@ -101,7 +101,9 @@ const charactersInEvent = await Promise.all(
       <h2 class="font-display mb-2" style="font-size: var(--fs-h2); line-height: 1.1">{data.title}</h2>
       {data.subtitle && <p class="font-display italic opacity-70 mb-4" style={`font-size: var(--fs-h3)`}>{data.subtitle}</p>}
 
-      <NarratorButton eventId={data.id} narrationText={narrationText} audioSrc={audioSrc} />
+      <div class="narrator-mobile-sticky">
+        <NarratorButton eventId={data.id} narrationText={narrationText} audioSrc={audioSrc} />
+      </div>
 
       <MediaHero media={data.media?.hero} />
 
@@ -286,5 +288,14 @@ const charactersInEvent = await Promise.all(
   }
   .mobile-accordion-body {
     padding: 0 1rem 1rem;
+  }
+  .narrator-mobile-sticky { display: flex; justify-content: flex-end; }
+  @media (max-width: 767px) {
+    .narrator-mobile-sticky {
+      position: sticky;
+      bottom: 0.75rem;
+      z-index: 30;
+      margin-top: 0.5rem;
+    }
   }
 </style>
