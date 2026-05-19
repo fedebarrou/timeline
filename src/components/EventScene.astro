@@ -159,26 +159,69 @@ const charactersInEvent = await Promise.all(
         </>
       )}
 
-      {data.comparative.divergent && (
-        <ComparativeBlock comparative={data.comparative} />
-      )}
+      {/* Mobile: bloques colapsables */}
+      <div class="md:hidden mt-6 space-y-2">
+        {data.comparative.divergent && (
+          <details class="mobile-accordion">
+            <summary>Torá / Biblia / Corán</summary>
+            <div class="mobile-accordion-body">
+              <ComparativeBlock comparative={data.comparative} />
+            </div>
+          </details>
+        )}
+        {data.sources.length > 0 && (
+          <details class="mobile-accordion">
+            <summary>Fuentes consultadas</summary>
+            <div class="mobile-accordion-body">
+              <ul class="space-y-2">
+                {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
+              </ul>
+            </div>
+          </details>
+        )}
+        <details class="mobile-accordion">
+          <summary>Mini-historia</summary>
+          <div class="mobile-accordion-body">
+            <MiniHistorySection
+              eventId={data.id}
+              eventTitle={data.title}
+              eventSubtitle={data.subtitle}
+            />
+          </div>
+        </details>
+        {data.deepDive && (
+          <details class="mobile-accordion">
+            <summary>Profundizar</summary>
+            <div class="mobile-accordion-body">
+              <DeepDive deepDive={data.deepDive} />
+            </div>
+          </details>
+        )}
+      </div>
 
-      {data.sources.length > 0 && (
-        <div class="mt-8">
-          <h3 class="text-sm tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
-          <ul class="space-y-2">
-            {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
-          </ul>
-        </div>
-      )}
+      {/* Desktop: bloques siempre expandidos */}
+      <div class="hidden md:block">
+        {data.comparative.divergent && (
+          <ComparativeBlock comparative={data.comparative} />
+        )}
 
-      <MiniHistorySection
-        eventId={data.id}
-        eventTitle={data.title}
-        eventSubtitle={data.subtitle}
-      />
+        {data.sources.length > 0 && (
+          <div class="mt-8">
+            <h3 class="text-sm tracking-[0.3em] uppercase opacity-60 mb-3">Fuentes consultadas</h3>
+            <ul class="space-y-2">
+              {data.sources.map((s) => <li><SourceBadge source={s} /></li>)}
+            </ul>
+          </div>
+        )}
 
-      <DeepDive deepDive={data.deepDive} />
+        <MiniHistorySection
+          eventId={data.id}
+          eventTitle={data.title}
+          eventSubtitle={data.subtitle}
+        />
+
+        <DeepDive deepDive={data.deepDive} />
+      </div>
     </div>
 
     <div class="map-spacer hidden md:block"></div>
@@ -211,5 +254,37 @@ const charactersInEvent = await Promise.all(
     /* Subtle contrast lift so the figure stays readable through the
        softer edges of the mask. */
     filter: contrast(1.06) saturate(1.05);
+  }
+  .mobile-accordion {
+    border: 1px solid var(--era-border);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--era-surface) 50%, transparent);
+    overflow: hidden;
+  }
+  .mobile-accordion > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.9rem 1rem;
+    font-family: var(--era-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+  .mobile-accordion > summary::-webkit-details-marker { display: none; }
+  .mobile-accordion > summary::after {
+    content: '▸';
+    color: var(--era-primary);
+    transition: transform 200ms ease;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+  }
+  .mobile-accordion[open] > summary::after {
+    transform: rotate(90deg);
+  }
+  .mobile-accordion-body {
+    padding: 0 1rem 1rem;
   }
 </style>
