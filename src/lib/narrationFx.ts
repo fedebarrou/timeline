@@ -121,6 +121,48 @@ function getFxLayer(svg: SVGSVGElement): SVGGElement {
   return layer;
 }
 
+/**
+ * Tear down every in-flight FX on the narration-fx layer.
+ *
+ * Each primitive (fxFireFlicker, fxLightningStrike, fxGoldenCalf, …)
+ * appends transient nodes to `[data-layer="narration-fx"]` and ties their
+ * GSAP tweens to those nodes; an `onComplete: () => node.remove()` only
+ * cleans up *after* the full duration (up to 4–6 seconds for the long
+ * cinematic primitives). Without a scene-change teardown, a cue triggered
+ * for event A keeps painting flames / lightning / haloes on top of the
+ * map while the user has already scrolled into event B — and because the
+ * user's virtual scrubber takes ~1.6 s to start firing event B's own cues,
+ * the perceived effect is "the previous event's animation stayed stuck
+ * and the new event has none". This kills every active tween targeting
+ * an FX node, drops the nodes, and also removes the floating HTML
+ * tradition badge so the new era doesn't inherit the previous tradition's
+ * glyph.
+ *
+ * Filters/gradients stored under `<defs>` are intentionally preserved so
+ * subsequent cues can keep referencing them by id (#narration-fx-…).
+ */
+export function clearFxLayer(svg: SVGSVGElement): void {
+  const layer = svg.querySelector<SVGGElement>('[data-layer="narration-fx"]');
+  if (layer) {
+    layer.querySelectorAll('*').forEach((node) => {
+      try { gsap.killTweensOf(node); } catch {}
+      // Inline-style writes (e.g. fxTraditionBadge wrote to badge.style)
+      // and attribute tweens both register on the element; killing the
+      // node-level tween covers both.
+    });
+    try { gsap.killTweensOf(layer); } catch {}
+    layer.innerHTML = '';
+  }
+  // The tradition-badge primitive renders a fixed-position HTML node on
+  // document.body — kill its tween + element so a leftover ✡/✝/☪ doesn't
+  // float over the new event.
+  document.querySelectorAll<HTMLElement>('[data-narration-tradition-badge]').forEach((b) => {
+    try { gsap.killTweensOf(b); } catch {}
+    try { gsap.killTweensOf(b.style); } catch {}
+    b.remove();
+  });
+}
+
 /** Parse a `translate(x, y)` string into [x, y]. */
 function parseTranslate(t: string | null): [number, number] {
   if (!t) return [0, 0];
@@ -4592,9 +4634,21 @@ export function initNarrationFx(svg: SVGSVGElement): void {
   inited = true;
 
   // Track the active scene so pinIdx-only cues know which marker to use.
+  // On a genuine event change (newId !== currentEventId) we also tear
+  // down every in-flight FX so the previous event's long-running tweens
+  // (4–6 s timelines for fire flicker, golden-calf sway, etc.) stop
+  // painting on top of the new scene. Re-broadcasts for the same id —
+  // playMode + request-activate funnel through scene-changed twice on a
+  // single navigation — leave the layer alone so legitimate cues already
+  // playing for the active event are not nuked mid-animation.
   window.addEventListener('timeline:scene-changed', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
-    if (detail?.eventId) currentEventId = detail.eventId;
+    const newId = detail?.eventId;
+    if (!newId) return;
+    if (newId !== currentEventId) {
+      clearFxLayer(svg);
+    }
+    currentEventId = newId;
   });
 
   window.addEventListener('timeline:cue', (e: Event) => {
