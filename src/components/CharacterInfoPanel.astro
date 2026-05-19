@@ -27,6 +27,25 @@ interface Props {
 }
 const { events, charById } = Astro.props;
 
+type Tradition = 'tora' | 'biblia' | 'coran';
+
+function hasRealMentions(arr: any[] | undefined): boolean {
+  if (!arr || arr.length === 0) return false;
+  return arr.some((m) => {
+    const marker = m?.book ?? m?.sura ?? m?.reference ?? '';
+    return marker !== '—' && marker !== '';
+  });
+}
+
+function religionsFor(cd: any): Tradition[] {
+  const m = cd?.mentions ?? {};
+  const out: Tradition[] = [];
+  if (hasRealMentions(m.tora))   out.push('tora');
+  if (hasRealMentions(m.biblia)) out.push('biblia');
+  if (hasRealMentions(m.coran))  out.push('coran');
+  return out;
+}
+
 const eventCharacters = events.map((e) => {
   const chars = ((e.data.characters as any[]) ?? []).map((c: any) => {
     const cd = charById.get(c.id);
@@ -39,12 +58,18 @@ const eventCharacters = events.map((e) => {
       meaning: cd?.alternateNames?.meaning ?? null,
       significance: cd?.significance ?? null,
       canonicity: deriveCanonicity(cd),
+      religions: religionsFor(cd),
     };
   });
   return { eventId: e.data.id, characters: chars };
 });
 ---
 <aside class="character-info-panel" data-character-info-panel aria-hidden="true">
+  <div class="cip-watermarks" data-cip-watermarks aria-hidden="true">
+    <svg class="rel-watermark rel-tora" data-rel="tora" viewBox="0 0 100 100" fill="currentColor"><path d="M50 8 L88 70 L12 70 Z" /><path d="M50 92 L12 30 L88 30 Z" fill-opacity="0.85" /></svg>
+    <svg class="rel-watermark rel-biblia" data-rel="biblia" viewBox="0 0 100 100" fill="currentColor"><rect x="42" y="10" width="16" height="80" rx="2" /><rect x="22" y="32" width="56" height="16" rx="2" /></svg>
+    <svg class="rel-watermark rel-coran" data-rel="coran" viewBox="0 0 100 100" fill="currentColor"><path d="M50 12 a38 38 0 1 0 32 60 a30 30 0 1 1 0 -44 a38 38 0 0 0 -32 -16 z" /><polygon points="78,28 81,36 89,36 83,41 86,49 78,44 70,49 73,41 67,36 75,36" /></svg>
+  </div>
   <div class="cip-row">
     <div class="cip-portrait" data-cip-portrait>
       <img alt="" data-cip-portrait-img onerror="this.style.display='none'" />
@@ -52,7 +77,6 @@ const eventCharacters = events.map((e) => {
     <div class="cip-text">
       <div class="cip-meta">
         <span class="cip-kind">Personaje</span>
-        <span class="cip-canonicity" data-cip-canonicity></span>
       </div>
       <div class="cip-name" data-cip-name></div>
       <div class="cip-meaning" data-cip-meaning></div>
@@ -81,6 +105,11 @@ const eventCharacters = events.map((e) => {
 </aside>
 
 <aside class="mobile-cip" data-mobile-cip aria-hidden="true">
+  <div class="cip-watermarks" data-cip-watermarks aria-hidden="true">
+    <svg class="rel-watermark rel-tora" data-rel="tora" viewBox="0 0 100 100" fill="currentColor"><path d="M50 8 L88 70 L12 70 Z" /><path d="M50 92 L12 30 L88 30 Z" fill-opacity="0.85" /></svg>
+    <svg class="rel-watermark rel-biblia" data-rel="biblia" viewBox="0 0 100 100" fill="currentColor"><rect x="42" y="10" width="16" height="80" rx="2" /><rect x="22" y="32" width="56" height="16" rx="2" /></svg>
+    <svg class="rel-watermark rel-coran" data-rel="coran" viewBox="0 0 100 100" fill="currentColor"><path d="M50 12 a38 38 0 1 0 32 60 a30 30 0 1 1 0 -44 a38 38 0 0 0 -32 -16 z" /><polygon points="78,28 81,36 89,36 83,41 86,49 78,44 70,49 73,41 67,36 75,36" /></svg>
+  </div>
   <div class="mcip-portrait">
     <img alt="" data-mcip-portrait-img onerror="this.style.display='none'" />
   </div>
@@ -234,7 +263,6 @@ const eventCharacters = events.map((e) => {
     body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 14.5px; }
     body:not(.map-fullscreen) .character-info-panel .cip-meaning { font-size: 12px; }
     body:not(.map-fullscreen) .character-info-panel .cip-body { font-size: 12.5px; line-height: 1.5; }
-    body:not(.map-fullscreen) .character-info-panel .cip-canonicity { font-size: 9px; padding: 2px 7px; }
     body:not(.map-fullscreen) .character-info-panel .cip-kind { font-size: 9.5px; }
   }
 
@@ -274,16 +302,6 @@ const eventCharacters = events.map((e) => {
     /* Darken the kicker — 0.55 was unreadable on the warm parchment. */
     opacity: 0.85;
     color: color-mix(in srgb, var(--era-primary) 60%, #1a0f08);
-  }
-  .character-info-panel .cip-canonicity {
-    display: none; align-items: center; gap: 5px;
-    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 999px;
-  }
-  .character-info-panel .cip-canonicity.has-text { display: inline-flex; }
-  .character-info-panel .cip-canonicity-dot {
-    display: inline-block;
-    width: 6px; height: 6px; border-radius: 50%;
   }
   .character-info-panel .cip-name {
     font-family: var(--era-display, 'Cinzel', serif);
@@ -368,8 +386,7 @@ const eventCharacters = events.map((e) => {
   .character-info-panel.cip-fade .cip-portrait,
   .character-info-panel.cip-fade .cip-name,
   .character-info-panel.cip-fade .cip-meaning,
-  .character-info-panel.cip-fade .cip-body,
-  .character-info-panel.cip-fade .cip-canonicity {
+  .character-info-panel.cip-fade .cip-body {
     animation: cip-fade-in 320ms ease;
   }
 
@@ -415,10 +432,44 @@ const eventCharacters = events.map((e) => {
     opacity: 0.7;
     margin-top: 0.15rem;
   }
+
+  .cip-watermarks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cip-watermarks .rel-watermark {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    opacity: 0;
+    color: var(--era-primary);
+    pointer-events: none;
+    transition: opacity 320ms ease;
+  }
+  .cip-watermarks .rel-watermark.is-active {
+    opacity: 0.10;
+  }
+  .cip-watermarks .rel-tora { top: 0.6rem; left: 0.6rem; }
+  .cip-watermarks .rel-biblia { top: 50%; right: 0.6rem; transform: translateY(-50%); }
+  .cip-watermarks .rel-coran { bottom: 0.6rem; left: 0.6rem; }
+  /* Mobile flotante watermarks: smaller (panel is narrower) */
+  .mobile-cip .cip-watermarks .rel-watermark { width: 28px; height: 28px; opacity: 0; }
+  .mobile-cip .cip-watermarks .rel-watermark.is-active { opacity: 0.14; }
+  .mobile-cip .cip-watermarks .rel-tora { top: 0.3rem; left: 0.3rem; }
+  .mobile-cip .cip-watermarks .rel-biblia { top: 50%; right: 0.3rem; transform: translateY(-50%); }
+  .mobile-cip .cip-watermarks .rel-coran { bottom: 0.3rem; left: 0.3rem; }
+  /* Ensure panel content sits above watermarks. */
+  .character-info-panel .cip-row,
+  .character-info-panel .cip-body,
+  .character-info-panel .cip-controls,
+  .mobile-cip .mcip-portrait,
+  .mobile-cip .mcip-text { position: relative; z-index: 1; }
 </style>
 
 <script>
-  import { CANONICITY_COLORS, CANONICITY_LABELS, type Canonicity } from '../lib/canonicity';
+  import type { Canonicity } from '../lib/canonicity';
 
   type Character = {
     id: string;
@@ -430,6 +481,7 @@ const eventCharacters = events.map((e) => {
     significance: string | null;
     canonicity: Canonicity;
     quote?: string | null;
+    religions?: ('tora' | 'biblia' | 'coran')[];
   };
 
   const dataEl = document.querySelector<HTMLScriptElement>('script[data-character-info-data]');
@@ -441,7 +493,6 @@ const eventCharacters = events.map((e) => {
     for (const r of raw) byEvent.set(r.eventId, r.characters);
 
     const portraitImg = panel.querySelector<HTMLImageElement>('[data-cip-portrait-img]');
-    const canonicityEl = panel.querySelector<HTMLElement>('[data-cip-canonicity]');
     const nameEl = panel.querySelector<HTMLElement>('[data-cip-name]');
     const meaningEl = panel.querySelector<HTMLElement>('[data-cip-meaning]');
     const bodyEl = panel.querySelector<HTMLElement>('[data-cip-body]');
@@ -537,17 +588,14 @@ const eventCharacters = events.map((e) => {
       setText(meaningEl, c.meaning);
       // Prefer event-specific lore; fall back to the character's general significance.
       setText(bodyEl, c.lore ?? c.significance);
-      if (canonicityEl) {
-        const col = CANONICITY_COLORS[c.canonicity];
-        const lbl = CANONICITY_LABELS[c.canonicity];
-        canonicityEl.style.color = col;
-        canonicityEl.style.borderColor = col;
-        canonicityEl.style.borderStyle = 'solid';
-        canonicityEl.style.borderWidth = '1px';
-        canonicityEl.style.background = `color-mix(in srgb, ${col} 12%, transparent)`;
-        canonicityEl.innerHTML = `<span class="cip-canonicity-dot" style="background:${col}"></span>${lbl}`;
-        canonicityEl.classList.toggle('has-text', !!lbl);
-      }
+      // Toggle religion watermarks on both desktop and mobile panels.
+      const religions: string[] = Array.isArray((c as any).religions) ? (c as any).religions : [];
+      const wmDesktop = document.querySelectorAll<HTMLElement>('.character-info-panel .cip-watermarks .rel-watermark');
+      const wmMobile = document.querySelectorAll<HTMLElement>('.mobile-cip .cip-watermarks .rel-watermark');
+      [...wmDesktop, ...wmMobile].forEach((el) => {
+        const r = el.getAttribute('data-rel');
+        el.classList.toggle('is-active', !!r && religions.includes(r));
+      });
       // Mirror to the mobile flotante (hidden on desktop via CSS).
       const mobileEl = document.querySelector<HTMLElement>('[data-mobile-cip]');
       const mobileImg = document.querySelector<HTMLImageElement>('[data-mcip-portrait-img]');
