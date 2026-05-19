@@ -41,7 +41,6 @@
       iconExpand!.classList.add('hidden');
       iconCollapse!.classList.remove('hidden');
       btn!.setAttribute('aria-label', 'Salir de pantalla completa');
-      btn!.setAttribute('title', 'Salir de pantalla completa');
       bindIdle();
       // Hide the toggle itself in fullscreen — the "Volver" pill replaces it.
       btn!.style.display = 'none';
@@ -54,7 +53,6 @@
       iconExpand!.classList.remove('hidden');
       iconCollapse!.classList.add('hidden');
       btn!.setAttribute('aria-label', 'Ver mapa en pantalla completa');
-      btn!.setAttribute('title', 'Pantalla completa del mapa');
       unbindIdle();
       // Restore the toggle visibility when exiting fullscreen.
       btn!.style.display = '';

@@ -205,23 +205,22 @@ if (N > 0 && positions[N - 1] > 100) {
     bottom: calc(100% + 6px);
     left: 50%;
     transform: translateX(-50%);
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--era-bg) 92%, transparent);
-    border: 1px solid color-mix(in srgb, var(--era-primary) 50%, transparent);
     color: var(--era-primary);
     font-family: var(--era-display, 'Cinzel', serif);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.05em;
     white-space: nowrap;
-    max-width: 16rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
     pointer-events: none;
     opacity: 0;
     transition: opacity 140ms ease;
-    z-index: 5;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    z-index: 200;
+    /* Halo de era-bg para que el texto se lea sobre cualquier fondo
+       sin caja propia. */
+    text-shadow:
+      0 0 6px var(--era-bg),
+      0 0 6px var(--era-bg),
+      0 0 6px var(--era-bg),
+      0 0 6px var(--era-bg);
   }
   .fs-timeline-dot:hover .fs-timeline-title { opacity: 1; }
   .fs-timeline-active {

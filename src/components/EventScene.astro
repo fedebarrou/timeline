@@ -119,7 +119,7 @@ const charactersInEvent = await Promise.all(
               <a
                 href={`/personajes/${c.id}`}
                 class="char-pin group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-surface/40 hover:border-accent transition-colors"
-                title={`Ver perfil de ${c.name}`}
+                aria-label={`Ver perfil de ${c.name}`}
               >
                 <PortraitPlaceholder name={c.name} src={c.portrait ?? undefined} avatar={c.avatar ?? undefined} size="sm" />
                 <span class="text-base font-display">{c.name}</span>

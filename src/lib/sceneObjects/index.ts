@@ -76,12 +76,8 @@ export function renderSceneObjects(
     g.style.pointerEvents = 'auto';
     g.style.cursor = 'help';
 
-    // Native SVG <title> for accessibility / native tooltip
-    const titleEl = document.createElementNS(SVG_NS, 'title');
-    titleEl.textContent = obj.name;
-    g.insertBefore(titleEl, g.firstChild);
-
-    // Custom styled tooltip on hover
+    // Custom styled tooltip on hover (SVG <title> intentionally OMITTED:
+    // it spawns Chrome's native delay-tooltip on top of our papyrus one).
     const showTooltip = (e: MouseEvent) => {
       let tip = document.querySelector<HTMLElement>('[data-scene-tooltip]');
       if (!tip) {

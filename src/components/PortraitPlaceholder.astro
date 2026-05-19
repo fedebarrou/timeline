@@ -15,7 +15,7 @@ const sizeClasses = {
   lg: 'w-40 h-40 text-4xl',
 }[size];
 ---
-<div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden flex-shrink-0`} title={name}>
+<div class={`portrait-placeholder ${sizeClasses} relative rounded-full border-2 border-primary/60 bg-surface flex items-center justify-center font-display overflow-hidden flex-shrink-0`} aria-label={name}>
   {imageSrc ? (
     <>
       <img src={imageSrc} alt={name} loading="lazy" class="w-full h-full object-cover object-top" data-portrait-img />

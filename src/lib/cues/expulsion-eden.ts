@@ -18,9 +18,9 @@ const CUES: Cue[] = [
   { match: /[áa]rbol (del conocimiento|prohibido|de la eternidad)|shajarat al-khuld/i,
     cueId: 'fx:animate-scene-object', data: { id: 'arbol-del-conocimiento', kind: 'sway' } },
 
-  // 'fruto' — menciona el fruto comido
-  { match: /\bfruto\b|comi[oó] del [áa]rbol|prob[oó] el [áa]rbol|tom[oó] de su fruto/i,
-    cueId: 'fx:glow-pulse', data: { pinIdx: 1 } },
+  // 'fruto' / 'manzana' — la manzana figurativa del Edén
+  { match: /\bfruto\b|\bmanzana\b|comi[oó] del [áa]rbol|prob[oó] el [áa]rbol|tom[oó] de su fruto/i,
+    cueId: 'fx:forbidden-fruit', data: { position: [620, 318] } },
 
   // 'espada flameante' — scene-object 'espada-flameante' existe; REGLA #1
   { match: /espada (flame|encendida)|espada giratoria/i,

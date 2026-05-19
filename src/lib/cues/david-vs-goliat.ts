@@ -32,6 +32,10 @@ const CUES: Cue[] = [
     cueId: 'fx:sword-strike',
     data: { from: [575, 360], to: [582, 365] } },
 
+  // El duelo — David se lanza, Goliat cae (motion-meaning sobre los pins)
+  { match: /se acerc[oó].{0,15}filisteo|David corri[oó]|enfrent[oó].{0,10}Goliat|encuentro de los dos/i,
+    cueId: 'fx:char-clash', data: { fromPinIdx: 0, toPinIdx: 1, loserPinIdx: 1 } },
+
   // Sangre y cuerpos — efímero
   { match: /sangre|cuerpos de los filisteos|aves del cielo/i,
     cueId: 'fx:blood-stain',

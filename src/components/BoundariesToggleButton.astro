@@ -19,8 +19,7 @@ if (!hasBoundaries) return null;
   class="boundaries-toggle-btn absolute z-[60] bottom-4 left-4 md:bottom-5 md:left-5 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
   data-boundaries-toggle
   aria-pressed="false"
-  aria-label="Mostrar divisiones políticas históricas"
-  title={caption ? `Divisiones políticas — ${caption}` : 'Divisiones políticas'}
+  aria-label={caption ? `Divisiones políticas — ${caption}` : 'Mostrar divisiones políticas históricas'}
 >
   {/* Subtle "boundary lines" icon — two dashed crossing arcs hint at
       political polygons without committing to any specific era's shape. */}

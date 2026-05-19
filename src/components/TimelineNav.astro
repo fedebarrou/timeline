@@ -125,8 +125,10 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
               data-marker-year={e.data.biblicalYear}
             >
               <div class="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-primary hover:scale-150 transition-transform"></div>
-              {/* Event TITLE tooltip ABOVE the dot — shows on hover. */}
-              <div class="timeline-dot-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-[10px] bg-bg/95 border border-border text-primary whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg z-50" style="max-width: 14rem; overflow: hidden; text-overflow: ellipsis;">
+              {/* Event TITLE tooltip ABOVE the dot — plain text, no chrome.
+                  Hidden by default, shown on hover with high z-index so it
+                  always floats above sibling dots. */}
+              <div class="timeline-dot-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 text-[11px] text-primary whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[100] font-display tracking-wide" style="text-shadow: 0 0 6px var(--era-bg), 0 0 6px var(--era-bg), 0 0 6px var(--era-bg);">
                 {e.data.title}
               </div>
               {/* Year label sitting BELOW the dot. Tiny, low opacity, plain. */}

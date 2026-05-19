@@ -974,9 +974,10 @@ function fxEarthquakeShake(
 }
 
 /** 12. Blood stain — slow seep with halo + droplets, long hold, slow fade (>4s visible). */
-function fxBloodStain(svg: SVGSVGElement, data: { position: [number, number] }) {
-  if (!data?.position) return;
-  const [x, y] = data.position;
+function fxBloodStain(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
   const layer = getFxLayer(svg);
 
   // Faint outer halo (suggests soaked area).
@@ -1042,22 +1043,23 @@ function fxBloodStain(svg: SVGSVGElement, data: { position: [number, number] }) 
       inner.remove();
     },
   });
+  // Bigger so the bloodstain reads at viewBox scale (was getting lost as a 14px halo on a 1000-unit-wide map).
   tl.to(halo, {
-    attr: { r: 14, opacity: 0.5 },
-    duration: 1.2,
+    attr: { r: 22, opacity: 0.55 },
+    duration: 1.3,
     ease: 'power3.out',
   });
   tl.to(
     outer,
-    { attr: { r: 10, opacity: 0.85 }, duration: 1.0, ease: 'power2.out' },
+    { attr: { r: 15, opacity: 0.9 }, duration: 1.0, ease: 'power2.out' },
     '-=1.0',
   );
   tl.to(
     inner,
-    { attr: { r: 4, opacity: 0.95 }, duration: 0.85, ease: 'power2.out' },
+    { attr: { r: 6, opacity: 0.95 }, duration: 0.85, ease: 'power2.out' },
     '-=0.7',
   );
-  tl.to({}, { duration: 3.0 }); // long hold
+  tl.to({}, { duration: 3.4 }); // long hold
   tl.to([halo, outer, inner], {
     attr: { opacity: 0 },
     duration: 1.6,
@@ -2076,12 +2078,15 @@ function fadeAndRemove(nodes: Element[], opts: { delay?: number; duration?: numb
 // ---------------------------------------------------------------------------
 
 /** 23. Serpent — coiled snake silhouette rising via S-curve, head tilts. */
-function fxSerpent(svg: SVGSVGElement, data: { position: [number, number] }) {
-  if (!data?.position) return;
-  const [x, y] = data.position;
+function fxSerpent(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
   const layer = getFxLayer(svg);
   const glow = ensureGlowFilter(svg, 'serpent-glow', 1.4);
 
+  // Bigger overall scale so the serpent reads as a clear silhouette
+  // even at the narrow viewBox crop used for adan/eva, expulsion, etc.
   const g = svgEl('g', { transform: `translate(${x}, ${y}) scale(0)`, opacity: '0' });
   // Body — S-curve via quadratic beziers. Local frame: head ~ (8,-12), tail ~ (-6,8).
   const body = svgEl('path', {
@@ -2128,9 +2133,9 @@ function fxSerpent(svg: SVGSVGElement, data: { position: [number, number] }) {
   layer.appendChild(g);
 
   const tl = gsap.timeline({ onComplete: () => g.remove() });
-  // Rise from ground with scale-in
+  // Rise from ground with scale-in — scale 1.8x for visibility.
   tl.to(g, {
-    attr: { transform: `translate(${x}, ${y}) scale(1)`, opacity: 1 },
+    attr: { transform: `translate(${x}, ${y}) scale(1.8)`, opacity: 1 },
     duration: 1.0,
     ease: 'expo.out',
   });
@@ -2140,9 +2145,9 @@ function fxSerpent(svg: SVGSVGElement, data: { position: [number, number] }) {
   tl.to(tongue, { attr: { opacity: 0 }, duration: 0.2 });
   tl.to(tongue, { attr: { opacity: 1 }, duration: 0.15 });
   tl.to(tongue, { attr: { opacity: 0 }, duration: 0.2 });
-  // Lingering glow then fade
-  tl.to(g, { attr: { opacity: 0.4 }, duration: 1.3, ease: 'sine.inOut' });
-  tl.to(g, { attr: { opacity: 0 }, duration: 0.9, ease: 'sine.in' });
+  // Linger longer so the reader catches it.
+  tl.to(g, { attr: { opacity: 0.6 }, duration: 1.6, ease: 'sine.inOut' });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.1, ease: 'sine.in' });
 }
 
 /** 24. Golden calf — stylised calf appears with halo + shimmers gently. */
@@ -2733,9 +2738,10 @@ function fxLadder(svg: SVGSVGElement, data: { from: [number, number]; to: [numbe
 }
 
 /** 35. Ram — ram silhouette with curled horns, scale-in + head bob. */
-function fxRam(svg: SVGSVGElement, data: { position: [number, number] }) {
-  if (!data?.position) return;
-  const [x, y] = data.position;
+function fxRam(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
   const layer = getFxLayer(svg);
   const wool = '#c8b89a';
   const dark = '#5a4830';
@@ -2777,8 +2783,9 @@ function fxRam(svg: SVGSVGElement, data: { position: [number, number] }) {
   layer.appendChild(g);
 
   const tl = gsap.timeline({ onComplete: () => g.remove() });
+  // Scale 1.6x for visibility — ram silhouette was getting lost at unit scale.
   tl.to(g, {
-    attr: { transform: `translate(${x}, ${y}) scale(1)`, opacity: 1 },
+    attr: { transform: `translate(${x}, ${y}) scale(1.6)`, opacity: 1 },
     duration: 0.7,
     ease: 'back.out(1.6)',
   });
@@ -3270,14 +3277,14 @@ function fxFireFromHeaven(svg: SVGSVGElement, data: { position?: [number, number
   // 2. Bolt strike (fast, bright)
   tl.to(bolt, { attr: { opacity: 1 }, duration: 0.12, ease: 'power3.in' }, 0.18);
   tl.to(inner, { attr: { opacity: 1 }, duration: 0.1, ease: 'power3.in' }, 0.22);
-  // 3. Impact
-  tl.to(impact, { attr: { r: 14, opacity: 1 }, duration: 0.22, ease: 'expo.out' }, 0.3);
-  tl.to(ring, { attr: { r: 22, opacity: 0.95 }, duration: 0.32, ease: 'expo.out' }, 0.3);
+  // 3. Impact — smaller than before so it doesn't become a planet-sized circle.
+  tl.to(impact, { attr: { r: 8, opacity: 1 }, duration: 0.22, ease: 'expo.out' }, 0.3);
+  tl.to(ring, { attr: { r: 14, opacity: 0.9 }, duration: 0.32, ease: 'expo.out' }, 0.3);
   // 4. Bolt fades, shockwave expands and dissolves
   tl.to(inner, { attr: { opacity: 0 }, duration: 0.4, ease: 'sine.in' }, 0.45);
   tl.to(bolt, { attr: { opacity: 0 }, duration: 0.6, ease: 'sine.in' }, 0.5);
-  tl.to(ring, { attr: { r: 60, opacity: 0, 'stroke-width': 0.2 }, duration: 1.6, ease: 'sine.in' }, 0.5);
-  tl.to(impact, { attr: { r: 26, opacity: 0 }, duration: 1.6, ease: 'sine.in' }, 0.5);
+  tl.to(ring, { attr: { r: 30, opacity: 0, 'stroke-width': 0.2 }, duration: 1.4, ease: 'sine.in' }, 0.5);
+  tl.to(impact, { attr: { r: 14, opacity: 0 }, duration: 1.4, ease: 'sine.in' }, 0.5);
   // 5. Residual flame on impact site
   setTimeout(() => fxFireFlicker(svg, { position: [x, y] }), 500);
 }
@@ -4391,47 +4398,157 @@ function fxSilhouetteHorizon(svg: SVGSVGElement, _data: any = {}) {
   tl.to(g, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' });
 }
 
+/** fx:char-clash — two pins lurch at each other, brief weapon-spark
+ *  between them, then the "loser" recedes. Used for conflicts
+ *  (David↔Goliat, Caín↔Abel, Moisés↔Faraón). data: { fromPinIdx,
+ *  toPinIdx, loserPinIdx? }. Implements the motion-meaning rule:
+ *  the gesture itself describes the conflict. */
+function fxCharClash(svg: SVGSVGElement, data: { fromPinIdx: number; toPinIdx: number; loserPinIdx?: number } = { fromPinIdx: 0, toPinIdx: 1 }) {
+  const a = getPinAt(svg, data.fromPinIdx);
+  const b = getPinAt(svg, data.toPinIdx);
+  if (!a || !b) return;
+  const [ax, ay] = parseTranslate(a.getAttribute('transform'));
+  const [bx, by] = parseTranslate(b.getAttribute('transform'));
+  const dx = bx - ax;
+  const dy = by - ay;
+  const dist = Math.hypot(dx, dy) || 1;
+  const ux = dx / dist;
+  const uy = dy / dist;
+  const lunge = Math.min(6, dist * 0.35);
+  // Move A toward B and B toward A — collision blocking.
+  const tlA = gsap.timeline();
+  tlA.to(a, { attr: { transform: `translate(${ax + ux * lunge}, ${ay + uy * lunge})` }, duration: 0.35, ease: 'power3.in' });
+  tlA.to(a, { attr: { transform: `translate(${ax - ux * 2}, ${ay - uy * 2})` }, duration: 0.4, ease: 'back.out(2)' });
+  tlA.to(a, { attr: { transform: `translate(${ax}, ${ay})` }, duration: 0.6, ease: 'sine.inOut' });
+
+  const tlB = gsap.timeline();
+  tlB.to(b, { attr: { transform: `translate(${bx - ux * lunge}, ${by - uy * lunge})` }, duration: 0.35, ease: 'power3.in' });
+  tlB.to(b, { attr: { transform: `translate(${bx + ux * 2}, ${by + uy * 2})` }, duration: 0.4, ease: 'back.out(2)' });
+  tlB.to(b, { attr: { transform: `translate(${bx}, ${by})` }, duration: 0.6, ease: 'sine.inOut' });
+
+  // Weapon spark at midpoint (sword-strike line + tiny flash).
+  const layer = getFxLayer(svg);
+  const marker = a.closest('[data-marker]') as SVGGElement | null;
+  const [mx, my] = parseTranslate(marker?.getAttribute('transform') ?? null);
+  const mid = { x: mx + (ax + bx) / 2, y: my + (ay + by) / 2 };
+  const sparkLine = svgEl('line', {
+    x1: mx + ax, y1: my + ay, x2: mx + bx, y2: my + by,
+    stroke: '#ffffff', 'stroke-width': 0.6, 'stroke-linecap': 'round', opacity: 0,
+  });
+  layer.appendChild(sparkLine);
+  const spark = svgEl('circle', { cx: mid.x, cy: mid.y, r: 0, fill: '#fff5c8', opacity: 0 });
+  layer.appendChild(spark);
+  const sparkTl = gsap.timeline({ onComplete: () => { sparkLine.remove(); spark.remove(); } });
+  sparkTl.to(sparkLine, { attr: { opacity: 0.9 }, duration: 0.06 }, 0.32);
+  sparkTl.to(spark, { attr: { r: 3, opacity: 1 }, duration: 0.12, ease: 'expo.out' }, 0.32);
+  sparkTl.to(sparkLine, { attr: { opacity: 0 }, duration: 0.4, ease: 'sine.in' }, 0.45);
+  sparkTl.to(spark, { attr: { r: 6, opacity: 0 }, duration: 0.55, ease: 'sine.in' }, 0.45);
+
+  // Loser recedes after the clash (defaults to pinB).
+  const loserIdx = data.loserPinIdx ?? data.toPinIdx;
+  setTimeout(() => fxCharacterRecede(svg, { pinIdx: loserIdx }), 800);
+}
+
+/** fx:char-embrace — two pins drift toward each other, share a warm
+ *  glow at the meeting point, then return to base. Used for
+ *  reconciliations (José↔hermanos, padre prodigo, Jacob↔Esaú). */
+function fxCharEmbrace(svg: SVGSVGElement, data: { fromPinIdx: number; toPinIdx: number } = { fromPinIdx: 0, toPinIdx: 1 }) {
+  const a = getPinAt(svg, data.fromPinIdx);
+  const b = getPinAt(svg, data.toPinIdx);
+  if (!a || !b) return;
+  const [ax, ay] = parseTranslate(a.getAttribute('transform'));
+  const [bx, by] = parseTranslate(b.getAttribute('transform'));
+  const dx = bx - ax;
+  const dy = by - ay;
+  const dist = Math.hypot(dx, dy) || 1;
+  const ux = dx / dist;
+  const uy = dy / dist;
+  // Move halfway toward each other, hold, drift back.
+  const meet = Math.min(dist * 0.42, 6);
+  const tlA = gsap.timeline();
+  tlA.to(a, { attr: { transform: `translate(${ax + ux * meet}, ${ay + uy * meet})` }, duration: 1.2, ease: 'sine.inOut' });
+  tlA.to({}, { duration: 1.4 });
+  tlA.to(a, { attr: { transform: `translate(${ax}, ${ay})` }, duration: 1.2, ease: 'sine.inOut' });
+
+  const tlB = gsap.timeline();
+  tlB.to(b, { attr: { transform: `translate(${bx - ux * meet}, ${by - uy * meet})` }, duration: 1.2, ease: 'sine.inOut' });
+  tlB.to({}, { duration: 1.4 });
+  tlB.to(b, { attr: { transform: `translate(${bx}, ${by})` }, duration: 1.2, ease: 'sine.inOut' });
+
+  // Warm glow at the meeting point.
+  const layer = getFxLayer(svg);
+  const marker = a.closest('[data-marker]') as SVGGElement | null;
+  const [mx, my] = parseTranslate(marker?.getAttribute('transform') ?? null);
+  const cx = mx + (ax + bx) / 2;
+  const cy = my + (ay + by) / 2;
+  const glowFx = ensureGlowFilter(svg, 'embrace-glow', 2.4);
+  const glow = svgEl('circle', { cx, cy, r: 0, fill: '#ffd866', opacity: 0, filter: glowFx });
+  layer.appendChild(glow);
+  const tlGlow = gsap.timeline({ onComplete: () => glow.remove() });
+  tlGlow.to(glow, { attr: { r: 6, opacity: 0.65 }, duration: 1.0, ease: 'sine.out' }, 0.6);
+  tlGlow.to(glow, { attr: { r: 9, opacity: 0.85 }, duration: 0.6, yoyo: true, repeat: 1, ease: 'sine.inOut' });
+  tlGlow.to(glow, { attr: { r: 12, opacity: 0 }, duration: 1.2, ease: 'sine.in' });
+}
+
+/** fx:forbidden-fruit — apple/fig on a leafy branch (Edén). */
+function fxForbiddenFruit(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'fruit-glow', 1.4);
+  const g = svgEl('g', { transform: `translate(${x}, ${y}) scale(0)`, opacity: '0' });
+  // Branch
+  g.appendChild(svgEl('path', { d: 'M -10 -4 Q -4 -2 0 0', fill: 'none', stroke: '#5a3a18', 'stroke-width': 0.7, 'stroke-linecap': 'round' }));
+  // Stem
+  g.appendChild(svgEl('line', { x1: 0, y1: 0, x2: 0, y2: 2, stroke: '#5a3a18', 'stroke-width': 0.6 }));
+  // Two leaves
+  g.appendChild(svgEl('ellipse', { cx: -3, cy: -2, rx: 3, ry: 1.4, fill: '#3a7a30', transform: 'rotate(-30 -3 -2)' }));
+  g.appendChild(svgEl('ellipse', { cx: -7, cy: -3.5, rx: 2.5, ry: 1.2, fill: '#2e6028', transform: 'rotate(-20 -7 -3.5)' }));
+  // Apple body — main fruit
+  g.appendChild(svgEl('circle', { cx: 0, cy: 4, r: 3.4, fill: '#c02020', stroke: '#601010', 'stroke-width': 0.4, filter: glow }));
+  // Highlight on the apple
+  g.appendChild(svgEl('ellipse', { cx: -1.2, cy: 2.8, rx: 1.0, ry: 0.6, fill: '#ff8866', opacity: 0.7 }));
+  // Tiny leaf at top of apple
+  g.appendChild(svgEl('path', { d: 'M 0 1 Q 1.4 0.2 2.2 1.2 Q 1.4 1.6 0 1 Z', fill: '#3a7a30' }));
+  layer.appendChild(g);
+
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { transform: `translate(${x}, ${y}) scale(1.6)`, opacity: 1 }, duration: 0.6, ease: 'back.out(1.6)' });
+  tl.to({}, { duration: 1.8 });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' });
+}
+
 /** fx:radial-bloom — bright radial bloom centered on target (epiphanies). */
 function fxRadialBloom(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
   const t = targetOrMarker(svg, data);
   if (!t) return;
   const [x, y] = t;
   const layer = getFxLayer(svg);
-  const glow = ensureGlowFilter(svg, 'bloom-glow', 3.2);
-  // Core flash — hot white centre.
-  const core = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#fff5c8', opacity: 0, filter: glow });
-  // Mid halo — saturated gold.
-  const halo = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
-  // Outer ray ring — wider, faster expansion for cinematic spread.
-  const ring = svgEl('circle', { cx: x, cy: y, r: 0, fill: 'none', stroke: '#ffd866', 'stroke-width': 1.6, opacity: 0, filter: glow });
-  layer.appendChild(halo); layer.appendChild(ring); layer.appendChild(core);
-  // 6 radial spokes — rays of glory.
-  const spokes: SVGLineElement[] = [];
-  for (let i = 0; i < 6; i++) {
-    const ang = (i * Math.PI * 2) / 6;
-    const sx = x + Math.cos(ang) * 10;
-    const sy = y + Math.sin(ang) * 10;
-    const ex = x + Math.cos(ang) * 14;
-    const ey = y + Math.sin(ang) * 14;
-    const ln = svgEl('line', { x1: sx, y1: sy, x2: ex, y2: ey, stroke: '#fff5c8', 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0, filter: glow });
-    layer.appendChild(ln); spokes.push(ln);
+  const glow = ensureGlowFilter(svg, 'bloom-glow', 2.0);
+  // 4 short rays of glory — NOT a big concentric ring set. Reads as a
+  // momentary holy-light burst, not a planet-sized circle.
+  const rays: SVGLineElement[] = [];
+  for (let i = 0; i < 4; i++) {
+    const ang = (i * Math.PI * 2) / 4 + Math.PI / 4;
+    const sx = x + Math.cos(ang) * 5;
+    const sy = y + Math.sin(ang) * 5;
+    const ln = svgEl('line', { x1: sx, y1: sy, x2: sx, y2: sy, stroke: '#fff5c8', 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0, filter: glow });
+    layer.appendChild(ln); rays.push(ln);
   }
-  const tl = gsap.timeline({ onComplete: () => { core.remove(); halo.remove(); ring.remove(); spokes.forEach(s => s.remove()); } });
-  // Quick punch
-  tl.to(core, { attr: { r: 18, opacity: 1 }, duration: 0.28, ease: 'expo.out' }, 0);
-  tl.to(halo, { attr: { r: 32, opacity: 0.85 }, duration: 0.45, ease: 'expo.out' }, 0);
-  tl.to(ring, { attr: { r: 26, opacity: 0.95 }, duration: 0.5, ease: 'expo.out' }, 0);
-  spokes.forEach((s, i) => {
-    const ang = (i * Math.PI * 2) / 6;
-    const ex2 = x + Math.cos(ang) * 38;
-    const ey2 = y + Math.sin(ang) * 38;
-    tl.to(s, { attr: { x2: ex2, y2: ey2, opacity: 0.9 }, duration: 0.4, ease: 'expo.out' }, 0.05);
-    tl.to(s, { attr: { opacity: 0 }, duration: 1.1, ease: 'sine.in' }, 0.5);
+  // Single small core flash (no outer halo, no shockwave ring).
+  const core = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#fff5c8', opacity: 0, filter: glow });
+  layer.appendChild(core);
+  const tl = gsap.timeline({ onComplete: () => { core.remove(); rays.forEach((r) => r.remove()); } });
+  tl.to(core, { attr: { r: 8, opacity: 0.95 }, duration: 0.22, ease: 'expo.out' }, 0);
+  rays.forEach((ln, i) => {
+    const ang = (i * Math.PI * 2) / 4 + Math.PI / 4;
+    const ex = x + Math.cos(ang) * 18;
+    const ey = y + Math.sin(ang) * 18;
+    tl.to(ln, { attr: { x2: ex, y2: ey, opacity: 0.85 }, duration: 0.32, ease: 'expo.out' }, 0.04);
+    tl.to(ln, { attr: { opacity: 0 }, duration: 0.7, ease: 'sine.in' }, 0.45);
   });
-  // Slow fade-out
-  tl.to(core, { attr: { r: 32, opacity: 0 }, duration: 1.4, ease: 'sine.in' }, 0.3);
-  tl.to(halo, { attr: { r: 70, opacity: 0 }, duration: 1.8, ease: 'sine.in' }, 0.4);
-  tl.to(ring, { attr: { r: 85, opacity: 0, 'stroke-width': 0.2 }, duration: 1.8, ease: 'sine.in' }, 0.4);
+  tl.to(core, { attr: { r: 14, opacity: 0 }, duration: 0.9, ease: 'sine.in' }, 0.25);
 }
 
 /** fx:shockwave — expanding ring (earthquake, explosion). */
@@ -4533,6 +4650,15 @@ export function initNarrationFx(svg: SVGSVGElement): void {
           break;
         case 'fx:burning-bush':
           fxBurningBush(svg, data);
+          break;
+        case 'fx:forbidden-fruit':
+          fxForbiddenFruit(svg, data);
+          break;
+        case 'fx:char-clash':
+          fxCharClash(svg, data);
+          break;
+        case 'fx:char-embrace':
+          fxCharEmbrace(svg, data);
           break;
         case 'fx:stone-tablets':
           fxStoneTablets(svg, data);

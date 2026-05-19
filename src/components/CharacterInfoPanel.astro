@@ -116,7 +116,7 @@ const eventCharacters = events.map((e) => {
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0.18 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
     background-size: cover, 220px 220px;
     background-blend-mode: multiply, multiply;
-    border: 1px solid color-mix(in srgb, var(--era-primary) 38%, transparent);
+    border: 1px solid color-mix(in srgb, var(--era-primary) 60%, #3a261a);
     border-radius: 4px;
     /* Layered shadow: inner glow tinted by the era so the scroll feels
        lit from above + outer drop for elevation off the map. */
@@ -280,7 +280,10 @@ const eventCharacters = events.map((e) => {
   .character-info-panel .cip-name {
     font-family: var(--era-display, 'Cinzel', serif);
     font-size: 17px; letter-spacing: 0.03em;
-    color: var(--era-primary); line-height: 1.2;
+    /* Always mix with dark ink so the name reads on cream papyrus even
+       in eras whose --era-primary is a light tone (primordial, evangelio). */
+    color: color-mix(in srgb, var(--era-primary) 55%, #1a0f08);
+    line-height: 1.2;
   }
   .character-info-panel .cip-meaning {
     display: none;

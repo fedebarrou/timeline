@@ -16,6 +16,10 @@ const CUES: Cue[] = [
     cueId: 'fx:animate-scene-object',
     data: { id: 'copa-plata-jose', kind: 'pulse' } },
 
+  // El reencuentro — abrazo entre José y sus hermanos (pin 0↔pin 1)
+  { match: /Yo soy Jos[ée]|llor[óo].{0,15}cuello|abraz[oó].{0,15}hermanos|reencuentro|reconciliaci[óo]n/i,
+    cueId: 'fx:char-embrace', data: { fromPinIdx: 0, toPinIdx: 1 } },
+
   // 'caravana' / viaje Canaán → Egipto — journey trace
   { match: /hambruna.{0,12}(alcanza|llega|Cana[áa]n)|viajan a comprar grano|caravana de hermanos/i,
     cueId: 'fx:journey-trace',

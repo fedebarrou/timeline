@@ -31,6 +31,10 @@ const CUES: Cue[] = [
   { match: /\bserpiente\b/i,
     cueId: 'fx:serpent', data: { position: [625, 325] } },
 
+  // 'manzana' / 'fruto' — la futura tentación, ya plantada en el relato
+  { match: /\bmanzana\b|\bfruto prohibido\b|fruto del [áa]rbol/i,
+    cueId: 'fx:forbidden-fruit', data: { position: [620, 320] } },
+
   // 'ángeles' / Iblis — anuncio divino a los ángeles (tradición coránica)
   { match: /\b[áa]ngeles\b|se prosternen|prosternaci[oó]n/i,
     cueId: 'fx:angel-formation', data: { position: [620, 310] } },
