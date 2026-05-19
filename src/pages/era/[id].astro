@@ -104,7 +104,7 @@ const boundarySet = getBoundarySetFor(era.data.id);
 const allMarkers = events.map((e) => {
   const loc = e.data.locations[0];
   if (!loc) return null;
-  const charPins = (e.data.characters ?? []).map((c: { id: string; role: string; lore?: string }) => {
+  const charPins = (e.data.characters ?? []).map((c: { id: string; role: string; lore?: string; quote?: string }) => {
     const cd = charByIdMap.get(c.id);
     return {
       id: c.id,
@@ -113,6 +113,7 @@ const allMarkers = events.map((e) => {
       avatar: cd?.avatar ?? null,
       role: c.role,                                  // per-event role
       lore: c.lore ?? null,                          // event-specific narrative lore
+      quote: c.quote ?? null,                        // per-event speech-bubble line
       meaning: cd?.alternateNames?.meaning ?? null,  // name meaning
       significance: cd?.significance ?? null,        // short bio
       canonicity: deriveCanonicity(cd),              // canonical / traditional / apocryphal / unknown
@@ -458,6 +459,7 @@ const allMarkers = events.map((e) => {
     import { registerMarkers } from '../../lib/mapToggle';
     import { initNarrationFx } from '../../lib/narrationFx';
     import { renderBoundaries } from '../../lib/mapBoundaries';
+    import { initSpeechBubble } from '../../lib/mapSpeechBubble';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
@@ -476,6 +478,7 @@ const allMarkers = events.map((e) => {
       })));
       initScrollytelling(sceneConfigs);
       if (svg) initNarrationFx(svg);
+      initSpeechBubble();
     }
   </script>
 

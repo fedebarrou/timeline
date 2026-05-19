@@ -1,0 +1,252 @@
+---
+/**
+ * First-visit disclaimer / about modal.
+ *
+ * Brief explanation that the timeline is a comparative investigation
+ * across Torá, Biblia and Corán + tradition + apocrypha — that sources
+ * conflict, that the dates are conjectural, and that errors are
+ * possible. Stored in localStorage as `intro-modal-seen=1` so it shows
+ * only on first visit. A small floating "?" affordance lets the user
+ * re-open it whenever they want.
+ *
+ * Renders once globally via BaseLayout. The modal markup is always in
+ * the DOM but hidden via CSS; JS adds/removes the `is-open` class.
+ */
+---
+<!-- Modal backdrop + card. Hidden by default; CSS opens it via .is-open. -->
+<div class="intro-modal" data-intro-modal aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
+  <div class="intro-modal-backdrop" data-intro-modal-backdrop></div>
+  <article class="intro-modal-card">
+    <header>
+      <span class="intro-modal-kicker">Adán → Mahoma</span>
+      <h2 id="intro-modal-title">Una investigación, no una verdad</h2>
+    </header>
+    <div class="intro-modal-body">
+      <p>
+        Esto es una <strong>línea de tiempo comparada</strong> de relatos sagrados:
+        la Torá, la Biblia y el Corán, junto con tradiciones rabínicas,
+        midrásicas, patrísticas, apócrifas y de la Sira islámica.
+      </p>
+      <p>
+        Las <strong>fechas son convencionales</strong> (cronología de Ussher para el Antiguo
+        Testamento, datación tradicional para el Nuevo y la Sira). Cuando las
+        tradiciones divergen lo señalamos con la marca de canonicidad de cada
+        personaje.
+      </p>
+      <p class="intro-modal-warning">
+        Es un trabajo en curso y puede contener errores —
+        atribuciones discutibles, fechas refinables, contexto incompleto. Lo
+        publicamos así porque preferimos que esté disponible y abierto a
+        crítica antes que perfecto y privado.
+      </p>
+    </div>
+    <footer>
+      <button type="button" class="intro-modal-cta" data-intro-modal-accept>
+        Entendido — empezar
+      </button>
+    </footer>
+  </article>
+</div>
+
+{/* "?" trigger to re-open the modal at any time. Lives bottom-right of
+    the viewport, opposite the era cursor's tip direction so the click
+    feels natural. */}
+<button
+  type="button"
+  class="intro-modal-trigger"
+  data-intro-modal-open
+  aria-label="Acerca de este sitio"
+  title="Acerca de este sitio"
+>?</button>
+
+<style>
+  .intro-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    pointer-events: none;
+  }
+  .intro-modal.is-open {
+    display: flex;
+    pointer-events: auto;
+  }
+  .intro-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+    backdrop-filter: blur(4px);
+    animation: introBackdrop 280ms ease;
+  }
+  @keyframes introBackdrop {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .intro-modal-card {
+    position: relative;
+    max-width: 540px;
+    width: 100%;
+    /* Same papyrus treatment as the CharacterInfoPanel so the
+       disclaimer reads as part of the same world. */
+    background-color: color-mix(in srgb, var(--era-text, #e8d4c8) 96%, var(--era-bg, #1a0f08) 4%);
+    background-image:
+      radial-gradient(
+        ellipse at center,
+        transparent 55%,
+        color-mix(in srgb, var(--era-primary, #a04048) 14%, transparent) 100%
+      ),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+    background-size: cover, 220px 220px;
+    background-blend-mode: multiply, multiply;
+    border: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 50%, transparent);
+    border-radius: 6px;
+    color: #1a0f08;
+    padding: 1.5rem 1.6rem 1.3rem;
+    box-shadow:
+      inset 0 0 24px color-mix(in srgb, var(--era-primary, #a04048) 14%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--era-text, #e8d4c8) 70%, transparent),
+      0 16px 40px rgba(0, 0, 0, 0.6);
+    font-family: var(--era-body, 'EB Garamond', Georgia, serif);
+    animation: introCard 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes introCard {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+
+  .intro-modal-kicker {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    color: color-mix(in srgb, var(--era-primary, #a04048) 65%, #1a0f08);
+    margin-bottom: 0.35rem;
+  }
+  .intro-modal-card h2 {
+    margin: 0 0 1rem;
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    color: var(--era-primary, #a04048);
+  }
+  .intro-modal-body p {
+    margin: 0 0 0.75rem;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  .intro-modal-body p:last-child { margin-bottom: 0; }
+  .intro-modal-body strong {
+    color: color-mix(in srgb, var(--era-primary, #a04048) 80%, #1a0f08);
+  }
+  .intro-modal-warning {
+    margin-top: 1rem !important;
+    padding: 0.65rem 0.85rem;
+    background: color-mix(in srgb, var(--era-primary, #a04048) 8%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--era-primary, #a04048) 60%, #1a0f08);
+    font-size: 13px !important;
+    font-style: italic;
+  }
+
+  .intro-modal-card footer {
+    margin-top: 1.25rem;
+    text-align: right;
+  }
+  .intro-modal-cta {
+    padding: 0.6rem 1.1rem;
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--era-text, #e8d4c8) 96%, transparent);
+    background: color-mix(in srgb, var(--era-primary, #a04048) 80%, #1a0f08);
+    border: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 90%, #1a0f08);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 180ms ease, transform 100ms ease;
+  }
+  .intro-modal-cta:hover { background: color-mix(in srgb, var(--era-accent, #b86058) 85%, #1a0f08); }
+  .intro-modal-cta:active { transform: scale(0.97); }
+
+  /* Floating "?" pill — bottom-right, subtle so it doesn't fight the
+     map toggle buttons but discoverable enough that a curious user
+     finds it. */
+  .intro-modal-trigger {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 90;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, transparent);
+    background: color-mix(in srgb, var(--era-bg, #1a0f08) 85%, transparent);
+    backdrop-filter: blur(4px);
+    color: var(--era-primary, #a04048);
+    font-family: var(--era-display, 'Cinzel', serif);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 180ms ease, background 180ms ease, transform 100ms ease;
+  }
+  .intro-modal-trigger:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--era-primary, #a04048) 25%, var(--era-bg, #1a0f08));
+  }
+  .intro-modal-trigger:active { transform: scale(0.93); }
+  /* Tuck it behind the MapToggleButton when the map is in fullscreen
+     so it doesn't collide with the toggle buttons. */
+  body.map-fullscreen .intro-modal-trigger {
+    bottom: 1rem;
+    right: 4.5rem;
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'intro-modal-seen';
+
+  const modal = document.querySelector<HTMLElement>('[data-intro-modal]');
+  const acceptBtn = document.querySelector<HTMLButtonElement>('[data-intro-modal-accept]');
+  const trigger = document.querySelector<HTMLButtonElement>('[data-intro-modal-open]');
+  const backdrop = document.querySelector<HTMLElement>('[data-intro-modal-backdrop]');
+
+  function open() {
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    // Move focus to the accept button so ENTER dismisses.
+    requestAnimationFrame(() => acceptBtn?.focus());
+  }
+  function close() {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    try { localStorage.setItem(STORAGE_KEY, '1'); } catch {}
+  }
+
+  // First-visit auto-open. Wait a beat so the sand-transition + initial
+  // page animations don't compete with the modal opening.
+  let seen = false;
+  try { seen = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+  if (!seen) {
+    setTimeout(open, 700);
+  }
+
+  acceptBtn?.addEventListener('click', close);
+  backdrop?.addEventListener('click', close);
+  trigger?.addEventListener('click', open);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('is-open')) close();
+  });
+</script>

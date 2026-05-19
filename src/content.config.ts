@@ -174,6 +174,11 @@ const events = defineCollection({
       id: z.string(),
       role: z.string(),
       lore: z.string().optional(),
+      // Optional 1–2 line quote attributed (canonical) or fitting to this
+      // event. Shown as a speech-bubble tooltip on character-pin hover.
+      // Pins without a quote get no tooltip — the right-side info panel
+      // already covers identity/role.
+      quote: z.string().optional(),
     })).default([]),
     tags: z.array(z.string()).default([]),
     precededBy: z.array(z.string()).default([]),

@@ -393,6 +393,7 @@ const eventCharacters = events.map((e) => {
     meaning: string | null;
     significance: string | null;
     canonicity: Canonicity;
+    quote?: string | null;
   };
 
   const dataEl = document.querySelector<HTMLScriptElement>('script[data-character-info-data]');
@@ -416,6 +417,21 @@ const eventCharacters = events.map((e) => {
 
     let activeChars: Character[] = [];
     let activeIdx = -1;
+    let activeEventId: string | null = null;
+
+    function emitCharacterActive(c: Character) {
+      if (!activeEventId) return;
+      try {
+        window.dispatchEvent(new CustomEvent('timeline:character-active', {
+          detail: {
+            eventId: activeEventId,
+            charId: c.id,
+            quote: (c as any).quote ?? null,
+            name: c.name,
+          },
+        }));
+      } catch {}
+    }
 
     // Auto-cycle state. While `narrationActive` is true (a tick has
     // fired in the last 1.5 s) the timer is paused and the tick handler
@@ -439,6 +455,7 @@ const eventCharacters = events.map((e) => {
         activeIdx = next;
         renderCharacter(activeChars[next]);
         renderControls(activeChars.length, next);
+        emitCharacterActive(activeChars[next]);
       }, AUTO_CYCLE_MS);
     }
     function stopAutoCycle() {
@@ -507,6 +524,7 @@ const eventCharacters = events.map((e) => {
     function showFor(eventId: string) {
       const chars = byEvent.get(eventId) ?? [];
       activeChars = chars;
+      activeEventId = eventId;
       stopAutoCycle();
       if (chars.length === 0) {
         panel!.classList.remove('is-active');
@@ -517,6 +535,10 @@ const eventCharacters = events.map((e) => {
       renderCharacter(chars[0]);
       renderControls(chars.length, 0);
       panel!.classList.add('is-active');
+      // Announce the active character so map overlays (speech bubble
+      // on the pin) can react. Done AFTER renderCharacter so the panel
+      // is in sync with the bubble.
+      emitCharacterActive(chars[0]);
       // Kick the auto-cycle for this event. Narration tick will pause
       // it via `narrationActive` if narration is also running.
       startAutoCycle();
@@ -530,6 +552,7 @@ const eventCharacters = events.map((e) => {
       activeIdx = next;
       renderCharacter(activeChars[next]);
       renderControls(activeChars.length, next);
+      emitCharacterActive(activeChars[next]);
     }
 
     function step(direction: 1 | -1) {
@@ -539,6 +562,7 @@ const eventCharacters = events.map((e) => {
       activeIdx = next;
       renderCharacter(activeChars[next]);
       renderControls(n, next);
+      emitCharacterActive(activeChars[next]);
       // Manual nav → restart the auto-cycle clock so the user doesn't
       // get clobbered by an auto-advance milliseconds after their click.
       restartAutoCycle();

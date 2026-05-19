@@ -1,5 +1,6 @@
 import { gsap } from './scrollytelling';
 import { showPreview, movePreview, hidePreview } from './mapHoverPreview';
+import { showQuote, moveQuote, hideQuote } from './mapQuoteTooltip';
 import { CANONICITY_COLORS, type Canonicity } from './canonicity';
 
 /**
@@ -375,6 +376,9 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
 
       const pinWrap = document.createElementNS(ns, 'g');
       pinWrap.setAttribute('data-char-pin-wrap', '');
+      // Per-character id so external modules (mapSpeechBubble) can
+      // locate the right pin to anchor a quote bubble to.
+      pinWrap.setAttribute('data-char-id', char.id);
       pinWrap.setAttribute('transform', `translate(${cx}, ${cy})`);
       pinWrap.appendChild(fo);
       pinWrap.appendChild(nameText);
@@ -388,15 +392,14 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
       let pinFocused = false;
       const showCharTip = (e: MouseEvent) => {
         if (!pinFocused) { lockFocus(); pinFocused = true; }
-        showPreview(e, {
-          kind: 'character',
-          title: char.name,
-          imageSrc: char.avatar ?? char.portrait ?? null,
-          subtitle: char.meaning ?? null,
-          role: char.role ?? null,
-          body: char.lore ?? char.significance ?? null,
-          canonicity: char.canonicity ?? 'unknown',
-        });
+        // The right-side CharacterInfoPanel already shows portrait + bio
+        // for the active scene's characters, so the hover here doesn't
+        // repeat that. Instead, when a per-event quote was authored for
+        // this character we surface it as a small speech-bubble — a
+        // "what they said" affordance attached to the pin itself. If
+        // no quote exists, the bubble stays hidden (the pin still
+        // scales + reveals its name).
+        showQuote(e, (char as any).quote ?? null, char.name);
         // Scale up the pin + reveal its name label
         pinWrap.style.transition = 'transform 200ms ease';
         const base = pinWrap.getAttribute('data-base-transform') ?? pinWrap.getAttribute('transform') ?? 'translate(0,0)';
@@ -407,10 +410,10 @@ export function renderMarker(svgRoot: SVGSVGElement, marker: MarkerSpec) {
         // (and the revealed name) doesn't sit behind a neighbour pin.
         pinWrap.parentElement?.appendChild(pinWrap);
       };
-      const moveCharTip = (e: MouseEvent) => movePreview(e);
+      const moveCharTip = (e: MouseEvent) => moveQuote(e);
       const hideCharTip = () => {
         if (pinFocused) { releaseFocus(); pinFocused = false; }
-        hidePreview();
+        hideQuote();
         const base = pinWrap.getAttribute('data-base-transform');
         if (base) pinWrap.setAttribute('transform', base);
         nameText.setAttribute('opacity', '0');

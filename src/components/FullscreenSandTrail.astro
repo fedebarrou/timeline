@@ -274,6 +274,58 @@
       // browser but still produces a trail under finger drags).
       window.addEventListener('pointermove', onMove, { passive: true });
 
+      /* ── DEVICE-SHAKE → SANDSTORM ─────────────────────────────────────
+         On phones and tablets there's no cursor to wiggle, so the
+         storm intensity ramp never fires. Listen to `devicemotion`
+         (accelerometer) and treat a hard shake as the equivalent of
+         a sustained-fast cursor — pumps `stormIntensity` directly so
+         the same wind/density ramp kicks in.
+
+         iOS 13+ requires `DeviceMotionEvent.requestPermission()` after
+         a user gesture; we wait for the first `pointerdown` /
+         `touchstart` before requesting so the prompt doesn't pop up
+         unprovoked on page load. Android + desktop browsers grant
+         motion access by default and skip the request entirely. */
+      const SHAKE_ACCEL_THRESHOLD = 16;   // m/s² total (including gravity ~9.8)
+      const SHAKE_BOOST_PER_HIT  = 0.45;  // how much stormIntensity jumps per shake spike
+      const SHAKE_COOLDOWN_MS    = 220;   // ignore further spikes within this window
+      let lastShakeAt = 0;
+      function onMotion(ev: DeviceMotionEvent) {
+        if (!active) return;
+        const a = ev.accelerationIncludingGravity;
+        if (!a) return;
+        const mag = Math.hypot(a.x ?? 0, a.y ?? 0, a.z ?? 0);
+        if (mag < SHAKE_ACCEL_THRESHOLD) return;
+        const now = performance.now();
+        if (now - lastShakeAt < SHAKE_COOLDOWN_MS) return;
+        lastShakeAt = now;
+        // Jump intensity — clamped at 1. The existing per-frame decay
+        // takes care of bringing it back down (~1.5 s drain to 0).
+        stormIntensity = Math.min(1, stormIntensity + SHAKE_BOOST_PER_HIT);
+        ensureLoop();
+      }
+      function attachMotion() {
+        window.addEventListener('devicemotion', onMotion, { passive: true });
+      }
+      // iOS permission gate. Touch the screen once → ask → on grant,
+      // attach the listener. We only need to do this on iOS; the type
+      // check survives bundling.
+      const DME = (window as any).DeviceMotionEvent;
+      if (DME && typeof DME.requestPermission === 'function') {
+        const requestOnce = async () => {
+          try {
+            const state = await DME.requestPermission();
+            if (state === 'granted') attachMotion();
+          } catch {}
+          window.removeEventListener('touchstart', requestOnce);
+          window.removeEventListener('pointerdown', requestOnce);
+        };
+        window.addEventListener('touchstart', requestOnce, { once: true, passive: true });
+        window.addEventListener('pointerdown', requestOnce, { once: true, passive: true });
+      } else {
+        attachMotion();
+      }
+
       // Refresh era colours if the body's `data-era` attribute changes
       // (era navigation changes the active theme variables).
       const mo = new MutationObserver(refreshColors);

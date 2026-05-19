@@ -19,27 +19,52 @@ const PRIMORDIAL: ChoreographySet = {
   // ─────────────────────────────────────────────────────────────────────────
   'nacimiento-adan-eva': {
     steps: [
-      // (0) ESTADO INICIAL — polvo, casi invisibles
-      { pinIdx: 0, scale: 0.4, opacity: 0.15, duration: 0.01 },
-      { pinIdx: 1, scale: 0.2, opacity: 0.05, duration: 0.01 },
+      // (0) ESTADO INICIAL — polvo casi invisible. Eva NO existe aún y
+      //     la dejamos SUPERPUESTA sobre Adán (offset 0) para que
+      //     pueda "brotar de su costado" sin teleportarse desde afuera
+      //     de cuadro.
+      { pinIdx: 0, scale: 0.3, opacity: 0.1, duration: 0.01 },
+      { pinIdx: 1, scale: 0.0, opacity: 0.0, offset: [0, 0], duration: 0.01 },
       { pinIdx: 2, scale: 0.0, opacity: 0.0, duration: 0.01 },
-      // (1) Adán emerge primero del polvo — aliento de vida
+
+      // (1) ALIENTO DE VIDA — Adán se eleva del polvo (Gn 2:7)
       { pinIdx: 0, scale: 1.0, opacity: 1.0, duration: 2.2, ease: 'power2.out' },
-      // (2) Pausa: Adán solo, mira a su alrededor (leve respiración)
-      { pinIdx: 0, scale: 1.05, duration: 0.8, ease: 'sine.inOut' },
-      { pinIdx: 0, scale: 1.0, duration: 0.8, ease: 'sine.inOut' },
-      // (3) Eva nace del costado — emerge desplazándose hacia su lugar
-      { pinIdx: 1, offset: [-6, 0], scale: 0.5, opacity: 0.4, duration: 0.01 },
-      { pinIdx: 1, offset: [0, 0], scale: 1.0, opacity: 1.0, duration: 2.0, ease: 'power3.out' },
-      // (4) Reconocimiento mutuo — se acercan un instante
-      { pinIdx: 0, offset: [2, 0], duration: 1.0, ease: 'sine.inOut' },
-      { pinIdx: 1, offset: [-2, 0], duration: 1.0, ease: 'sine.inOut' },
-      // (5) Lilit aparece fantasmal al margen (tradición rabínica)
-      { pinIdx: 2, offset: [28, -4], scale: 0.9, opacity: 0.35, duration: 1.8, ease: 'sine.out' },
-      // (6) Reset suave para loopear
-      { pinIdx: 0, offset: [0, 0], duration: 1.2, ease: 'sine.inOut' },
-      { pinIdx: 1, offset: [0, 0], duration: 1.2, ease: 'sine.inOut' },
-      { pinIdx: 2, offset: [28, -4], opacity: 0.35, duration: 0.6 },
+
+      // (2) RESPIRACIÓN — soliloquio del primer hombre
+      { pinIdx: 0, scale: 1.06, duration: 1.0, ease: 'sine.inOut' },
+      { pinIdx: 0, scale: 1.0,  duration: 1.0, ease: 'sine.inOut' },
+
+      // (3) SUEÑO PROFUNDO — Adán cae en torpor; pulso + atenuación
+      //     leve. Es el "tardemá" del Génesis (Gn 2:21).
+      { pinIdx: 0, scale: 0.92, opacity: 0.65, duration: 1.4, ease: 'sine.inOut' },
+
+      // (4) DE LA COSTILLA — Eva emerge DESDE Adán. Empieza encima de
+      //     él (mismo offset 0,0) en escala 0; crece in situ con un
+      //     pulso de "extracción" en Adán, y después se desliza hacia
+      //     la derecha hasta su posición final. La superposición
+      //     inicial + el delay hacen que se lea como "saliendo de él",
+      //     no como "llegando volando".
+      { pinIdx: 0, scale: 1.02, opacity: 0.75, duration: 0.6, ease: 'sine.inOut' }, // pulso de extracción
+      { pinIdx: 1, scale: 0.45, opacity: 0.55, duration: 0.9, ease: 'power2.out' }, // brote inicial superpuesto
+      { pinIdx: 1, offset: [10, -2], scale: 0.8, opacity: 0.85, duration: 1.0, ease: 'power2.out' },
+      { pinIdx: 1, offset: [18, 0],  scale: 1.0, opacity: 1.0,  duration: 1.1, ease: 'power3.out' },
+
+      // (5) ADÁN DESPIERTA — vuelve a escala/opacidad plenas
+      { pinIdx: 0, scale: 1.0, opacity: 1.0, duration: 1.0, ease: 'power2.out' },
+
+      // (6) RECONOCIMIENTO — leve gesto uno hacia el otro
+      { pinIdx: 0, offset: [3, 0],  duration: 0.9, ease: 'sine.inOut' },
+      { pinIdx: 1, offset: [15, 0], duration: 0.9, ease: 'sine.inOut' },
+
+      // (7) LILIT — primera esposa de la tradición rabínica, fantasmal
+      //     al margen
+      { pinIdx: 2, offset: [34, -4], scale: 0.9, opacity: 0.35, duration: 1.8, ease: 'sine.out' },
+
+      // (8) RESET — devuelve la pareja a su posición canónica para
+      //     loopear sin saltos
+      { pinIdx: 0, offset: [0, 0],  duration: 1.2, ease: 'sine.inOut' },
+      { pinIdx: 1, offset: [18, 0], duration: 1.2, ease: 'sine.inOut' },
+      { pinIdx: 2, offset: [34, -4], opacity: 0.35, duration: 0.6 },
     ],
   },
 

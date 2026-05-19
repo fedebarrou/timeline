@@ -3,6 +3,7 @@ import SiteNav from '../components/SiteNav.astro';
 import EraTheme from '../components/EraTheme.astro';
 import FullscreenSandTrail from '../components/FullscreenSandTrail.astro';
 import SandPageTransition from '../components/SandPageTransition.astro';
+import IntroModal from '../components/IntroModal.astro';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -60,6 +61,7 @@ const allEras = await getCollection('eras');
     <SiteNav currentEraId={currentEraId} currentEraName={currentEraName} />
     <FullscreenSandTrail />
     <SandPageTransition />
+    <IntroModal />
     <main class="pt-16"><slot /></main>
     <style is:global>@import '../styles/global.css';</style>
     <script>
