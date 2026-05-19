@@ -154,6 +154,11 @@ const allMarkers = events.map((e) => {
          not flush against it. Matches the JS scrollToElement offset. */
       --scroll-anchor-offset: calc(var(--sticky-header-h) + 1rem);
     }
+    /* Both navs are fixed (SiteNav top:0 + TimelineNav top:3rem), so main
+       must pad-top by their combined height to avoid being tapped under
+       the nav stack. Overrides BaseLayout's pt-16 since the timeline nav
+       adds an extra row beyond the SiteNav. */
+    main { padding-top: var(--sticky-header-h) !important; }
     /* The year anchor — not the section top — is what we want under the
        header on hash-based jumps. The section itself uses `flex justify-center`
        inside min-h-[120vh], so its offsetTop is far above the visible content. */
