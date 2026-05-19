@@ -478,6 +478,7 @@ const allMarkers = events.map((e) => {
     import { initSpeechBubble } from '../../lib/mapSpeechBubble';
     import { mountEraAmbient } from '../../lib/eraAmbient';
     import type { EraId } from '../../lib/cues/_eraIds';
+    import { initMobileZoom } from '../../lib/mapMobileZoom';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
@@ -495,6 +496,11 @@ const allMarkers = events.map((e) => {
         id: m.id, coords: m.coords, label: m.label,
       })));
       initScrollytelling(sceneConfigs);
+      if (svg) {
+        initMobileZoom(svg, sceneConfigs).then((cleanup) => {
+          document.addEventListener('astro:before-swap', () => { try { cleanup?.(); } catch {} }, { once: true });
+        });
+      }
       if (svg) initNarrationFx(svg);
       initSpeechBubble();
       // Ambient FX layer for the ACTIVE era only. Reading from body
