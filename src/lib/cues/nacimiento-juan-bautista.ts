@@ -15,6 +15,10 @@ const CUES: Cue[] = [
   { match: /Benedictus|bendito el Se[ñn]or|profet[ií]a|profeta del Alt[ií]simo|preparar sus caminos/i, cueId: 'fx:halo-divine', data: { pinIdx: 1 } },
   // Niño crece, lleno del Espíritu
   { match: /lleno del Esp[ií]ritu|crec[ií]a y se fortalec[ií]a|temeroso de Dios|sabidur[ií]a/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0, color: '#fff1c0' } },
+  // Estrella / presagio sobre el nacimiento — sin scene-object estrella-belen aquí
+  { match: /presagio|maravilla|¿qu[eé] ser[áa] este ni[ñn]o|mano del Se[ñn]or con [eé]l/i, cueId: 'fx:starfield-shimmer' },
+  // Ángel que anunció — Gabriel
+  { match: /Gabriel.{0,20}anunci[oó]|mensajero del Se[ñn]or|anuncio.{0,12}Gabriel/i, cueId: 'fx:angel-descent', data: { position: [581, 363] } },
   // Va al desierto — recede
   { match: /desierto|estuvo en el desierto|manifestaci[oó]n a Israel/i, cueId: 'fx:character-recede', data: { pinIdx: 0 } },
 ];

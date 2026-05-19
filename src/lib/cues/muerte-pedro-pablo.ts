@@ -19,6 +19,10 @@ const CUES: Cue[] = [
   { match: /decapitaci[oó]n|Aguas Salvias|pena noble|San Pablo Extramuros/i, cueId: 'fx:blood-stain', data: { pinIdx: 1 } },
   // Ambos receden — era apostólica cierra
   { match: /cierra la era apost[oó]lica|veneraci[oó]n conjunta|29 de junio|martirio de ambos/i, cueId: 'fx:character-recede', data: { pinIdx: 0 } },
+  // Fade to black al martirio
+  { match: /entreg[oó] el esp[ií]ritu|muri[oó].{0,12}(Pedro|Pablo)|ultimo suspiro|muerte de ambos/i, cueId: 'fx:fade-to-black' },
+  // Halo de mártires
+  { match: /corona de martirio|corona del m[áa]rtir|muertes testigos|dar la vida/i, cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
 ];
 
 export default CUES;

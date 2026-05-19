@@ -52,6 +52,22 @@ const CUES: Cue[] = [
   // Hermana gemela Azura — tradición rabínica
   { match: /Azura|hermana gemela de Abel/i,
     cueId: 'fx:dust-burst', data: { pinIdx: 2 } },
+
+  // 'tierra maldecida' — el terreno que labra Caín vs el pasto de Abel
+  { match: /tierra maldecida|maldici[oó]n.{0,10}tierra|tierra.{0,10}maldij/i,
+    cueId: 'fx:dust-burst', data: { position: [622, 325] } },
+
+  // 'Hābīl' — nombre islámico de Abel (modelo del creyente no violento)
+  { match: /H[áa]b[ií]l|creyente que prefiere morir|no atacar.{0,15}suyos/i,
+    cueId: 'fx:halo-divine', data: { pinIdx: 2 } },
+
+  // 'hermano' — la relación fraterna que define su trágico destino
+  { match: /hermano de Ca[ií]n|primer hermano|relaci[oó]n fraterna/i,
+    cueId: 'fx:glow-pulse', data: { pinIdx: 2 } },
+
+  // 'fe' — "por la fe Abel ofreció sacrificio más excelente" (Heb 11:4)
+  { match: /por la fe Abel|sacrificio m[áa]s excelente|Hebreos 11/i,
+    cueId: 'fx:divine-light-beam', data: { position: [620, 308] } },
 ];
 
 export default CUES;

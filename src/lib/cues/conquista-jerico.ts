@@ -19,6 +19,10 @@ const CUES: Cue[] = [
   { match: /Josu[eé]|sucesor de Mois[eé]s|dirige el asedio|al frente del pueblo/i, cueId: 'fx:character-emerge', data: { pinIdx: 0 } },
   // Maldición sobre quien reconstruya
   { match: /maldici[oó]n|Hiel de Betel|reconstruya .{0,10}Jeric[oó]/i, cueId: 'fx:blood-stain', data: { position: [583, 365] } },
+
+  // Tesoros consagrados — el oro y el bronce para el arca de Yahveh
+  { match: /tesoro.{0,12}(Yahveh|consagra)|oro .{0,8}bronce .{0,8}arca|metales .{0,8}consagra/i,
+    cueId: 'fx:glow-pulse', data: { position: [583, 360] } },
 ];
 
 export default CUES;

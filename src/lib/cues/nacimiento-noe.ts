@@ -61,6 +61,18 @@ const CUES: Cue[] = [
   { match: /bisagra de la humanidad|cierra la genealog[ií]a|intervenci[oó]n divina anticipatoria/i,
     cueId: 'fx:radial-bloom', data: { position: [620, 320] } },
 
+  // 'cabellos rojos' — detalle sobrenatural de 1 Enoc 106
+  { match: /cabellos rojos|cabellos.{0,10}rosa|cabellos.{0,15}resplandecientes/i,
+    cueId: 'fx:glow-pulse', data: { pinIdx: 0 } },
+
+  // 'ojos que iluminan la casa' — Noé abre los ojos y la habitación resplandece
+  { match: /ilumina.{0,10}casa|ojos que iluminan|abri[oó] los ojos.{0,15}luz/i,
+    cueId: 'fx:flash-white' },
+
+  // 'Nuh' / predicador — Sura Nuh 71: enviado a advertir a su pueblo
+  { match: /Nuh|enviado a su pueblo|advert[íi]r.{0,15}pueblo|profeta.{0,10}Noé/i,
+    cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
+
   // ── Pasada 3: diálogos ────────────────────────────────────────────────
 
   // "Este nos consolará de nuestros trabajos" — Lamec profetiza al nacer Noé

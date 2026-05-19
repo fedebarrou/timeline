@@ -45,6 +45,26 @@ const CUES: Cue[] = [
   { match: /nombre.{0,20}Qayin|Qayin.{0,20}adquirir|forjador/i,
     cueId: 'fx:glow-pulse', data: { pinIdx: 2 } },
 
+  // 'campo' — el escenario de la vida de Caín (y más tarde del fratricidio)
+  { match: /campo|tierra de labor|campos fuera del Ed[eé]n/i,
+    cueId: 'fx:dust-burst', data: { position: [620, 325] } },
+
+  // 'linaje' / 'simiente' — Caín inaugura el linaje histórico de la humanidad
+  { match: /simiente|linaje|primer eslab[oó]n|humanidad hist[oó]rica/i,
+    cueId: 'fx:radial-bloom', data: { position: [620, 318] } },
+
+  // 'Jehová' / voz divina — Eva invoca el nombre del Señor al dar a luz
+  { match: /ayuda de (Jehov[áa]|Yahveh|el Se[ñn]or)|por voluntad de/i,
+    cueId: 'fx:divine-light-beam', data: { position: [618, 308] } },
+
+  // 'noche' — el tiempo sombrío que llegará con sus decisiones
+  { match: /\bnoche\b|oscuridad (moral|futura)/i,
+    cueId: 'fx:night-fall' },
+
+  // 'vientre' — alumbrado del vientre, primer nacimiento humano natural
+  { match: /vientre de una mujer|alumbr[oó]|naci[oó] de mujer/i,
+    cueId: 'fx:character-emerge', data: { pinIdx: 2 } },
+
   // ── Pasada 3: diálogos ────────────────────────────────────────────────
 
   // Eva declara: "He adquirido varón con la ayuda de Yahveh"

@@ -19,6 +19,18 @@ const CUES: Cue[] = [
   { match: /persecuci[oó]n|tortura|maltrat|esclavos conversos|hostilidad|insultos/i, cueId: 'fx:smoke-rise', data: { position: [625, 460] } },
   // Resplandor del mensaje público
   { match: /mensaje p[úu]blico|llamada al Islam|clan por clan|exhortaci[oó]n|advertencia/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0, color: '#ffd27a' } },
+  // Pergamino de la revelación pública — Corán recitado
+  { match: /Cor[áa]n.{0,20}(recit|proclam)|revelaci[oó]n recit|versículos.{0,20}(proclam|p[úu]blic)|voz del Profeta/i, cueId: 'fx:scroll-unfurl', data: { position: [625, 460] } },
+  // Ídolos cuestionados — primera confrontación pública
+  { match: /[íi]dolos.{0,20}(cuestiona|refut|falsos|de barro|de madera)|politeísmo.{0,20}(denuncia|expone|rechaza)/i, cueId: 'fx:idol-shatter', data: { position: [625, 460], count: 3 } },
+  // Tormenta de reacción Quraysh — el clan contraataca
+  { match: /clan Quraysh.{0,30}(reacci[oó]n|ataque|furia)|furia.{0,15}Quraysh|se indignaron/i, cueId: 'fx:storm-clouds', data: {} },
+  // Bilāl e esclavos conversos torturados — sangre por la fe
+  { match: /Bil[āa]l|Yasar|Sumayyah|esclavo.{0,15}(tortura|pied|ardiente|flagel)|primer m[áa]rtir del Islam/i, cueId: 'fx:blood-stain', data: { position: [625, 460] } },
+  // Noche de los primeros convertidos — primeras almas ganadas
+  { match: /primeros convertidos|primeros creyentes|primeras almas|j[óo]venes conversos|Zayd|Jab[āa]b/i, cueId: 'fx:dawn-break', data: {} },
+  // Luz divina sobre los creyentes ocultos
+  { match: /creyentes ocultos|islam secreto|profesan en privado|convertidos clandestinos/i, cueId: 'fx:divine-light-beam', data: {} },
 ];
 
 export default CUES;

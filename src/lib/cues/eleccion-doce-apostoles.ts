@@ -19,6 +19,8 @@ const CUES: Cue[] = [
   { match: /Judas Iscariote|el traidor|Queriot|el que tambi[eé]n .{0,6}entreg[oó]/i, cueId: 'fx:character-emerge', data: { pinIdx: 5 } },
   // Doce columnas / doce tribus — pulso colectivo
   { match: /doce ap[oó]stoles|doce tribus|nuevo Israel|pueblo de Dios renovado|al-Hawariyy[uū]n/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0, color: '#fff1c0' } },
+  // Radial bloom al proclamar los doce
+  { match: /los design[oó]|llamado.{0,12}los doce|proclamaci[oó]n de los Doce|enviar.{0,10}predicar/i, cueId: 'fx:radial-bloom', data: { position: [580, 350] } },
 ];
 
 export default CUES;

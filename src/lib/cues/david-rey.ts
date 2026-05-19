@@ -19,6 +19,14 @@ const CUES: Cue[] = [
   { match: /or[áa]culo de Nat[áa]n|promesa din[áa]stica|tu casa y tu reino|firmes para siempre|le ser[eé] padre/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0, color: '#e6c66a' } },
   // Casa de David — atestación arqueológica
   { match: /casa de David|byt dwd|estela de Tel Dan|dinast[ií]a davídica|D[āa]w[uū]d/i, cueId: 'fx:scroll-unfurl', data: { position: [582, 363] } },
+
+  // Arpa de David — animar scene-object (REGLA #1: no fx:trumpet-blast)
+  { match: /arpa .{0,12}David|David .{0,12}arpa|salmos .{0,12}David|canta .{0,8}David|psalmos/i,
+    cueId: 'fx:animate-scene-object', data: { id: 'arpa-david', kind: 'sway', duration: 1.4 } },
+
+  // Trono de David — animar scene-object en coronación
+  { match: /trono .{0,12}(David|Jerusal[eé]n)|David .{0,12}(trono|reina|rey de todo Israel)/i,
+    cueId: 'fx:animate-scene-object', data: { id: 'trono-david', kind: 'glow', duration: 1.6 } },
 ];
 
 export default CUES;

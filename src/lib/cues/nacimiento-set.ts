@@ -53,6 +53,22 @@ const CUES: Cue[] = [
   { match: /En[oó]s|hijo de Set/i,
     cueId: 'fx:glow-pulse', data: { pinIdx: 2 } },
 
+  // 'imagen y semejanza' — Set nace "a semejanza de Adán, conforme a su imagen" (Gn 5:3)
+  { match: /semejanza de Ad[áa]n|conforme a su imagen|a su semejanza/i,
+    cueId: 'fx:halo-divine', data: { pinIdx: 2 } },
+
+  // 'reemplazo' / 'reinicio' — Set como sustituto sagrado del linaje roto
+  { match: /reemplazo|reinicio del linaje|linaje roto|linaje justo retoma/i,
+    cueId: 'fx:dawn-break' },
+
+  // 'Noé' / 'Abraham' — la línea directa que vendrá de Set (Gn 5)
+  { match: /de Set.{0,20}(No[eé]|Abraham)|hasta Abraham|linaje.{0,15}Set.{0,15}No[eé]/i,
+    cueId: 'fx:journey-trace', data: { from: [620, 320], to: [630, 310], style: 'dashed' } },
+
+  // 'evangelio de Lucas' — Set aparece en la genealogía de Jesús (Lc 3:38)
+  { match: /hijo de Set.{0,20}Adán|Lucas 3|genealog[ií]a de Jesús.{0,20}Set/i,
+    cueId: 'fx:divine-light-beam', data: { position: [618, 308] } },
+
   // ── Pasada 3: diálogos ────────────────────────────────────────────────
 
   // "Dios me ha dado otra simiente en lugar de Abel" — Eva
