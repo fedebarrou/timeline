@@ -9,8 +9,8 @@ const CUES: Cue[] = [
   { match: /G[oó]lgota|Calvario|lugar de la calavera|Sim[oó]n de Cirene|cargando la cruz/i, cueId: 'fx:character-emerge', data: { pinIdx: 0 } },
   // Lo crucifican — sangre
   { match: /crucifican|crucificado|clav[oó]|le abre el costado|sangre y agua|lanza/i, cueId: 'fx:blood-stain', data: { pinIdx: 0 } },
-  // Cruz alzada — silueta figurativa del crucifijo
-  { match: /levantaron la cruz|alzaron la cruz|elev[oó].{0,10}cruz|cruz en alto|crucifix|en la cruz/i, cueId: 'fx:cross-rise', data: { position: [582, 363] } },
+  // Cruz alzada — REGLA #1: anima la 'cruz' ya en escena
+  { match: /levantaron la cruz|alzaron la cruz|elev[oó].{0,10}cruz|cruz en alto|crucifix|en la cruz/i, cueId: 'fx:animate-scene-object', data: { id: 'cruz', kind: 'rise', duration: 2.4 } },
   // María al pie de la cruz
   { match: /Mar[ií]a.{0,20}(pie de la cruz|cruz|madre doliente)|he ah[ií] a tu madre/i, cueId: 'fx:character-emerge', data: { pinIdx: 1 } },
   // Juan el discípulo amado / María Magdalena

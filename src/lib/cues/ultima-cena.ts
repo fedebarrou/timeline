@@ -19,12 +19,12 @@ const CUES: Cue[] = [
   { match: /tom[oó] el pan|bendijo|parti[oó].{0,12}pan|esto es mi cuerpo|haced esto en memoria/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0 } },
   // Copa / vino — sangre del nuevo pacto
   { match: /la copa|esta copa|nuevo pacto|sangre.{0,20}derrama|cordero pascual/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0 } },
-  // Vino — chalice (fallback si no tiene scene-object 'caliz' con ese id exacto)
-  { match: /\bvino\b|copa de la bendici[oó]n|beberlo todos/i, cueId: 'fx:chalice', data: { position: [584, 363] } },
+  // Vino — REGLA #1: anima el cáliz ya en escena
+  { match: /\bvino\b|copa de la bendici[oó]n|beberlo todos/i, cueId: 'fx:animate-scene-object', data: { id: 'caliz', kind: 'glow', duration: 2.4 } },
   // Cordero pascual en la mesa
   { match: /cordero pascual|Pascua jud[ií]a|cordero sin mancha|comer el cordero/i, cueId: 'fx:ram', data: { position: [582, 362] } },
-  // Panes ácimos — bread
-  { match: /panes [áa]cimos|pan [áa]cimo|sin levadura/i, cueId: 'fx:bread-multiply', data: { position: [582, 362] } },
+  // Panes ácimos — REGLA #1: anima el pan-eucaristia ya en escena
+  { match: /panes [áa]cimos|pan [áa]cimo|sin levadura/i, cueId: 'fx:animate-scene-object', data: { id: 'pan-eucaristia', kind: 'pulse', duration: 2.0 } },
   // Copa de vino del nuevo pacto — incienso
   { match: /nueva alianza|nuevo pacto|alianza nueva|en mi sangre/i, cueId: 'fx:incense-spiral', data: { position: [582, 360] } },
   // Traición anunciada — glow sombrío

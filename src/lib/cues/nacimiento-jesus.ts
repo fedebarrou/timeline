@@ -23,8 +23,8 @@ const CUES: Cue[] = [
   { match: /pastores|coro celest[ií]al|coro ang[eé]lico|gloria a Dios en las alturas|[áa]ngel del Se[ñn]or/i, cueId: 'fx:angel-descent', data: { position: [581, 350] } },
   // Ángel-formación — ejército celestial
   { match: /muchedumbre del ej[eé]rcito celestial|multitud de [áa]ngeles|h[oó]ste celestial/i, cueId: 'fx:angel-formation', data: { position: [581, 348] } },
-  // Estrella — campo estelar
-  { match: /estrella|estrellas|campo estrellado|noche estrellada/i, cueId: 'fx:starfield-shimmer' },
+  // Estrella — REGLA #1: anima la estrella-belen ya en escena
+  { match: /estrella|estrellas|campo estrellado|noche estrellada/i, cueId: 'fx:animate-scene-object', data: { id: 'estrella-belen', kind: 'pulse', duration: 2.4 } },
   // Noche del nacimiento
   { match: /noche|de noche|en la oscuridad|en aquel tiempo/i, cueId: 'fx:night-fall' },
   // Luz del ángel

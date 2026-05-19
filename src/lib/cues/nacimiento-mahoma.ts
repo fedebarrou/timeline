@@ -9,9 +9,9 @@ import type { Cue } from '../narrationCues';
 const CUES: Cue[] = [
   // ── Pasada 1: sustantivos ─────────────────────────────────────────────
 
-  // Estrella anunciante del nacimiento — significado islámico
+  // Estrella anunciante — REGLA #1: anima la estrella-ocho-puntas ya en escena
   { match: /estrella.{0,20}(anunci|apare|brillo)|A[ñn]o del Elefante|luz celestial.{0,15}naci/i,
-    cueId: 'fx:star-bethlehem', data: { position: [625, 450] } },
+    cueId: 'fx:animate-scene-object', data: { id: 'estrella-ocho-puntas', kind: 'glow', duration: 2.6 } },
 
   // Kaaba — el abuelo lleva al niño
   { match: /Kaaba|santuario.{0,20}(nomb|llev)|custodio de la Kaaba|recibe al ni[ñn]o/i,
@@ -21,9 +21,9 @@ const CUES: Cue[] = [
   { match: /viaje comercial a Yathrib|regresaba.{0,20}(Yathrib|Medina)|caravana.{0,20}padre/i,
     cueId: 'fx:camel-train', data: { position: [625, 445] } },
 
-  // Noche del nacimiento — luna creciente y estrellas
+  // Noche del nacimiento — REGLA #1: anima la estrella-ocho-puntas ya en escena
   { match: /noci[oó]n de noche|noci[oó]n de d[ií]a|noche.{0,15}nac|en la noche/i,
-    cueId: 'fx:starfield-shimmer' },
+    cueId: 'fx:animate-scene-object', data: { id: 'estrella-ocho-puntas', kind: 'pulse', duration: 2.2 } },
 
   // Elefante de Abraha — polvo de batalla
   { match: /elefante de guerra|Abraha|expedici[oó]n abisinia|Sura Al-F[īi]l|Sura 105|[ʿ']?[āa]m al-f[ií]l/i,

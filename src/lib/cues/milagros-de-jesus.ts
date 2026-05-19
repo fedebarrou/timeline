@@ -15,10 +15,10 @@ const CUES: Cue[] = [
   { match: /sanaciones|san[oó] a|ciegos recuperan|limpios|levántate y anda/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0 } },
   // Exorcismos — pulso rojizo
   { match: /exorcism|endemoniado|expulsar demonios|Gerasa|esp[ií]ritu inmundo|epil[eé]ptico/i, cueId: 'fx:glow-pulse', data: { pinIdx: 0 } },
-  // Peces — fish school para pesca milagrosa
-  { match: /pesca milagrosa|dos peces|peces|redes|red se llenaba|red llena de peces/i, cueId: 'fx:fish-school', data: { position: [580, 356] } },
-  // Fish multiply — multiplicación de peces
-  { match: /pesca milagrosa|peces y pan|multiplicaci[oó]n.{0,6}peces|los peces/i, cueId: 'fx:fish-multiply', data: { position: [580, 354] } },
+  // Pesca milagrosa — REGLA #1: anima el pez-cristiano ya en escena
+  { match: /pesca milagrosa|dos peces|peces|redes|red se llenaba|red llena de peces/i, cueId: 'fx:animate-scene-object', data: { id: 'pez-cristiano', kind: 'sway', duration: 1.8 } },
+  // Multiplicación de peces — REGLA #1
+  { match: /pesca milagrosa|peces y pan|multiplicaci[oó]n.{0,6}peces|los peces/i, cueId: 'fx:animate-scene-object', data: { id: 'pez-cristiano', kind: 'pulse', duration: 2.0 } },
   // Pan multiplicado — bread multiply
   { match: /multiplicaci[oó]n de.{0,6}panes|cinco panes|panes y peces|reparti[oó].{0,12}panes|saciaron.{0,15}multitud/i, cueId: 'fx:bread-multiply', data: { position: [580, 352] } },
   // Bodas de Caná — agua
@@ -37,8 +37,8 @@ const CUES: Cue[] = [
   { match: /quitad la piedra|piedra del sepulcro|r[eé]tirala|la piedra/i, cueId: 'fx:rolling-stone', data: { position: [583, 361] } },
   // Pájaros de barro (Corán) — dove flight
   { match: /p[áa]jaros de barro|figura de p[áa]jaro|arcilla|con permiso de Dios|sopla en ella/i, cueId: 'fx:dove-flight', data: { from: [580, 355], to: [580, 345] } },
-  // Pez y moneda — fish school
-  { match: /pez.{0,20}moneda|estatero en la boca|moneda en el pez/i, cueId: 'fx:fish-school', data: { position: [580, 354] } },
+  // Pez y moneda — REGLA #1: anima pez-cristiano
+  { match: /pez.{0,20}moneda|estatero en la boca|moneda en el pez/i, cueId: 'fx:animate-scene-object', data: { id: 'pez-cristiano', kind: 'wobble', duration: 1.6 } },
   // Cordero — Jesús como pastor y curador
   { match: /obejas perdidas|pastor que busca|noventa y nueve|ovejas|rebaño/i, cueId: 'fx:goat-herd', data: { position: [580, 355] } },
 
