@@ -320,14 +320,14 @@ const eventCharacters = events.map((e) => {
   .character-info-panel .cip-meaning.has-text { display: block; }
   .character-info-panel .cip-role {
     display: none;
-    /* Center the pill horizontally — auto margins on a block element
-       with width: fit-content collapse the box around its text and
-       center the result. */
-    margin: 8px auto 0;
+    /* Left-aligned pill — block + width: fit-content + margin-right auto
+       lets the box collapse around its text but stays anchored to the
+       panel's left edge. */
+    margin: 8px auto 0 0;
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     font-weight: 600;
     padding: 3px 10px;
-    text-align: center;
+    text-align: left;
     /* Strong border + darker text so the role pill reads as a stamp,
        not a faint outline. */
     border: 1.5px solid color-mix(in srgb, var(--era-primary) 75%, #1a0f08);
