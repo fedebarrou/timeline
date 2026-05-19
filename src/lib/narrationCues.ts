@@ -8,14 +8,18 @@
  * primitives layer can consume to trigger map FX.
  *
  * Public surface:
- *   - `Cue`                — cue descriptor
- *   - `registerEventCues`  — attach cues to a specific event id
- *   - `initNarrationCues`  — install the global listeners (call once)
+ *   - `Cue`                  — cue descriptor
+ *   - `registerEventCues`    — attach cues to a specific event id
+ *   - `registerEventDialogs` — attach DialogCues to an event id
+ *   - `initNarrationCues`    — install the global listeners (call once)
  *
  * This module is purely a router: it never touches the DOM beyond reading
  * the narration text JSON the page already embeds; whether anyone listens
- * to `timeline:cue` is the responsibility of the FX layer.
+ * to `timeline:cue` (or `timeline:dialog`) is the responsibility of the
+ * FX / speech-bubble layers.
  */
+
+import type { DialogCue, DialogEventDetail } from './dialogTypes';
 
 export type Cue = {
   /** Regex tested against the substring [charIndex-4 .. charIndex+24] of narration text.
@@ -39,6 +43,11 @@ const WINDOW_AFTER = 24;
 
 /** Per-event registered cues. */
 const cueRegistry: Map<string, Cue[]> = new Map();
+
+/** Per-event registered DialogCues (parallel to cueRegistry). When a
+ *  dialog cue's regex matches the narration window, we dispatch
+ *  `timeline:dialog` instead of `timeline:cue`. */
+const dialogRegistry: Map<string, DialogCue[]> = new Map();
 
 /** Per-event firing state — `Set<cueIndex>` of cues that have already
  *  fired in the current scene run. Cleared on scene change. The index is
@@ -139,6 +148,48 @@ export function registerEventCues(eventId: string, cues: Cue[]): void {
   else cueRegistry.set(eventId, [...cues]);
 }
 
+/**
+ * Register DialogCues for a specific event id. Multiple calls append.
+ * Era loaders (`dialogs/{era}.ts`) call this for every event in their
+ * era during page boot. When a DialogCue fires, `timeline:dialog` is
+ * dispatched with `DialogEventDetail`.
+ */
+export function registerEventDialogs(eventId: string, dialogs: DialogCue[]): void {
+  if (!eventId || !Array.isArray(dialogs) || dialogs.length === 0) return;
+  const existing = dialogRegistry.get(eventId);
+  if (existing) existing.push(...dialogs);
+  else dialogRegistry.set(eventId, [...dialogs]);
+}
+
+/** Dialog firing state, scoped per eventId — symmetric with firedCues. */
+const firedDialogs: Map<string, Set<number>> = new Map();
+function getFiredDialogSet(eventId: string): Set<number> {
+  let s = firedDialogs.get(eventId);
+  if (!s) { s = new Set<number>(); firedDialogs.set(eventId, s); }
+  return s;
+}
+
+function tryFireDialog(
+  eventId: string,
+  index: number,
+  dialog: DialogCue,
+  windowText: string,
+  fired: Set<number>,
+): void {
+  const fireOnce = dialog.fireOnce !== false;
+  if (fireOnce && fired.has(index)) return;
+  if (!dialog.match.test(windowText)) return;
+  if (fireOnce) fired.add(index);
+  const detail: DialogEventDetail = {
+    eventId,
+    speakerCharId: dialog.speaker,
+    addresseeCharId: dialog.addressee,
+    text: dialog.text,
+    holdMs: dialog.holdMs ?? 4500,
+  };
+  window.dispatchEvent(new CustomEvent('timeline:dialog', { detail }));
+}
+
 /** Idempotency guard — calling `initNarrationCues()` more than once on the
  *  same page would attach duplicate listeners and fire each cue twice. */
 let initialized = false;
@@ -198,12 +249,45 @@ function startVirtualScrubberFor(eventId: string): void {
   }, VIRTUAL_TICK_MS);
 }
 
+/** Auto-load all era dialog shards and register them. Falls back
+ *  gracefully if a shard exports nothing or doesn't exist yet. */
+async function loadEraDialogs(): Promise<void> {
+  const eraIds = [
+    'primordial',
+    'patriarcal',
+    'exodo',
+    'reinos-y-exilio',
+    'evangelio',
+    'revelacion',
+  ] as const;
+  await Promise.all(
+    eraIds.map(async (era) => {
+      try {
+        const mod = await import(`./dialogs/${era}.ts`);
+        const data: Record<string, DialogCue[]> | undefined =
+          (mod && (mod.default ?? mod.DIALOGS)) as any;
+        if (!data) return;
+        for (const eventId of Object.keys(data)) {
+          const list = data[eventId];
+          if (Array.isArray(list) && list.length > 0) {
+            registerEventDialogs(eventId, list);
+          }
+        }
+      } catch {
+        // Shard not present or failed — silent skip; Phase 1 agents fill it.
+      }
+    }),
+  );
+}
+
 /**
  * Install the global listeners. Call once per page load.
  */
 export function initNarrationCues(): void {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
+  // Best-effort dialog loader (era shards live in ./dialogs/{era}.ts).
+  void loadEraDialogs();
 
   // A real `narration-tick` is the unambiguous "audio is playing" signal —
   // NarratorButton dispatches it on every `timeupdate`. Use it to gate the
@@ -247,6 +331,15 @@ export function initNarrationCues(): void {
     for (let i = 0; i < GLOBAL_CUES.length; i++) {
       tryFireCue(eventId, 'global', i, GLOBAL_CUES[i], windowText, fired);
     }
+
+    // DialogCues: dispatch `timeline:dialog` for any matching speech.
+    const dialogs = dialogRegistry.get(eventId);
+    if (dialogs && dialogs.length > 0) {
+      const firedD = getFiredDialogSet(eventId);
+      for (let i = 0; i < dialogs.length; i++) {
+        tryFireDialog(eventId, i, dialogs[i], windowText, firedD);
+      }
+    }
   });
 
   window.addEventListener('timeline:scene-changed', (ev) => {
@@ -255,8 +348,8 @@ export function initNarrationCues(): void {
     // Reset firing state for the previously-active event (so revisits
     // start clean) AND for the new event (in case it was visited before
     // this scene change in the same page session).
-    if (activeEventId) firedCues.delete(activeEventId);
-    if (newId) firedCues.delete(newId);
+    if (activeEventId) { firedCues.delete(activeEventId); firedDialogs.delete(activeEventId); }
+    if (newId) { firedCues.delete(newId); firedDialogs.delete(newId); }
     activeEventId = newId ?? null;
 
     // Kick the virtual scrubber unless real narration is already running.

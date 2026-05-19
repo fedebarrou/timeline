@@ -20,7 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "verify": "tsx scripts/verify-citations.ts && tsx scripts/verify-licenses.ts",
+    "verify": "tsx scripts/verify-citations.ts && tsx scripts/verify-licenses.ts && tsx scripts/verify-no-duplicate-fx.ts",
     "generate-narrations": "node scripts/generate-narrations.mjs"
   },
   "dependencies": {

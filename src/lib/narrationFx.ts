@@ -49,6 +49,31 @@
  *   - fx:pillar-of-fire     (position)
  *   - fx:parted-waters      (position)
  *
+ * Extended catalog (see docs/superpowers/STYLE_GUIDE_ANIMACIONES.md):
+ *   - fx:animate-scene-object (id, kind, duration?)
+ *   - C.1 figurative:  fx:caravan, fx:throne, fx:crown-descent,
+ *     fx:fire-from-heaven, fx:bowing-crowd, fx:trumpet-blast,
+ *     fx:angel-formation, fx:tablets-shatter, fx:moon-split,
+ *     fx:kaaba-pulse, fx:tongue-of-flame, fx:crown-of-thorns,
+ *     fx:fish-school, fx:plague-locust, fx:plague-frogs,
+ *     fx:plague-darkness, fx:rolling-stone, fx:tomb-empty,
+ *     fx:resurrection-light, fx:divine-hand, fx:sword-clash,
+ *     fx:lion-roar, fx:wolf-prowl, fx:eagle-soar, fx:raven-flight,
+ *     fx:horse-gallop, fx:camel-train, fx:goat-herd, fx:donkey-walk,
+ *     fx:locust-cloud, fx:frog-rain, fx:scorpion-skitter, fx:whale-breach.
+ *   - C.2 atmospheric:  fx:dawn-break, fx:dusk-fall, fx:night-fall,
+ *     fx:starfield-shimmer, fx:starfield-rotate, fx:eclipse-darken,
+ *     fx:moon-bloodred, fx:storm-clouds, fx:hailstorm, fx:rain-sheet,
+ *     fx:fog-roll, fx:mist-rise, fx:wind-streaks, fx:sandstorm-major,
+ *     fx:heat-shimmer, fx:meteor-strike, fx:meteor-shower,
+ *     fx:lightning-storm, fx:thunder-flash, fx:earthquake-major,
+ *     fx:divine-light-beam, fx:incense-spiral, fx:smoke-column,
+ *     fx:dust-pillar, fx:cloud-pillar.
+ *   - C.4 cinematic:    fx:vignette-pulse, fx:flash-white,
+ *     fx:fade-to-black, fx:fade-from-black, fx:zoom-pulse,
+ *     fx:slow-motion, fx:silhouette-horizon, fx:radial-bloom,
+ *     fx:shockwave.
+ *
  * SVG primitives draw into a lazy `<g data-layer="narration-fx">` group
  * appended to the SVG root on first use; child nodes are removed after
  * each animation, but the group itself is retained for reuse.
@@ -3064,6 +3089,1290 @@ function fxPartedWaters(svg: SVGSVGElement, data: { position: [number, number] }
   tl.to([left, right, rippleL, rippleR], { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=1.4');
 }
 
+// ===========================================================================
+// EXTENDED PRIMITIVES — see docs/superpowers/STYLE_GUIDE_ANIMACIONES.md
+// Categories: C.1 figurative, C.2 atmospheric one-shot, C.4 cinematic.
+// All primitives below follow the existing pattern: lazy-mount into the FX
+// layer, animate with GSAP, remove on completion. Color uses only era CSS
+// vars (--era-*) or the universal palette (fire #ff8844, blood #a01010,
+// divine gold #ffd866, dark ink #1a0f08 / #3a261a).
+// ===========================================================================
+
+// Resolve a target [x, y] more tolerantly: accepts {position} or {pinIdx}
+// or {from}/{to}. Falls back to active marker center.
+function targetOrMarker(
+  svg: SVGSVGElement,
+  data: { position?: [number, number]; pinIdx?: number } = {},
+): [number, number] | null {
+  const t = resolveTarget(svg, data);
+  if (t) return t;
+  if (!currentEventId) return null;
+  const m = svg.querySelector<SVGGElement>(`[data-marker="${currentEventId}"]`);
+  if (!m) return null;
+  return parseTranslate(m.getAttribute('transform'));
+}
+
+// ─── C.1 FIGURATIVE ────────────────────────────────────────────────────────
+
+/** fx:animate-scene-object — animate a scene-object that's already rendered
+ *  in the [data-layer="scene-objects"] layer. Delegates to the sceneObjects
+ *  animator so the figurative SVG that's already on stage (arca, becerro,
+ *  zarza…) actually moves instead of being duplicated by a parallel FX.
+ *  This is the keystone primitive of REGLA #1 (one concept, one render). */
+async function fxAnimateSceneObject(
+  svg: SVGSVGElement,
+  data: { id?: string; kind?: string; duration?: number } = {},
+) {
+  if (!data?.id || !data?.kind) return;
+  try {
+    const mod = await import('./sceneObjects/animator');
+    mod.animateSceneObject(svg, data.id, data.kind as any, data.duration);
+  } catch {
+    /* animator not yet available — silent no-op */
+  }
+}
+
+/** fx:caravan — string of camels marching across the marker area. */
+function fxCaravan(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const target = targetOrMarker(svg, data);
+  if (!target) return;
+  const [x, y] = target;
+  const layer = getFxLayer(svg);
+  const sec = eraVar('--era-secondary', '#7a5a3a');
+  const acc = eraVar('--era-accent', '#d9b35a');
+
+  const buildCamel = (cx: number, cy: number, scale = 1): SVGGElement => {
+    const g = svgEl('g', { transform: `translate(${cx}, ${cy}) scale(${scale})`, opacity: 0 });
+    g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 4, ry: 1.6, fill: sec }));
+    g.appendChild(svgEl('path', { d: 'M -1.5 -0.5 Q -1 -3 0 -2 Q 1 -3 1.5 -0.5 Z', fill: sec })); // 2 humps
+    g.appendChild(svgEl('rect', { x: 3, y: -2, width: 0.8, height: 3.5, fill: sec })); // neck
+    g.appendChild(svgEl('ellipse', { cx: 3.6, cy: -2.5, rx: 0.9, ry: 0.7, fill: sec })); // head
+    g.appendChild(svgEl('rect', { x: -3, y: 1.4, width: 0.5, height: 2.2, fill: '#3a261a' }));
+    g.appendChild(svgEl('rect', { x: -1, y: 1.4, width: 0.5, height: 2.2, fill: '#3a261a' }));
+    g.appendChild(svgEl('rect', { x: 1.5, y: 1.4, width: 0.5, height: 2.2, fill: '#3a261a' }));
+    g.appendChild(svgEl('rect', { x: 3, y: 1.4, width: 0.5, height: 2.2, fill: '#3a261a' }));
+    return g;
+  };
+
+  const startX = x - 30;
+  const camels: SVGGElement[] = [];
+  for (let i = 0; i < 4; i++) {
+    const c = buildCamel(startX + i * 8, y + 6 + i * 0.4, 0.95 - i * 0.06);
+    layer.appendChild(c);
+    camels.push(c);
+    gsap.to(c, { attr: { opacity: 0.92 }, duration: 0.5, delay: 0.08 * i });
+    gsap.to(c, {
+      attr: { transform: `translate(${x + 26}, ${y + 6 + i * 0.4}) scale(${0.95 - i * 0.06})` },
+      duration: 7.5,
+      delay: 0.05 * i,
+      ease: 'none',
+      onComplete: () => {
+        gsap.to(c, { attr: { opacity: 0 }, duration: 0.6, onComplete: () => c.remove() });
+      },
+    });
+  }
+  // dust trail behind
+  const dust = svgEl('ellipse', { cx: x - 30, cy: y + 8, rx: 6, ry: 1, fill: acc, opacity: 0, filter: 'blur(1px)' });
+  layer.appendChild(dust);
+  gsap.to(dust, { attr: { opacity: 0.4 }, duration: 0.6 });
+  gsap.to(dust, { attr: { cx: x + 26, opacity: 0 }, duration: 7.5, ease: 'none', onComplete: () => dust.remove() });
+}
+
+/** fx:throne — golden royal throne rising into view. */
+function fxThrone(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'throne-glow', 1.6);
+  const gold = '#ffd866';
+  const dark = eraVar('--era-primary', '#5b3a8a');
+
+  const g = svgEl('g', { transform: `translate(${x}, ${y - 12}) scale(0)`, opacity: 0, filter: glow });
+  // base + steps
+  g.appendChild(svgEl('rect', { x: -10, y: 8, width: 20, height: 2, fill: dark }));
+  g.appendChild(svgEl('rect', { x: -8, y: 6, width: 16, height: 2, fill: dark }));
+  // throne body
+  g.appendChild(svgEl('rect', { x: -6, y: -4, width: 12, height: 10, fill: gold, stroke: dark, 'stroke-width': 0.5 }));
+  // armrests
+  g.appendChild(svgEl('rect', { x: -8, y: 0, width: 2, height: 6, fill: gold, stroke: dark, 'stroke-width': 0.4 }));
+  g.appendChild(svgEl('rect', { x: 6, y: 0, width: 2, height: 6, fill: gold, stroke: dark, 'stroke-width': 0.4 }));
+  // back with crown
+  g.appendChild(svgEl('rect', { x: -6, y: -14, width: 12, height: 10, fill: gold, stroke: dark, 'stroke-width': 0.5 }));
+  g.appendChild(svgEl('polygon', { points: '-5,-14 -2,-18 0,-15 2,-18 5,-14', fill: gold, stroke: dark, 'stroke-width': 0.4 }));
+  // gem on top
+  g.appendChild(svgEl('circle', { cx: 0, cy: -17, r: 1.2, fill: '#a01010' }));
+  layer.appendChild(g);
+
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { transform: `translate(${x}, ${y - 12}) scale(1)`, opacity: 1 }, duration: 0.9, ease: 'back.out(1.3)' });
+  tl.to(g, { attr: { opacity: 0.95 }, duration: 0.4, yoyo: true, repeat: 3, ease: 'sine.inOut' }, '+=0.5');
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=1.5');
+}
+
+/** fx:crown-descent — crown floating down onto a position. */
+function fxCrownDescent(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'crown-glow', 1.4);
+  const gold = '#ffd866';
+
+  const g = svgEl('g', { transform: `translate(${x}, ${y - 30})`, opacity: 0, filter: glow });
+  g.appendChild(svgEl('path', { d: 'M -5 0 L -5 -6 L -3 -3 L -1 -7 L 1 -7 L 3 -3 L 5 -6 L 5 0 Z', fill: gold, stroke: '#8a5018', 'stroke-width': 0.4 }));
+  g.appendChild(svgEl('rect', { x: -5.5, y: 0, width: 11, height: 1.6, fill: gold, stroke: '#8a5018', 'stroke-width': 0.3 }));
+  // gems
+  g.appendChild(svgEl('circle', { cx: -3, cy: -4.5, r: 0.6, fill: '#a01010' }));
+  g.appendChild(svgEl('circle', { cx: 0, cy: -5.5, r: 0.7, fill: '#1a3a60' }));
+  g.appendChild(svgEl('circle', { cx: 3, cy: -4.5, r: 0.6, fill: '#27ae60' }));
+  layer.appendChild(g);
+
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 1 }, duration: 0.4 });
+  tl.to(g, { attr: { transform: `translate(${x}, ${y - 8})` }, duration: 1.6, ease: 'sine.inOut' }, 0);
+  tl.to(g, { attr: { opacity: 0.95 }, duration: 0.6, yoyo: true, repeat: 2, ease: 'sine.inOut' });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=1.2');
+}
+
+/** fx:fire-from-heaven — vertical fire bolt descending onto target. */
+function fxFireFromHeaven(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'firesky-glow', 2.0);
+
+  // descending bolt
+  const bolt = svgEl('polygon', {
+    points: `${x - 1.5},${y - 60} ${x + 1.5},${y - 60} ${x + 4},${y} ${x - 4},${y}`,
+    fill: '#ff8844', opacity: 0, filter: glow,
+  });
+  layer.appendChild(bolt);
+  // impact flames
+  const impact = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(impact);
+
+  const tl = gsap.timeline({ onComplete: () => { bolt.remove(); impact.remove(); } });
+  tl.to(bolt, { attr: { opacity: 0.9 }, duration: 0.2, ease: 'power3.in' });
+  tl.to(impact, { attr: { r: 10, opacity: 0.85 }, duration: 0.3, ease: 'expo.out' }, '<+0.2');
+  tl.to(impact, { attr: { r: 18, opacity: 0 }, duration: 1.4, ease: 'sine.in' });
+  tl.to(bolt, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' }, '<');
+  // call fire-flicker for residual flames
+  setTimeout(() => fxFireFlicker(svg, { position: [x, y] }), 600);
+}
+
+/** fx:bowing-crowd — silhouettes bowing in unison around the target. */
+function fxBowingCrowd(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const dark = '#1a0f08';
+  const fig: SVGGElement[] = [];
+  for (let i = 0; i < 6; i++) {
+    const ang = (i / 6) * Math.PI * 2;
+    const fx = x + Math.cos(ang) * 14;
+    const fy = y + Math.sin(ang) * 8 + 4;
+    const g = svgEl('g', { transform: `translate(${fx}, ${fy})`, opacity: 0 });
+    g.appendChild(svgEl('circle', { cx: 0, cy: -3, r: 1.2, fill: dark })); // head
+    g.appendChild(svgEl('path', { d: 'M -1.6 -2 L -1.6 2 L 1.6 2 L 1.6 -2 Z', fill: dark })); // torso
+    layer.appendChild(g);
+    fig.push(g);
+    gsap.to(g, { attr: { opacity: 0.85 }, duration: 0.4, delay: i * 0.05 });
+    // bow: rotate the torso path via Y compression on group
+    const bow = gsap.timeline({ delay: 0.6 + i * 0.05, repeat: 1, yoyo: true });
+    bow.to(g, { attr: { transform: `translate(${fx}, ${fy + 1.2}) scale(1, 0.6)` }, duration: 0.7, ease: 'sine.inOut' });
+    bow.to(g, { attr: { transform: `translate(${fx}, ${fy}) scale(1, 1)` }, duration: 0.7, ease: 'sine.inOut' });
+  }
+  setTimeout(() => fig.forEach((f) => gsap.to(f, { attr: { opacity: 0 }, duration: 0.8, onComplete: () => f.remove() })), 3800);
+}
+
+/** fx:trumpet-blast — shofar/trumpet with sound waves rippling outward. */
+function fxTrumpetBlast(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const acc = eraVar('--era-accent', '#d9b35a');
+  // trumpet horn
+  const horn = svgEl('g', { transform: `translate(${x}, ${y}) scale(0)`, opacity: 0 });
+  horn.appendChild(svgEl('path', { d: 'M -6 -1 Q -6 0 -5 1 L 4 2 L 8 4 L 8 -4 L 4 -2 L -5 -1 Q -6 -2 -6 -1 Z', fill: acc, stroke: '#5a4830', 'stroke-width': 0.4 }));
+  layer.appendChild(horn);
+  gsap.to(horn, { attr: { transform: `translate(${x}, ${y}) scale(1)`, opacity: 1 }, duration: 0.5, ease: 'back.out(2)' });
+  // sound waves
+  for (let i = 0; i < 4; i++) {
+    const arc = svgEl('path', { d: `M ${x + 9} ${y - 4} Q ${x + 14 + i * 3} ${y} ${x + 9} ${y + 4}`, fill: 'none', stroke: acc, 'stroke-width': 0.8, opacity: 0 });
+    layer.appendChild(arc);
+    const tl = gsap.timeline({ delay: 0.3 + i * 0.2, onComplete: () => arc.remove() });
+    tl.to(arc, { attr: { opacity: 0.8 }, duration: 0.3 });
+    tl.to(arc, { attr: { opacity: 0, d: `M ${x + 9} ${y - 8} Q ${x + 20 + i * 3} ${y} ${x + 9} ${y + 8}` }, duration: 1.2, ease: 'sine.out' });
+  }
+  setTimeout(() => gsap.to(horn, { attr: { opacity: 0 }, duration: 0.8, onComplete: () => horn.remove() }), 2800);
+}
+
+/** fx:angel-formation — three angels arrayed in flight. */
+function fxAngelFormation(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'angel-form-glow', 1.6);
+  const positions = [[-12, -18], [0, -22], [12, -18]];
+  positions.forEach(([dx, dy], i) => {
+    const g = svgEl('g', { transform: `translate(${x + dx}, ${y + dy - 14})`, opacity: 0, filter: glow });
+    g.appendChild(svgEl('circle', { cx: 0, cy: -1.5, r: 1.4, fill: '#ffd866' })); // head
+    g.appendChild(svgEl('path', { d: 'M -3 0 Q -4 -3 -2 -4 M 3 0 Q 4 -3 2 -4', fill: 'none', stroke: '#ffd866', 'stroke-width': 1.2, 'stroke-linecap': 'round' })); // wings
+    g.appendChild(svgEl('path', { d: 'M -1 0 L 0 4 L 1 0 Z', fill: '#ffffff' })); // robe
+    g.appendChild(svgEl('circle', { cx: 0, cy: -3.5, r: 2, fill: 'none', stroke: '#ffd866', 'stroke-width': 0.3, opacity: 0.7 })); // halo
+    layer.appendChild(g);
+    const tl = gsap.timeline({ delay: i * 0.15, onComplete: () => g.remove() });
+    tl.to(g, { attr: { opacity: 1, transform: `translate(${x + dx}, ${y + dy})` }, duration: 1.2, ease: 'sine.out' });
+    tl.to(g, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' }, '+=2.0');
+  });
+}
+
+/** fx:tablets-shatter — the stone tablets break in two. */
+function fxTabletsShatter(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const stone = '#3a261a';
+  const left = svgEl('path', { d: 'M -5 -7 Q -5 -8 -4 -8 L -0.4 -8 L -0.4 5 L -5 5 Z', fill: '#8a7250', stroke: stone, 'stroke-width': 0.5, transform: `translate(${x}, ${y})`, opacity: 1 });
+  const right = svgEl('path', { d: 'M 0.4 -8 L 4 -8 Q 5 -8 5 -7 L 5 5 L 0.4 5 Z', fill: '#8a7250', stroke: stone, 'stroke-width': 0.5, transform: `translate(${x}, ${y})`, opacity: 1 });
+  // engravings (suggest Hebrew letters)
+  [-1, 1].forEach((sgn) => {
+    const t2 = svgEl('g', { transform: `translate(${x}, ${y})` });
+    for (let r = 0; r < 4; r++) {
+      t2.appendChild(svgEl('line', { x1: sgn * 1.5, y1: -5 + r * 2, x2: sgn * 3.5, y2: -5 + r * 2, stroke: stone, 'stroke-width': 0.3 }));
+    }
+    layer.appendChild(t2);
+    setTimeout(() => t2.remove(), 2400);
+  });
+  layer.appendChild(left); layer.appendChild(right);
+  const tl = gsap.timeline({ onComplete: () => { left.remove(); right.remove(); } });
+  tl.to({}, { duration: 0.4 });
+  tl.to(left, { attr: { transform: `translate(${x - 6}, ${y + 4}) rotate(-22)`, opacity: 0.7 }, duration: 0.8, ease: 'expo.out' });
+  tl.to(right, { attr: { transform: `translate(${x + 6}, ${y + 4}) rotate(20)`, opacity: 0.7 }, duration: 0.8, ease: 'expo.out' }, '<');
+  tl.to([left, right], { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=0.4');
+  // dust burst
+  setTimeout(() => fxDustBurst(svg, { position: [x, y + 4] }), 400);
+}
+
+/** fx:moon-split — the moon splits into two halves (Islamic miracle). */
+function fxMoonSplit(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw] = getViewBox(svg);
+  const cx = vx + vw * 0.5;
+  const cy = vy + 40;
+  const glow = ensureGlowFilter(svg, 'moonsplit-glow', 2.4);
+  const left = svgEl('path', { d: `M ${cx - 8} ${cy} A 8 8 0 0 1 ${cx} ${cy - 8} L ${cx} ${cy + 8} A 8 8 0 0 1 ${cx - 8} ${cy} Z`, fill: '#f4f1e0', filter: glow, opacity: 0 });
+  const right = svgEl('path', { d: `M ${cx} ${cy - 8} A 8 8 0 0 1 ${cx + 8} ${cy} A 8 8 0 0 1 ${cx} ${cy + 8} Z`, fill: '#f4f1e0', filter: glow, opacity: 0 });
+  layer.appendChild(left); layer.appendChild(right);
+  const tl = gsap.timeline({ onComplete: () => { left.remove(); right.remove(); } });
+  tl.to([left, right], { attr: { opacity: 1 }, duration: 0.6 });
+  tl.to(left, { attr: { transform: `translate(-12, 0)` }, duration: 1.6, ease: 'expo.out' }, '<+0.5');
+  tl.to(right, { attr: { transform: `translate(12, 0)` }, duration: 1.6, ease: 'expo.out' }, '<');
+  tl.to([left, right], { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' }, '+=1.2');
+}
+
+/** fx:kaaba-pulse — Kaaba cube with golden halo pulse. */
+function fxKaabaPulse(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'kaaba-glow', 1.8);
+  const dark = '#1a0f08';
+  const g = svgEl('g', { transform: `translate(${x}, ${y})`, opacity: 0, filter: glow });
+  // cube perspective: 3 faces
+  g.appendChild(svgEl('polygon', { points: '-6,-4 0,-7 6,-4 0,-1', fill: '#3a261a' })); // top
+  g.appendChild(svgEl('polygon', { points: '-6,-4 -6,5 0,8 0,-1', fill: dark })); // left face
+  g.appendChild(svgEl('polygon', { points: '0,-1 0,8 6,5 6,-4', fill: '#2a1a10' })); // right face
+  // gold band (kiswa embroidery)
+  g.appendChild(svgEl('polygon', { points: '-6,1 0,4 6,1 6,2 0,5 -6,2', fill: '#ffd866', opacity: 0.85 }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 1 }, duration: 0.4 });
+  // halo pulse
+  for (let i = 0; i < 3; i++) {
+    const r = svgEl('circle', { cx: x, cy: y, r: 10, fill: 'none', stroke: '#ffd866', 'stroke-width': 1.2, opacity: 0 });
+    layer.appendChild(r);
+    const rt = gsap.timeline({ delay: 0.4 + i * 0.4, onComplete: () => r.remove() });
+    rt.to(r, { attr: { r: 22, opacity: 0.6 }, duration: 0.6, ease: 'expo.out' });
+    rt.to(r, { attr: { r: 38, opacity: 0 }, duration: 1.6, ease: 'sine.in' });
+  }
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=2.4');
+}
+
+/** fx:tongue-of-flame — tongues of fire over several positions (Pentecost). */
+function fxTongueOfFlame(svg: SVGSVGElement, data: { positions?: [number, number][]; position?: [number, number]; pinIdx?: number } = {}) {
+  const positions = data.positions ?? (() => { const t = targetOrMarker(svg, data); return t ? [t] : []; })();
+  if (positions.length === 0) return;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'tongue-glow', 1.2);
+  positions.forEach(([x, y], i) => {
+    const t = svgEl('path', {
+      d: `M ${x - 1.5} ${y - 4} Q ${x} ${y - 9} ${x + 1.5} ${y - 4} Q ${x} ${y - 2} ${x - 1.5} ${y - 4} Z`,
+      fill: '#ff8844', opacity: 0, filter: glow,
+    });
+    const inner = svgEl('path', {
+      d: `M ${x - 0.7} ${y - 5} Q ${x} ${y - 8.5} ${x + 0.7} ${y - 5} Z`,
+      fill: '#ffd866', opacity: 0,
+    });
+    layer.appendChild(t); layer.appendChild(inner);
+    const tl = gsap.timeline({ delay: i * 0.12, onComplete: () => { t.remove(); inner.remove(); } });
+    tl.to([t, inner], { attr: { opacity: 0.95 }, duration: 0.4 });
+    // flicker
+    const fl = gsap.timeline({ repeat: 6, yoyo: true });
+    fl.to(inner, { attr: { opacity: 0.6 }, duration: 0.25, ease: 'sine.inOut' });
+    fl.to(inner, { attr: { opacity: 1 }, duration: 0.25, ease: 'sine.inOut' });
+    tl.to([t, inner], { attr: { opacity: 0 }, duration: 1.0, ease: 'sine.in' }, '+=3.0');
+  });
+}
+
+/** fx:crown-of-thorns — woven thorn crown ring around target. */
+function fxCrownOfThorns(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const dark = '#3a261a';
+  const g = svgEl('g', { transform: `translate(${x}, ${y - 6}) scale(0)`, opacity: 0, style: 'transform-origin: 50% 50%; transform-box: fill-box;' });
+  const ring = svgEl('ellipse', { cx: 0, cy: 0, rx: 6, ry: 2.4, fill: 'none', stroke: dark, 'stroke-width': 1.4 });
+  g.appendChild(ring);
+  // thorns
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    const tx = Math.cos(a) * 6;
+    const ty = Math.sin(a) * 2.4;
+    const nx = Math.cos(a) * 8;
+    const ny = Math.sin(a) * 3.4;
+    g.appendChild(svgEl('line', { x1: tx, y1: ty, x2: nx, y2: ny, stroke: dark, 'stroke-width': 0.6, 'stroke-linecap': 'round' }));
+  }
+  // drops of blood
+  g.appendChild(svgEl('circle', { cx: -2, cy: 2.5, r: 0.6, fill: '#a01010' }));
+  g.appendChild(svgEl('circle', { cx: 3, cy: 2.4, r: 0.5, fill: '#a01010' }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { transform: `translate(${x}, ${y - 6}) scale(1)`, opacity: 1 }, duration: 0.7, ease: 'back.out(1.4)' });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=2.4');
+}
+
+/** fx:fish-school — silver fish swimming across the position. */
+function fxFishSchool(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const silver = '#bfe6ec';
+  for (let i = 0; i < 7; i++) {
+    const oy = (i - 3) * 2;
+    const fish = svgEl('path', { d: 'M -3 0 Q 0 -1.2 3 0 Q 0 1.2 -3 0 Z M 3 0 L 4.5 -1 L 4.5 1 Z', fill: silver, stroke: '#3a6fa0', 'stroke-width': 0.2, transform: `translate(${x - 22}, ${y + oy})`, opacity: 0 });
+    layer.appendChild(fish);
+    const tl = gsap.timeline({ delay: i * 0.08, onComplete: () => fish.remove() });
+    tl.to(fish, { attr: { opacity: 0.9 }, duration: 0.3 });
+    tl.to(fish, { attr: { transform: `translate(${x + 22}, ${y + oy + Math.sin(i) * 1.5})` }, duration: 3.5, ease: 'sine.inOut' }, '<');
+    tl.to(fish, { attr: { opacity: 0 }, duration: 0.6, ease: 'sine.in' }, '-=0.4');
+  }
+}
+
+/** fx:plague-locust — swarm of locusts crossing the scene. */
+function fxPlagueLocust(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const N = 28;
+  for (let i = 0; i < N; i++) {
+    const sx = vx - 10 - Math.random() * 30;
+    const sy = vy + Math.random() * vh;
+    const c = svgEl('path', { d: 'M 0 0 L 2 -0.4 L 2.2 0 L 2 0.4 Z M 0.4 -0.6 L 1 -1.4 M 0.4 0.6 L 1 1.4', fill: '#5a6a30', stroke: '#3a4818', 'stroke-width': 0.15, transform: `translate(${sx}, ${sy})`, opacity: 0 });
+    layer.appendChild(c);
+    const drift = (Math.random() - 0.5) * 30;
+    const dur = 3.5 + Math.random() * 2;
+    const tl = gsap.timeline({ delay: Math.random() * 0.8, onComplete: () => c.remove() });
+    tl.to(c, { attr: { opacity: 0.8 }, duration: 0.4 });
+    tl.to(c, { attr: { transform: `translate(${vx + vw + 10}, ${sy + drift})` }, duration: dur, ease: 'none' }, '<');
+    tl.to(c, { attr: { opacity: 0 }, duration: 0.5 }, '-=0.5');
+  }
+}
+
+/** fx:plague-frogs — frogs hopping across the scene. */
+function fxPlagueFrogs(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 10; i++) {
+    const sx = x + (Math.random() - 0.5) * 28;
+    const sy = y + (Math.random() - 0.5) * 16;
+    const g = svgEl('g', { transform: `translate(${sx}, ${sy})`, opacity: 0 });
+    g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 1.6, ry: 1, fill: '#3a6a30', stroke: '#1a3a10', 'stroke-width': 0.2 }));
+    g.appendChild(svgEl('circle', { cx: -0.6, cy: -0.6, r: 0.3, fill: '#ffd866' }));
+    g.appendChild(svgEl('circle', { cx: 0.6, cy: -0.6, r: 0.3, fill: '#ffd866' }));
+    g.appendChild(svgEl('circle', { cx: -0.6, cy: -0.6, r: 0.12, fill: '#1a0808' }));
+    g.appendChild(svgEl('circle', { cx: 0.6, cy: -0.6, r: 0.12, fill: '#1a0808' }));
+    layer.appendChild(g);
+    const tl = gsap.timeline({ delay: i * 0.1, onComplete: () => g.remove() });
+    tl.to(g, { attr: { opacity: 1 }, duration: 0.3 });
+    // hop
+    for (let h = 0; h < 4; h++) {
+      tl.to(g, { attr: { transform: `translate(${sx + h * 2.5 - 4 + (Math.random() - 0.5)}, ${sy - 3})` }, duration: 0.25, ease: 'sine.out' });
+      tl.to(g, { attr: { transform: `translate(${sx + h * 2.5 - 3 + (Math.random() - 0.5)}, ${sy})` }, duration: 0.25, ease: 'sine.in' });
+    }
+    tl.to(g, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' });
+  }
+}
+
+/** fx:plague-darkness — full-screen darkness overlay (ninth plague). */
+function fxPlagueDarkness(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const rect = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: '#0a0506', opacity: 0 });
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.78 }, duration: 1.4, ease: 'sine.inOut' });
+  tl.to(rect, { attr: { opacity: 0.6 }, duration: 0.3, yoyo: true, repeat: 2, ease: 'sine.inOut' });
+  tl.to({}, { duration: 1.6 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 2.0, ease: 'sine.in' });
+}
+
+/** fx:rolling-stone — round stone rolling away from a tomb. */
+function fxRollingStone(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const stone = svgEl('circle', { cx: x, cy: y, r: 5, fill: '#8a7250', stroke: '#3a261a', 'stroke-width': 0.5, opacity: 0 });
+  layer.appendChild(stone);
+  const tl = gsap.timeline({ onComplete: () => stone.remove() });
+  tl.to(stone, { attr: { opacity: 1 }, duration: 0.4 });
+  tl.to(stone, { attr: { cx: x + 18, transform: `rotate(360 ${x + 9} ${y})` }, duration: 2.0, ease: 'power2.out' });
+  tl.to(stone, { attr: { opacity: 0 }, duration: 1.0, ease: 'sine.in' }, '+=0.6');
+  // dust
+  setTimeout(() => fxDustBurst(svg, { position: [x + 10, y + 2] }), 400);
+}
+
+/** fx:tomb-empty — open tomb arch with empty interior glow. */
+function fxTombEmpty(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'tomb-glow', 1.6);
+  const g = svgEl('g', { transform: `translate(${x}, ${y})`, opacity: 0, filter: glow });
+  g.appendChild(svgEl('path', { d: 'M -7 5 L -7 -4 Q -7 -8 0 -8 Q 7 -8 7 -4 L 7 5 Z', fill: '#3a261a', stroke: '#1a0f08', 'stroke-width': 0.5 }));
+  g.appendChild(svgEl('path', { d: 'M -5 5 L -5 -3 Q -5 -6 0 -6 Q 5 -6 5 -3 L 5 5 Z', fill: '#ffd866', opacity: 0.6 }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 1 }, duration: 0.6 });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' }, '+=2.5');
+}
+
+/** fx:resurrection-light — radial bloom + ascending body silhouette. */
+function fxResurrectionLight(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'res-glow', 2.4);
+  // radial bloom
+  const bloom = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(bloom);
+  // rays
+  const rays = svgEl('g', { transform: `translate(${x}, ${y})`, opacity: 0, filter: glow });
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    rays.appendChild(svgEl('line', { x1: Math.cos(a) * 6, y1: Math.sin(a) * 6, x2: Math.cos(a) * 22, y2: Math.sin(a) * 22, stroke: '#ffd866', 'stroke-width': 0.6 }));
+  }
+  layer.appendChild(rays);
+  const tl = gsap.timeline({ onComplete: () => { bloom.remove(); rays.remove(); } });
+  tl.to(bloom, { attr: { r: 18, opacity: 0.85 }, duration: 0.5, ease: 'expo.out' });
+  tl.to(rays, { attr: { opacity: 0.9, transform: `translate(${x}, ${y}) rotate(30)` }, duration: 0.8, ease: 'sine.out' }, '<');
+  tl.to(bloom, { attr: { r: 36, opacity: 0 }, duration: 1.8, ease: 'sine.in' });
+  tl.to(rays, { attr: { opacity: 0, transform: `translate(${x}, ${y}) rotate(60)` }, duration: 1.8, ease: 'sine.in' }, '<');
+}
+
+/** fx:divine-hand — large hand silhouette descending from above. */
+function fxDivineHand(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'dhand-glow', 1.8);
+  const g = svgEl('g', { transform: `translate(${x}, ${y - 30})`, opacity: 0, filter: glow });
+  // simple hand silhouette
+  g.appendChild(svgEl('path', { d: 'M -3 0 L -3 -4 L -2 -4 L -2 -7 L -1 -7 L -1 -4 L 0 -4 L 0 -8 L 1 -8 L 1 -4 L 2 -4 L 2 -7 L 3 -7 L 3 -4 L 4 0 L 4 5 L -3 5 Z', fill: '#ffd866', opacity: 0.85 }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 1, transform: `translate(${x}, ${y - 12})` }, duration: 1.4, ease: 'sine.out' });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=1.8');
+}
+
+/** fx:sword-clash — two swords striking at center with sparks. */
+function fxSwordClash(svg: SVGSVGElement, data: { from?: [number, number]; to?: [number, number]; position?: [number, number] } = {}) {
+  const from = data.from ?? data.position;
+  const to = data.to ?? data.position;
+  if (!from || !to) return;
+  const cx = (from[0] + to[0]) / 2;
+  const cy = (from[1] + to[1]) / 2;
+  const layer = getFxLayer(svg);
+  // two diagonal swords
+  const sA = svgEl('line', { x1: cx - 6, y1: cy - 6, x2: cx + 6, y2: cy + 6, stroke: '#bfe6ec', 'stroke-width': 1.4, opacity: 0 });
+  const sB = svgEl('line', { x1: cx + 6, y1: cy - 6, x2: cx - 6, y2: cy + 6, stroke: '#bfe6ec', 'stroke-width': 1.4, opacity: 0 });
+  layer.appendChild(sA); layer.appendChild(sB);
+  // spark burst
+  const spark = svgEl('circle', { cx, cy, r: 0, fill: '#ffd866', opacity: 0 });
+  layer.appendChild(spark);
+  const tl = gsap.timeline({ onComplete: () => { sA.remove(); sB.remove(); spark.remove(); } });
+  tl.to([sA, sB], { attr: { opacity: 1 }, duration: 0.2 });
+  tl.to(spark, { attr: { r: 6, opacity: 1 }, duration: 0.15, ease: 'expo.out' });
+  tl.to(spark, { attr: { r: 14, opacity: 0 }, duration: 0.8, ease: 'sine.in' });
+  tl.to([sA, sB], { attr: { opacity: 0 }, duration: 0.6, ease: 'sine.in' }, '<');
+}
+
+/** fx:lion-roar — lion silhouette with roar shockwave. */
+function fxLionRoar(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const tan = '#c8a064';
+  const dark = '#3a261a';
+  const g = svgEl('g', { transform: `translate(${x}, ${y}) scale(0)`, opacity: 0, style: 'transform-origin: 50% 50%; transform-box: fill-box;' });
+  g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 6, ry: 3, fill: tan, stroke: dark, 'stroke-width': 0.4 })); // body
+  // mane
+  g.appendChild(svgEl('circle', { cx: 6, cy: -1, r: 3.5, fill: '#8a6030', stroke: dark, 'stroke-width': 0.4 }));
+  // head
+  g.appendChild(svgEl('ellipse', { cx: 7.5, cy: -1, rx: 2, ry: 1.6, fill: tan }));
+  // eye
+  g.appendChild(svgEl('circle', { cx: 8, cy: -1.4, r: 0.25, fill: dark }));
+  // open jaw
+  g.appendChild(svgEl('path', { d: 'M 8.5 -0.5 L 10 0 L 9.5 0.8 Z', fill: '#a01010' }));
+  // legs
+  [-4, -1, 2, 4.5].forEach((lx) => g.appendChild(svgEl('rect', { x: lx, y: 2.5, width: 0.7, height: 3, fill: dark })));
+  // tail
+  g.appendChild(svgEl('path', { d: 'M -6 -1 Q -9 -2 -8 -4', fill: 'none', stroke: dark, 'stroke-width': 0.6 }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { transform: `translate(${x}, ${y}) scale(1)`, opacity: 1 }, duration: 0.6, ease: 'back.out(1.6)' });
+  // roar shockwave
+  for (let i = 0; i < 3; i++) {
+    const r = svgEl('path', { d: `M ${x + 10} ${y - 3} Q ${x + 16 + i * 3} ${y} ${x + 10} ${y + 3}`, fill: 'none', stroke: '#ff8844', 'stroke-width': 0.8, opacity: 0 });
+    layer.appendChild(r);
+    const rt = gsap.timeline({ delay: 0.6 + i * 0.18, onComplete: () => r.remove() });
+    rt.to(r, { attr: { opacity: 0.75 }, duration: 0.2 });
+    rt.to(r, { attr: { opacity: 0, d: `M ${x + 10} ${y - 6} Q ${x + 24 + i * 3} ${y} ${x + 10} ${y + 6}` }, duration: 1.0, ease: 'sine.out' });
+  }
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.2, ease: 'sine.in' }, '+=2.4');
+}
+
+/** fx:wolf-prowl — wolf silhouette prowling across position. */
+function fxWolfProwl(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const grey = '#5a5a5a';
+  const g = svgEl('g', { transform: `translate(${x - 22}, ${y + 4})`, opacity: 0 });
+  g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 5, ry: 1.8, fill: grey })); // body
+  g.appendChild(svgEl('ellipse', { cx: 5, cy: -1, rx: 2, ry: 1.4, fill: grey })); // head
+  g.appendChild(svgEl('polygon', { points: '4,-2 4.5,-3.2 5.2,-2.2', fill: grey })); // ear1
+  g.appendChild(svgEl('polygon', { points: '5.5,-2 6,-3.2 6.5,-2.2', fill: grey })); // ear2
+  g.appendChild(svgEl('circle', { cx: 5.5, cy: -1.2, r: 0.2, fill: '#ffd866' })); // eye
+  [-3, -1, 2, 3.5].forEach((lx) => g.appendChild(svgEl('rect', { x: lx, y: 1.5, width: 0.5, height: 2.5, fill: '#3a3a3a' })));
+  g.appendChild(svgEl('path', { d: 'M -5 -0.5 Q -7 -1 -7 0.5', fill: 'none', stroke: grey, 'stroke-width': 0.6 })); // tail
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 0.92 }, duration: 0.5 });
+  tl.to(g, { attr: { transform: `translate(${x + 22}, ${y + 4})` }, duration: 4.5, ease: 'sine.inOut' }, '<');
+  tl.to(g, { attr: { opacity: 0 }, duration: 0.8, ease: 'sine.in' }, '-=0.5');
+}
+
+/** fx:eagle-soar — eagle silhouette soaring across the sky. */
+function fxEagleSoar(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const dark = '#3a261a';
+  const eagle = svgEl('path', { d: 'M -6 0 Q -3 -3 0 -1 Q 3 -3 6 0 Q 3 1 0 0.5 Q -3 1 -6 0 Z', fill: dark, opacity: 0, transform: `translate(${x - 28}, ${y - 16})` });
+  layer.appendChild(eagle);
+  const tl = gsap.timeline({ onComplete: () => eagle.remove() });
+  tl.to(eagle, { attr: { opacity: 0.85 }, duration: 0.4 });
+  // bob + travel
+  const path = { t: 0 };
+  gsap.to(path, { t: 1, duration: 5.0, ease: 'sine.inOut', onUpdate: () => {
+    const cx = x - 28 + 56 * path.t;
+    const cy = y - 16 + Math.sin(path.t * Math.PI * 3) * 4;
+    eagle.setAttribute('transform', `translate(${cx}, ${cy})`);
+  }, onComplete: () => { gsap.to(eagle, { attr: { opacity: 0 }, duration: 0.6 }); } });
+}
+
+/** fx:raven-flight — single black raven flying. */
+function fxRavenFlight(svg: SVGSVGElement, data: { from?: [number, number]; to?: [number, number]; position?: [number, number] } = {}) {
+  const from = data.from ?? (data.position ? [data.position[0] - 20, data.position[1] - 10] as [number, number] : null);
+  const to = data.to ?? (data.position ?? null);
+  if (!from || !to) return;
+  const layer = getFxLayer(svg);
+  const raven = svgEl('path', { d: 'M -3 0 Q -1 -2 0 0 Q 1 -2 3 0 Q 1 1 0 0.6 Q -1 1 -3 0 Z', fill: '#1a0f08', opacity: 0, transform: `translate(${from[0]}, ${from[1]})` });
+  layer.appendChild(raven);
+  const tl = gsap.timeline({ onComplete: () => raven.remove() });
+  tl.to(raven, { attr: { opacity: 0.95 }, duration: 0.3 });
+  const path = { t: 0 };
+  gsap.to(path, { t: 1, duration: 3.6, ease: 'sine.inOut', onUpdate: () => {
+    const cx = from[0] + (to[0] - from[0]) * path.t;
+    const cy = from[1] + (to[1] - from[1]) * path.t + Math.sin(path.t * Math.PI * 4) * 2;
+    const wing = 1 + Math.sin(path.t * Math.PI * 14) * 0.2;
+    raven.setAttribute('transform', `translate(${cx}, ${cy}) scale(1, ${wing.toFixed(3)})`);
+  } });
+  tl.to(raven, { attr: { opacity: 0 }, duration: 0.6, delay: 3.4 });
+}
+
+/** fx:horse-gallop — galloping horse silhouette. */
+function fxHorseGallop(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const dark = '#3a261a';
+  const g = svgEl('g', { transform: `translate(${x - 24}, ${y + 4})`, opacity: 0 });
+  g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 6, ry: 2, fill: '#7a4a30', stroke: dark, 'stroke-width': 0.3 }));
+  g.appendChild(svgEl('ellipse', { cx: 6, cy: -2, rx: 1.4, ry: 1.8, fill: '#7a4a30', stroke: dark, 'stroke-width': 0.3 })); // head
+  g.appendChild(svgEl('rect', { x: 5, y: -3.5, width: 0.4, height: 1.5, fill: dark }));
+  g.appendChild(svgEl('path', { d: 'M 4.5 -3 Q 5.5 -5 5 -2', fill: dark })); // mane
+  [-4, -1, 2, 4].forEach((lx) => g.appendChild(svgEl('rect', { x: lx, y: 2, width: 0.5, height: 3, fill: dark })));
+  g.appendChild(svgEl('path', { d: 'M -6 -1 Q -8 0 -7 2', fill: 'none', stroke: dark, 'stroke-width': 0.6 }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 1 }, duration: 0.3 });
+  tl.to(g, { attr: { transform: `translate(${x + 24}, ${y + 4})` }, duration: 3.0, ease: 'sine.in' }, '<');
+  // bobbing via secondary tween on a child is too complex; rely on travel.
+  tl.to(g, { attr: { opacity: 0 }, duration: 0.6 }, '-=0.4');
+  // dust puffs along the way
+  for (let i = 0; i < 4; i++) setTimeout(() => fxDustBurst(svg, { position: [x - 18 + i * 12, y + 6], duration: 1.2 }), 300 + i * 600);
+}
+
+/** fx:camel-train — alias of caravan but smaller (single line, slower). */
+function fxCamelTrain(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  fxCaravan(svg, data);
+}
+
+/** fx:goat-herd — small herd of goats. */
+function fxGoatHerd(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 5; i++) {
+    const sx = x + (i - 2) * 4 + (Math.random() - 0.5) * 2;
+    const sy = y + 6 + (Math.random() - 0.5) * 1.5;
+    const g = svgEl('g', { transform: `translate(${sx}, ${sy})`, opacity: 0 });
+    g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 2, ry: 1.2, fill: '#d0c0a0', stroke: '#5a4830', 'stroke-width': 0.2 }));
+    g.appendChild(svgEl('ellipse', { cx: 1.8, cy: -0.6, rx: 0.7, ry: 0.6, fill: '#d0c0a0' }));
+    g.appendChild(svgEl('path', { d: 'M 1.4 -1.2 L 1.2 -1.8 M 2.2 -1.2 L 2.4 -1.8', stroke: '#3a261a', 'stroke-width': 0.2 })); // horns
+    [-1.2, -0.4, 0.6, 1.4].forEach((lx) => g.appendChild(svgEl('rect', { x: lx, y: 1, width: 0.3, height: 1.6, fill: '#3a261a' })));
+    layer.appendChild(g);
+    gsap.to(g, { attr: { opacity: 0.9 }, duration: 0.4, delay: i * 0.08 });
+    setTimeout(() => gsap.to(g, { attr: { opacity: 0 }, duration: 0.8, onComplete: () => g.remove() }), 4500);
+  }
+}
+
+/** fx:donkey-walk — donkey walking. */
+function fxDonkeyWalk(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const grey = '#a0a0a0';
+  const dark = '#3a261a';
+  const g = svgEl('g', { transform: `translate(${x - 18}, ${y + 5})`, opacity: 0 });
+  g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 4, ry: 1.6, fill: grey, stroke: dark, 'stroke-width': 0.3 }));
+  g.appendChild(svgEl('ellipse', { cx: 4, cy: -1.4, rx: 1.2, ry: 1.4, fill: grey, stroke: dark, 'stroke-width': 0.3 }));
+  g.appendChild(svgEl('polygon', { points: '3.4,-2.4 3.8,-3.6 4.2,-2.4', fill: grey })); // ear
+  g.appendChild(svgEl('polygon', { points: '4.2,-2.4 4.6,-3.6 5,-2.4', fill: grey })); // ear
+  [-2.5, -0.5, 1.5, 3].forEach((lx) => g.appendChild(svgEl('rect', { x: lx, y: 1.4, width: 0.5, height: 2.6, fill: dark })));
+  g.appendChild(svgEl('path', { d: 'M -4 -0.5 Q -6 0 -5 1.5', fill: 'none', stroke: dark, 'stroke-width': 0.5 }));
+  layer.appendChild(g);
+  gsap.to(g, { attr: { opacity: 1 }, duration: 0.4 });
+  gsap.to(g, { attr: { transform: `translate(${x + 18}, ${y + 5})` }, duration: 5.5, ease: 'sine.inOut', onComplete: () => gsap.to(g, { attr: { opacity: 0 }, duration: 0.6, onComplete: () => g.remove() }) });
+}
+
+/** fx:locust-cloud — same as plague-locust but denser and darker. */
+function fxLocustCloud(svg: SVGSVGElement, data: any = {}) { fxPlagueLocust(svg, data); }
+/** fx:frog-rain — frogs falling from above. */
+function fxFrogRain(svg: SVGSVGElement, data: any = {}) { fxPlagueFrogs(svg, data); }
+
+/** fx:scorpion-skitter — small scorpions scurrying. */
+function fxScorpionSkitter(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 5; i++) {
+    const sx = x + (Math.random() - 0.5) * 18;
+    const sy = y + 4 + (Math.random() - 0.5) * 8;
+    const g = svgEl('g', { transform: `translate(${sx}, ${sy}) rotate(${Math.random() * 360})`, opacity: 0 });
+    g.appendChild(svgEl('ellipse', { cx: 0, cy: 0, rx: 1.6, ry: 0.8, fill: '#3a261a' }));
+    g.appendChild(svgEl('path', { d: 'M 1.6 0 Q 3 -1 2.8 -2 Q 3.2 -2 3 -1.5', fill: 'none', stroke: '#3a261a', 'stroke-width': 0.4 }));
+    g.appendChild(svgEl('line', { x1: -1.6, y1: -0.6, x2: -2.4, y2: -1.2, stroke: '#3a261a', 'stroke-width': 0.3 }));
+    g.appendChild(svgEl('line', { x1: -1.6, y1: 0.6, x2: -2.4, y2: 1.2, stroke: '#3a261a', 'stroke-width': 0.3 }));
+    layer.appendChild(g);
+    const tl = gsap.timeline({ delay: i * 0.1, onComplete: () => g.remove() });
+    tl.to(g, { attr: { opacity: 0.9 }, duration: 0.3 });
+    tl.to(g, { attr: { transform: `translate(${sx + (Math.random() - 0.5) * 8}, ${sy + (Math.random() - 0.5) * 6}) rotate(${Math.random() * 360})` }, duration: 2.0, ease: 'sine.inOut' }, '<');
+    tl.to(g, { attr: { opacity: 0 }, duration: 0.6 });
+  }
+}
+
+/** fx:whale-breach — large whale silhouette breaching from below. */
+function fxWhaleBreach(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const dark = '#1a3a60';
+  const g = svgEl('g', { transform: `translate(${x}, ${y + 10})`, opacity: 0 });
+  g.appendChild(svgEl('path', { d: 'M -12 0 Q -10 -8 0 -10 Q 10 -8 12 0 Q 8 1 0 1 Q -8 1 -12 0 Z', fill: dark, stroke: '#0a1a30', 'stroke-width': 0.4 }));
+  g.appendChild(svgEl('path', { d: 'M 10 -5 L 14 -2 L 12 -1 Z', fill: dark })); // tail fin
+  g.appendChild(svgEl('circle', { cx: -8, cy: -6, r: 0.4, fill: '#1a0f08' })); // eye
+  // water splash
+  const splash = svgEl('path', { d: `M -14 ${y - 3} Q -10 ${y - 8} -6 ${y - 3} M 6 ${y - 3} Q 10 ${y - 8} 14 ${y - 3}`, fill: 'none', stroke: '#bfe6ec', 'stroke-width': 0.6, opacity: 0 });
+  layer.appendChild(splash); layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => { g.remove(); splash.remove(); } });
+  tl.to(g, { attr: { opacity: 1, transform: `translate(${x}, ${y - 4})` }, duration: 1.2, ease: 'sine.out' });
+  tl.to(splash, { attr: { opacity: 0.8 }, duration: 0.3 }, '<+0.5');
+  tl.to(splash, { attr: { opacity: 0 }, duration: 1.2 });
+  tl.to(g, { attr: { opacity: 0, transform: `translate(${x}, ${y + 10})` }, duration: 1.6, ease: 'sine.in' }, '+=1.2');
+}
+
+// ─── C.2 ATMOSPHERIC ONE-SHOT ─────────────────────────────────────────────
+
+function viewBoxRect(svg: SVGSVGElement, fill: string, opacity = 0): SVGRectElement {
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  return svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill, opacity });
+}
+
+/** fx:dawn-break — warm horizon sweep upward. */
+function fxDawnBreak(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const defs = getDefs(svg);
+  const gradId = 'narration-fx-dawn-grad';
+  if (!svg.querySelector(`#${gradId}`)) {
+    const g = svgEl('linearGradient', { id: gradId, x1: '0', y1: '1', x2: '0', y2: '0' });
+    g.innerHTML = `<stop offset="0" stop-color="#ffd866" stop-opacity="0.7"/><stop offset="0.5" stop-color="#ff8844" stop-opacity="0.35"/><stop offset="1" stop-color="#ffd866" stop-opacity="0"/>`;
+    defs.appendChild(g);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy + vh, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { y: vy, opacity: 0.9 }, duration: 2.0, ease: 'sine.out' });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 2.0, ease: 'sine.in' }, '+=1.0');
+}
+
+/** fx:dusk-fall — orange-violet sweep downward. */
+function fxDuskFall(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const defs = getDefs(svg);
+  const gradId = 'narration-fx-dusk-grad';
+  if (!svg.querySelector(`#${gradId}`)) {
+    const g = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
+    g.innerHTML = `<stop offset="0" stop-color="#ff8844" stop-opacity="0.5"/><stop offset="0.6" stop-color="#5b3a8a" stop-opacity="0.35"/><stop offset="1" stop-color="#1a0f08" stop-opacity="0.6"/>`;
+    defs.appendChild(g);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy - vh, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { y: vy, opacity: 0.85 }, duration: 2.2, ease: 'sine.out' });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 2.0, ease: 'sine.in' }, '+=1.0');
+}
+
+/** fx:night-fall — dark blue sky + stars. */
+function fxNightFall(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#0a1a30');
+  layer.appendChild(rect);
+  gsap.to(rect, { attr: { opacity: 0.55 }, duration: 1.8, ease: 'sine.inOut' });
+  // sparse stars
+  const [vx, vy, vw] = getViewBox(svg);
+  const stars: SVGCircleElement[] = [];
+  for (let i = 0; i < 24; i++) {
+    const sx = vx + Math.random() * vw;
+    const sy = vy + Math.random() * 60;
+    const s = svgEl('circle', { cx: sx, cy: sy, r: 0.4 + Math.random() * 0.4, fill: '#ffd866', opacity: 0 });
+    layer.appendChild(s); stars.push(s);
+    gsap.to(s, { attr: { opacity: 0.9 }, duration: 0.4, delay: 1.0 + i * 0.04 });
+  }
+  setTimeout(() => {
+    gsap.to([rect, ...stars], { attr: { opacity: 0 }, duration: 1.8, onComplete: () => { rect.remove(); stars.forEach((s) => s.remove()); } });
+  }, 6500);
+}
+
+/** fx:starfield-shimmer — band of twinkling stars at top. */
+function fxStarfieldShimmer(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw] = getViewBox(svg);
+  const stars: SVGCircleElement[] = [];
+  for (let i = 0; i < 32; i++) {
+    const sx = vx + Math.random() * vw;
+    const sy = vy + Math.random() * 50;
+    const s = svgEl('circle', { cx: sx, cy: sy, r: 0.4 + Math.random() * 0.6, fill: '#fff6d0', opacity: 0 });
+    layer.appendChild(s); stars.push(s);
+    const tl = gsap.timeline({ delay: Math.random() * 1.5, repeat: 3, yoyo: true });
+    tl.to(s, { attr: { opacity: 0.95 }, duration: 0.5 + Math.random(), ease: 'sine.inOut' });
+    tl.to(s, { attr: { opacity: 0.2 }, duration: 0.5 + Math.random(), ease: 'sine.inOut' });
+  }
+  setTimeout(() => stars.forEach((s) => gsap.to(s, { attr: { opacity: 0 }, duration: 1.2, onComplete: () => s.remove() })), 6000);
+}
+
+/** fx:starfield-rotate — slow rotation of stars (epic projection). */
+function fxStarfieldRotate(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const g = svgEl('g', { transform: `translate(${vx + vw / 2}, ${vy + vh / 2})`, opacity: 0 });
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 20 + Math.random() * (Math.min(vw, vh) / 2);
+    g.appendChild(svgEl('circle', { cx: Math.cos(a) * r, cy: Math.sin(a) * r, r: 0.3 + Math.random() * 0.6, fill: '#fff6d0' }));
+  }
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 0.8 }, duration: 1.2 });
+  // rotation via attr transform substring update
+  const rot = { a: 0 };
+  gsap.to(rot, { a: 12, duration: 8, ease: 'none', onUpdate: () => {
+    g.setAttribute('transform', `translate(${vx + vw / 2}, ${vy + vh / 2}) rotate(${rot.a})`);
+  } });
+  tl.to(g, { attr: { opacity: 0 }, duration: 2.0, ease: 'sine.in' }, '+=6');
+}
+
+/** fx:eclipse-darken — sun disk eclipsed, light drops. */
+function fxEclipseDarken(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw] = getViewBox(svg);
+  const cx = vx + vw * 0.5;
+  const cy = vy + 50;
+  const glow = ensureGlowFilter(svg, 'eclipse-glow', 2.2);
+  const sun = svgEl('circle', { cx, cy, r: 10, fill: '#ffd866', filter: glow, opacity: 0 });
+  const disk = svgEl('circle', { cx: cx - 14, cy, r: 10, fill: '#0a0506', opacity: 0 });
+  const overlay = viewBoxRect(svg, '#0a0506');
+  layer.appendChild(sun); layer.appendChild(disk); layer.appendChild(overlay);
+  const tl = gsap.timeline({ onComplete: () => { sun.remove(); disk.remove(); overlay.remove(); } });
+  tl.to(sun, { attr: { opacity: 1 }, duration: 0.6 });
+  tl.to(disk, { attr: { opacity: 1, cx }, duration: 2.4, ease: 'sine.inOut' });
+  tl.to(overlay, { attr: { opacity: 0.5 }, duration: 1.4, ease: 'sine.inOut' }, '<+0.6');
+  tl.to({}, { duration: 1.2 });
+  tl.to(disk, { attr: { cx: cx + 14, opacity: 0 }, duration: 2.0, ease: 'sine.inOut' });
+  tl.to(overlay, { attr: { opacity: 0 }, duration: 1.5, ease: 'sine.in' }, '<');
+  tl.to(sun, { attr: { opacity: 0 }, duration: 0.8 });
+}
+
+/** fx:moon-bloodred — apocalyptic blood-red moon. */
+function fxMoonBloodred(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw] = getViewBox(svg);
+  const cx = vx + vw * 0.5;
+  const cy = vy + 50;
+  const glow = ensureGlowFilter(svg, 'bloodmoon-glow', 2.4);
+  const moon = svgEl('circle', { cx, cy, r: 9, fill: '#a01010', filter: glow, opacity: 0 });
+  layer.appendChild(moon);
+  const tl = gsap.timeline({ onComplete: () => moon.remove() });
+  tl.to(moon, { attr: { opacity: 0.95 }, duration: 1.2, ease: 'sine.out' });
+  tl.to(moon, { attr: { opacity: 0.7 }, duration: 0.6, yoyo: true, repeat: 3, ease: 'sine.inOut' });
+  tl.to(moon, { attr: { opacity: 0 }, duration: 1.5, ease: 'sine.in' });
+}
+
+/** fx:storm-clouds — dark clouds rolling in from one edge. */
+function fxStormClouds(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw] = getViewBox(svg);
+  const clouds: SVGEllipseElement[] = [];
+  for (let i = 0; i < 6; i++) {
+    const cy = vy + 10 + i * 6;
+    const e = svgEl('ellipse', { cx: vx - 30 - i * 10, cy, rx: 22 + Math.random() * 10, ry: 6 + Math.random() * 2, fill: '#2a2a3a', opacity: 0, filter: 'blur(1.2px)' });
+    layer.appendChild(e); clouds.push(e);
+    gsap.to(e, { attr: { opacity: 0.85, cx: vx + vw + 30 }, duration: 5.0 + Math.random() * 1.5, delay: i * 0.15, ease: 'sine.inOut', onComplete: () => gsap.to(e, { attr: { opacity: 0 }, duration: 0.6, onComplete: () => e.remove() }) });
+  }
+}
+
+/** fx:hailstorm — small ice balls falling + small impacts. */
+function fxHailstorm(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const N = 40;
+  for (let i = 0; i < N; i++) {
+    const sx = vx + Math.random() * vw;
+    const sy = vy - 5 - Math.random() * 30;
+    const ball = svgEl('circle', { cx: sx, cy: sy, r: 0.8 + Math.random() * 0.6, fill: '#bfe6ec', stroke: '#7ad0e0', 'stroke-width': 0.2, opacity: 0 });
+    layer.appendChild(ball);
+    const dur = 1.2 + Math.random() * 0.7;
+    const delay = Math.random() * 2;
+    const tl = gsap.timeline({ delay, onComplete: () => ball.remove() });
+    tl.to(ball, { attr: { opacity: 0.95 }, duration: 0.1 });
+    tl.to(ball, { attr: { cy: vy + vh + 5 }, duration: dur, ease: 'sine.in' }, '<');
+    tl.to(ball, { attr: { opacity: 0 }, duration: 0.2 }, '-=0.2');
+  }
+}
+
+/** fx:rain-sheet — dense rain wall, denser than fxRain. */
+function fxRainSheet(svg: SVGSVGElement, _data: any = {}) {
+  fxRain(svg, { count: 110, durationS: 5.5 });
+}
+
+/** fx:fog-roll — fog entering from a side. */
+function fxFogRoll(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const fog = svgEl('rect', { x: vx - vw, y: vy, width: vw, height: vh, fill: '#b8b8c0', opacity: 0, filter: 'blur(2.5px)' });
+  layer.appendChild(fog);
+  const tl = gsap.timeline({ onComplete: () => fog.remove() });
+  tl.to(fog, { attr: { opacity: 0.45, x: vx }, duration: 3.5, ease: 'sine.out' });
+  tl.to(fog, { attr: { opacity: 0, x: vx + vw }, duration: 4.5, ease: 'sine.in' });
+}
+
+/** fx:mist-rise — mist rising from ground (lakes/rivers). */
+function fxMistRise(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 6; i++) {
+    const ox = (Math.random() - 0.5) * 14;
+    const e = svgEl('ellipse', { cx: x + ox, cy: y + 4, rx: 4 + Math.random() * 2, ry: 1.4, fill: '#cfd6dc', opacity: 0, filter: 'blur(1px)' });
+    layer.appendChild(e);
+    const tl = gsap.timeline({ delay: i * 0.25, onComplete: () => e.remove() });
+    tl.to(e, { attr: { opacity: 0.55 }, duration: 0.6 });
+    tl.to(e, { attr: { cy: y - 12, rx: 7, opacity: 0 }, duration: 2.4, ease: 'sine.out' }, '<');
+  }
+}
+
+/** fx:wind-streaks — fast wind lines across the scene. */
+function fxWindStreaks(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  for (let i = 0; i < 18; i++) {
+    const sy = vy + Math.random() * vh;
+    const len = 18 + Math.random() * 22;
+    const line = svgEl('line', { x1: vx - len, y1: sy, x2: vx, y2: sy, stroke: '#e0e0e0', 'stroke-width': 0.4, opacity: 0 });
+    layer.appendChild(line);
+    const tl = gsap.timeline({ delay: i * 0.04, onComplete: () => line.remove() });
+    tl.to(line, { attr: { opacity: 0.6 }, duration: 0.1 });
+    tl.to(line, { attr: { x1: vx + vw, x2: vx + vw + len, opacity: 0 }, duration: 1.0 + Math.random() * 0.4, ease: 'sine.in' });
+  }
+}
+
+/** fx:sandstorm-major — heavier wrapper of triggerSandstorm. */
+function fxSandstormMajor(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  triggerSandstorm(svg, [t], { count: 220, duration: 6.0, windStrength: 32 });
+  // overlay haze
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#c9b48a');
+  layer.appendChild(rect);
+  gsap.to(rect, { attr: { opacity: 0.35 }, duration: 1.2, ease: 'sine.inOut' });
+  gsap.to(rect, { attr: { opacity: 0 }, duration: 2.0, delay: 4.5, ease: 'sine.in', onComplete: () => rect.remove() });
+}
+
+/** fx:heat-shimmer — turbulence distortion over horizon. */
+function fxHeatShimmer(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const defs = getDefs(svg);
+  const fid = 'narration-fx-heat-shim';
+  if (!svg.querySelector(`#${fid}`)) {
+    const f = svgEl('filter', { id: fid, x: '0%', y: '0%', width: '100%', height: '100%' });
+    f.innerHTML = `<feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3"/>`;
+    defs.appendChild(f);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy + vh * 0.55, width: vw, height: vh * 0.45, fill: '#ffd866', opacity: 0, filter: `url(#${fid})` });
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.2 }, duration: 1.2 });
+  tl.to({}, { duration: 3.0 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 1.4 });
+}
+
+/** fx:meteor-strike — single meteor with tail. */
+function fxMeteorStrike(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const sx = vx + vw * 0.2;
+  const sy = vy + 8;
+  const ex = vx + vw * 0.7;
+  const ey = vy + vh * 0.7;
+  const glow = ensureGlowFilter(svg, 'meteor-glow', 1.6);
+  const tail = svgEl('line', { x1: sx, y1: sy, x2: sx - 6, y2: sy - 4, stroke: '#ffd866', 'stroke-width': 1.2, opacity: 0, filter: glow });
+  const meteor = svgEl('circle', { cx: sx, cy: sy, r: 1.6, fill: '#fff6d0', filter: glow, opacity: 0 });
+  layer.appendChild(tail); layer.appendChild(meteor);
+  const path = { t: 0 };
+  gsap.to(meteor, { attr: { opacity: 1 }, duration: 0.2 });
+  gsap.to(tail, { attr: { opacity: 1 }, duration: 0.2 });
+  gsap.to(path, { t: 1, duration: 1.4, ease: 'power2.in', onUpdate: () => {
+    const cx = sx + (ex - sx) * path.t;
+    const cy = sy + (ey - sy) * path.t;
+    meteor.setAttribute('cx', String(cx)); meteor.setAttribute('cy', String(cy));
+    tail.setAttribute('x1', String(cx)); tail.setAttribute('y1', String(cy));
+    tail.setAttribute('x2', String(cx - 10)); tail.setAttribute('y2', String(cy - 8));
+  }, onComplete: () => {
+    // impact flash
+    const flash = svgEl('circle', { cx: ex, cy: ey, r: 0, fill: '#ffd866', opacity: 1, filter: glow });
+    layer.appendChild(flash);
+    gsap.to(flash, { attr: { r: 14, opacity: 0 }, duration: 0.8, ease: 'sine.out', onComplete: () => flash.remove() });
+    meteor.remove(); tail.remove();
+  } });
+}
+
+/** fx:meteor-shower — multiple meteors. */
+function fxMeteorShower(svg: SVGSVGElement, _data: any = {}) {
+  for (let i = 0; i < 5; i++) setTimeout(() => fxMeteorStrike(svg), i * 350);
+}
+
+/** fx:lightning-storm — multiple lightning bolts in cascade. */
+function fxLightningStorm(svg: SVGSVGElement, _data: any = {}) {
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  for (let i = 0; i < 4; i++) {
+    const fx2 = vx + Math.random() * vw;
+    const fy = vy + 10;
+    const tx = fx2 + (Math.random() - 0.5) * 30;
+    const ty = vy + vh * (0.5 + Math.random() * 0.4);
+    setTimeout(() => fxLightningStrike(svg, { from: [fx2, fy], to: [tx, ty] }), i * 600);
+  }
+}
+
+/** fx:thunder-flash — quick white flash + shake. */
+function fxThunderFlash(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#ffffff');
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.7 }, duration: 0.08 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 0.4, ease: 'sine.in' });
+  // mild shake of marker
+  if (currentEventId) {
+    const m = svg.querySelector<SVGGElement>(`[data-marker="${currentEventId}"]`);
+    if (m) fxEarthquakeShake(svg, { intensity: 1.5 });
+  }
+}
+
+/** fx:earthquake-major — strong shake of the whole SVG. */
+function fxEarthquakeMajor(svg: SVGSVGElement, _data: any = {}) {
+  fxEarthquakeShake(svg, { intensity: 5 });
+  // cracks across
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  for (let i = 0; i < 3; i++) {
+    const y0 = vy + vh * (0.3 + i * 0.2);
+    const pts = [`${vx},${y0}`];
+    for (let s = 1; s <= 6; s++) {
+      pts.push(`${vx + (vw * s) / 6},${y0 + (Math.random() - 0.5) * 6}`);
+    }
+    const line = svgEl('polyline', { points: pts.join(' '), fill: 'none', stroke: '#1a0f08', 'stroke-width': 0.6, opacity: 0 });
+    layer.appendChild(line);
+    const tl = gsap.timeline({ delay: 0.4 + i * 0.2, onComplete: () => line.remove() });
+    tl.to(line, { attr: { opacity: 0.7 }, duration: 0.4 });
+    tl.to({}, { duration: 1.8 });
+    tl.to(line, { attr: { opacity: 0 }, duration: 1.4 });
+  }
+}
+
+/** fx:divine-light-beam — vertical golden beam from heaven to target. */
+function fxDivineLightBeam(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const [, vy] = getViewBox(svg);
+  const glow = ensureGlowFilter(svg, 'beam-glow', 2.4);
+  const beam = svgEl('polygon', { points: `${x - 1.5},${vy} ${x + 1.5},${vy} ${x + 8},${y} ${x - 8},${y}`, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(beam);
+  const tl = gsap.timeline({ onComplete: () => beam.remove() });
+  tl.to(beam, { attr: { opacity: 0.7 }, duration: 0.8, ease: 'sine.out' });
+  tl.to({}, { duration: 1.5 });
+  tl.to(beam, { attr: { opacity: 0 }, duration: 1.6, ease: 'sine.in' });
+}
+
+/** fx:incense-spiral — spiral of smoke rising. */
+function fxIncenseSpiral(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const pts: string[] = [];
+  for (let i = 0; i < 24; i++) {
+    const tt = i / 23;
+    const r = 1 + tt * 2.5;
+    const a = tt * Math.PI * 4;
+    pts.push(`${(x + Math.cos(a) * r).toFixed(2)},${(y - tt * 18).toFixed(2)}`);
+  }
+  const path = svgEl('polyline', { points: pts.join(' '), fill: 'none', stroke: '#8a7250', 'stroke-width': 0.6, opacity: 0, filter: 'blur(0.6px)' });
+  layer.appendChild(path);
+  const tl = gsap.timeline({ onComplete: () => path.remove() });
+  tl.to(path, { attr: { opacity: 0.7 }, duration: 0.6 });
+  tl.to(path, { attr: { transform: 'translate(0, -4)', opacity: 0 }, duration: 2.6, ease: 'sine.out' });
+}
+
+/** fx:smoke-column — thick column of dark smoke. */
+function fxSmokeColumn(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 8; i++) {
+    const e = svgEl('ellipse', { cx: x + (Math.random() - 0.5) * 4, cy: y, rx: 3 + Math.random() * 2, ry: 2, fill: '#3a3a3a', opacity: 0, filter: 'blur(1px)' });
+    layer.appendChild(e);
+    const tl = gsap.timeline({ delay: i * 0.2, onComplete: () => e.remove() });
+    tl.to(e, { attr: { opacity: 0.7 }, duration: 0.4 });
+    tl.to(e, { attr: { cy: y - 26, rx: 6, opacity: 0 }, duration: 3.5, ease: 'power2.out' }, '<');
+  }
+}
+
+/** fx:dust-pillar — pillar of dust by day (Exodus column). */
+function fxDustPillar(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'dustpillar-glow', 1.4);
+  const pillar = svgEl('polygon', { points: `${x - 2},${y} ${x + 2},${y} ${x + 5},${y - 30} ${x - 5},${y - 30}`, fill: '#c9b48a', opacity: 0, filter: glow });
+  layer.appendChild(pillar);
+  const tl = gsap.timeline({ onComplete: () => pillar.remove() });
+  tl.to(pillar, { attr: { opacity: 0.85 }, duration: 0.9, ease: 'sine.out' });
+  tl.to({}, { duration: 2.0 });
+  tl.to(pillar, { attr: { opacity: 0 }, duration: 1.6, ease: 'sine.in' });
+}
+
+/** fx:cloud-pillar — pillar of cloud by night. */
+function fxCloudPillar(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const pillar = svgEl('polygon', { points: `${x - 3},${y} ${x + 3},${y} ${x + 6},${y - 30} ${x - 6},${y - 30}`, fill: '#cfd6dc', opacity: 0, filter: 'blur(1.2px)' });
+  layer.appendChild(pillar);
+  const tl = gsap.timeline({ onComplete: () => pillar.remove() });
+  tl.to(pillar, { attr: { opacity: 0.9 }, duration: 1.0, ease: 'sine.out' });
+  tl.to({}, { duration: 2.0 });
+  tl.to(pillar, { attr: { opacity: 0 }, duration: 1.6, ease: 'sine.in' });
+}
+
+// ─── C.4 CINEMATIC ────────────────────────────────────────────────────────
+
+/** fx:vignette-pulse — radial vignette to darken edges. */
+function fxVignettePulse(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const defs = getDefs(svg);
+  const gradId = 'narration-fx-vignette';
+  if (!svg.querySelector(`#${gradId}`)) {
+    const g = svgEl('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '70%' });
+    g.innerHTML = `<stop offset="0.5" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity="0.9"/>`;
+    defs.appendChild(g);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.85 }, duration: 1.0, ease: 'sine.out' });
+  tl.to({}, { duration: 1.6 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' });
+}
+
+/** fx:flash-white — short white flash. */
+function fxFlashWhite(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#ffffff');
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.85 }, duration: 0.12, ease: 'power2.out' });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' });
+}
+
+/** fx:fade-to-black — slow fade to black (deaths, era endings). */
+function fxFadeToBlack(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#000000');
+  layer.appendChild(rect);
+  const tl = gsap.timeline({ onComplete: () => rect.remove() });
+  tl.to(rect, { attr: { opacity: 0.85 }, duration: 2.4, ease: 'sine.in' });
+  tl.to({}, { duration: 1.2 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 1.6, ease: 'sine.out' });
+}
+
+/** fx:fade-from-black — fade from black (births, awakenings). */
+function fxFadeFromBlack(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const rect = viewBoxRect(svg, '#000000', 0.85);
+  layer.appendChild(rect);
+  gsap.to(rect, { attr: { opacity: 0 }, duration: 2.4, ease: 'sine.out', onComplete: () => rect.remove() });
+}
+
+/** fx:zoom-pulse — slight zoom-in-zoom-out on the active marker. */
+function fxZoomPulse(svg: SVGSVGElement, _data: any = {}) {
+  if (!currentEventId) return;
+  const m = svg.querySelector<SVGGElement>(`[data-marker="${currentEventId}"]`);
+  if (!m) return;
+  const t = m.getAttribute('transform') ?? '';
+  const [bx, by] = parseTranslate(t);
+  const tl = gsap.timeline({ onComplete: () => { if (t) m.setAttribute('transform', t); else m.removeAttribute('transform'); } });
+  tl.to(m, { attr: { transform: `translate(${bx}, ${by}) scale(1.15)` }, duration: 0.8, ease: 'sine.inOut' });
+  tl.to(m, { attr: { transform: `translate(${bx}, ${by}) scale(1)` }, duration: 1.0, ease: 'sine.inOut' });
+}
+
+/** fx:slow-motion — slow GSAP global timescale temporarily. */
+function fxSlowMotion(_svg: SVGSVGElement, data: { duration?: number } = {}) {
+  const dur = (data.duration ?? 2.5) * 1000;
+  const prev = gsap.globalTimeline.timeScale();
+  gsap.globalTimeline.timeScale(0.4);
+  setTimeout(() => gsap.globalTimeline.timeScale(prev), dur);
+}
+
+/** fx:silhouette-horizon — distant figure silhouette appearing on horizon. */
+function fxSilhouetteHorizon(svg: SVGSVGElement, _data: any = {}) {
+  const layer = getFxLayer(svg);
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const cx = vx + vw * 0.5;
+  const cy = vy + vh * 0.7;
+  const g = svgEl('g', { transform: `translate(${cx}, ${cy})`, opacity: 0 });
+  g.appendChild(svgEl('circle', { cx: 0, cy: -3, r: 0.8, fill: '#1a0f08' }));
+  g.appendChild(svgEl('path', { d: 'M -1 -2 L -1 3 L 1 3 L 1 -2 Z', fill: '#1a0f08' }));
+  layer.appendChild(g);
+  const tl = gsap.timeline({ onComplete: () => g.remove() });
+  tl.to(g, { attr: { opacity: 0.85 }, duration: 1.5, ease: 'sine.out' });
+  tl.to({}, { duration: 2.0 });
+  tl.to(g, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' });
+}
+
+/** fx:radial-bloom — bright radial bloom centered on target (epiphanies). */
+function fxRadialBloom(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  const glow = ensureGlowFilter(svg, 'bloom-glow', 2.4);
+  const c = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(c);
+  const tl = gsap.timeline({ onComplete: () => c.remove() });
+  tl.to(c, { attr: { r: 28, opacity: 0.9 }, duration: 0.5, ease: 'expo.out' });
+  tl.to(c, { attr: { r: 60, opacity: 0 }, duration: 1.8, ease: 'sine.in' });
+}
+
+/** fx:shockwave — expanding ring (earthquake, explosion). */
+function fxShockwave(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
+  const t = targetOrMarker(svg, data);
+  if (!t) return;
+  const [x, y] = t;
+  const layer = getFxLayer(svg);
+  for (let i = 0; i < 3; i++) {
+    const r = svgEl('circle', { cx: x, cy: y, r: 4, fill: 'none', stroke: '#ffd866', 'stroke-width': 1.4, opacity: 0 });
+    layer.appendChild(r);
+    const tl = gsap.timeline({ delay: i * 0.15, onComplete: () => r.remove() });
+    tl.to(r, { attr: { r: 22, opacity: 0.8 }, duration: 0.4, ease: 'expo.out' });
+    tl.to(r, { attr: { r: 56, opacity: 0, 'stroke-width': 0.2 }, duration: 1.4, ease: 'sine.in' });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Public init
 // ---------------------------------------------------------------------------
@@ -3211,6 +4520,213 @@ export function initNarrationFx(svg: SVGSVGElement): void {
           break;
         case 'fx:parted-waters':
           fxPartedWaters(svg, data);
+          break;
+        // ─── Extended C.1 figurative ─────────────────────────────────
+        case 'fx:animate-scene-object':
+          fxAnimateSceneObject(svg, data);
+          break;
+        case 'fx:caravan':
+          fxCaravan(svg, data);
+          break;
+        case 'fx:throne':
+          fxThrone(svg, data);
+          break;
+        case 'fx:crown-descent':
+          fxCrownDescent(svg, data);
+          break;
+        case 'fx:fire-from-heaven':
+          fxFireFromHeaven(svg, data);
+          break;
+        case 'fx:bowing-crowd':
+          fxBowingCrowd(svg, data);
+          break;
+        case 'fx:trumpet-blast':
+          fxTrumpetBlast(svg, data);
+          break;
+        case 'fx:angel-formation':
+          fxAngelFormation(svg, data);
+          break;
+        case 'fx:tablets-shatter':
+          fxTabletsShatter(svg, data);
+          break;
+        case 'fx:moon-split':
+          fxMoonSplit(svg, data);
+          break;
+        case 'fx:kaaba-pulse':
+          fxKaabaPulse(svg, data);
+          break;
+        case 'fx:tongue-of-flame':
+          fxTongueOfFlame(svg, data);
+          break;
+        case 'fx:crown-of-thorns':
+          fxCrownOfThorns(svg, data);
+          break;
+        case 'fx:fish-school':
+          fxFishSchool(svg, data);
+          break;
+        case 'fx:plague-locust':
+          fxPlagueLocust(svg, data);
+          break;
+        case 'fx:plague-frogs':
+          fxPlagueFrogs(svg, data);
+          break;
+        case 'fx:plague-darkness':
+          fxPlagueDarkness(svg, data);
+          break;
+        case 'fx:rolling-stone':
+          fxRollingStone(svg, data);
+          break;
+        case 'fx:tomb-empty':
+          fxTombEmpty(svg, data);
+          break;
+        case 'fx:resurrection-light':
+          fxResurrectionLight(svg, data);
+          break;
+        case 'fx:divine-hand':
+          fxDivineHand(svg, data);
+          break;
+        case 'fx:sword-clash':
+          fxSwordClash(svg, data);
+          break;
+        case 'fx:lion-roar':
+          fxLionRoar(svg, data);
+          break;
+        case 'fx:wolf-prowl':
+          fxWolfProwl(svg, data);
+          break;
+        case 'fx:eagle-soar':
+          fxEagleSoar(svg, data);
+          break;
+        case 'fx:raven-flight':
+          fxRavenFlight(svg, data);
+          break;
+        case 'fx:horse-gallop':
+          fxHorseGallop(svg, data);
+          break;
+        case 'fx:camel-train':
+          fxCamelTrain(svg, data);
+          break;
+        case 'fx:goat-herd':
+          fxGoatHerd(svg, data);
+          break;
+        case 'fx:donkey-walk':
+          fxDonkeyWalk(svg, data);
+          break;
+        case 'fx:locust-cloud':
+          fxLocustCloud(svg, data);
+          break;
+        case 'fx:frog-rain':
+          fxFrogRain(svg, data);
+          break;
+        case 'fx:scorpion-skitter':
+          fxScorpionSkitter(svg, data);
+          break;
+        case 'fx:whale-breach':
+          fxWhaleBreach(svg, data);
+          break;
+        // ─── Extended C.2 atmospheric one-shot ───────────────────────
+        case 'fx:dawn-break':
+          fxDawnBreak(svg, data);
+          break;
+        case 'fx:dusk-fall':
+          fxDuskFall(svg, data);
+          break;
+        case 'fx:night-fall':
+          fxNightFall(svg, data);
+          break;
+        case 'fx:starfield-shimmer':
+          fxStarfieldShimmer(svg, data);
+          break;
+        case 'fx:starfield-rotate':
+          fxStarfieldRotate(svg, data);
+          break;
+        case 'fx:eclipse-darken':
+          fxEclipseDarken(svg, data);
+          break;
+        case 'fx:moon-bloodred':
+          fxMoonBloodred(svg, data);
+          break;
+        case 'fx:storm-clouds':
+          fxStormClouds(svg, data);
+          break;
+        case 'fx:hailstorm':
+          fxHailstorm(svg, data);
+          break;
+        case 'fx:rain-sheet':
+          fxRainSheet(svg, data);
+          break;
+        case 'fx:fog-roll':
+          fxFogRoll(svg, data);
+          break;
+        case 'fx:mist-rise':
+          fxMistRise(svg, data);
+          break;
+        case 'fx:wind-streaks':
+          fxWindStreaks(svg, data);
+          break;
+        case 'fx:sandstorm-major':
+          fxSandstormMajor(svg, data);
+          break;
+        case 'fx:heat-shimmer':
+          fxHeatShimmer(svg, data);
+          break;
+        case 'fx:meteor-strike':
+          fxMeteorStrike(svg, data);
+          break;
+        case 'fx:meteor-shower':
+          fxMeteorShower(svg, data);
+          break;
+        case 'fx:lightning-storm':
+          fxLightningStorm(svg, data);
+          break;
+        case 'fx:thunder-flash':
+          fxThunderFlash(svg, data);
+          break;
+        case 'fx:earthquake-major':
+          fxEarthquakeMajor(svg, data);
+          break;
+        case 'fx:divine-light-beam':
+          fxDivineLightBeam(svg, data);
+          break;
+        case 'fx:incense-spiral':
+          fxIncenseSpiral(svg, data);
+          break;
+        case 'fx:smoke-column':
+          fxSmokeColumn(svg, data);
+          break;
+        case 'fx:dust-pillar':
+          fxDustPillar(svg, data);
+          break;
+        case 'fx:cloud-pillar':
+          fxCloudPillar(svg, data);
+          break;
+        // ─── Extended C.4 cinematic ──────────────────────────────────
+        case 'fx:vignette-pulse':
+          fxVignettePulse(svg, data);
+          break;
+        case 'fx:flash-white':
+          fxFlashWhite(svg, data);
+          break;
+        case 'fx:fade-to-black':
+          fxFadeToBlack(svg, data);
+          break;
+        case 'fx:fade-from-black':
+          fxFadeFromBlack(svg, data);
+          break;
+        case 'fx:zoom-pulse':
+          fxZoomPulse(svg, data);
+          break;
+        case 'fx:slow-motion':
+          fxSlowMotion(svg, data);
+          break;
+        case 'fx:silhouette-horizon':
+          fxSilhouetteHorizon(svg, data);
+          break;
+        case 'fx:radial-bloom':
+          fxRadialBloom(svg, data);
+          break;
+        case 'fx:shockwave':
+          fxShockwave(svg, data);
           break;
         default:
           // Unknown cue — silently ignore so the dispatcher can grow.

@@ -4,7 +4,7 @@ import { panTo, fitBounds, fitMarkerBBox } from './mapCamera';
 import { triggerSandstorm } from './mapSandstorm';
 import { flyModern } from './mapToggle';
 import { drawJourney, clearJourneys } from './mapJourneys';
-import { renderSceneObjects, clearSceneObjects } from './mapSceneObjects';
+import { renderSceneObjects, clearSceneObjects } from './sceneObjects';
 import { runChoreography, stopChoreography } from './characterChoreography';
 import { getSvgSceneZoom, getSceneZoom, getJourneyPaddingPct } from './mapModern';
 
