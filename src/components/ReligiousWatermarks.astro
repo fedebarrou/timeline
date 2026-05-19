@@ -1,0 +1,44 @@
+---
+interface Props {
+  religions: Array<'tora' | 'biblia' | 'coran'>;
+}
+const { religions } = Astro.props;
+const has = (r: 'tora' | 'biblia' | 'coran') => religions.includes(r);
+---
+{has('tora') && (
+  <svg class="rel-watermark rel-tora" viewBox="0 0 100 100" aria-hidden="true" fill="currentColor">
+    {/* Star of David: two triangles */}
+    <path d="M50 8 L88 70 L12 70 Z" />
+    <path d="M50 92 L12 30 L88 30 Z" fill-opacity="0.85" />
+  </svg>
+)}
+{has('biblia') && (
+  <svg class="rel-watermark rel-biblia" viewBox="0 0 100 100" aria-hidden="true" fill="currentColor">
+    {/* Latin Cross: vertical longer than horizontal, vertical descends below center */}
+    <rect x="42" y="10" width="16" height="80" rx="2" />
+    <rect x="22" y="32" width="56" height="16" rx="2" />
+  </svg>
+)}
+{has('coran') && (
+  <svg class="rel-watermark rel-coran" viewBox="0 0 100 100" aria-hidden="true" fill="currentColor">
+    {/* Crescent: large circle with a slightly offset circle subtracted */}
+    <path d="M50 12 a38 38 0 1 0 32 60 a30 30 0 1 1 0 -44 a38 38 0 0 0 -32 -16 z" />
+    {/* 5-pointed star at top-right */}
+    <polygon points="78,28 81,36 89,36 83,41 86,49 78,44 70,49 73,41 67,36 75,36" />
+  </svg>
+)}
+
+<style>
+  .rel-watermark {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    opacity: 0.08;
+    color: var(--era-primary);
+    pointer-events: none;
+    user-select: none;
+  }
+  .rel-tora { top: 0.6rem; left: 0.6rem; }
+  .rel-biblia { top: 50%; right: 0.6rem; transform: translateY(-50%); }
+  .rel-coran { bottom: 0.6rem; left: 0.6rem; }
+</style>
