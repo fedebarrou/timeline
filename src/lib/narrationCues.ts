@@ -219,6 +219,46 @@ const VIRTUAL_DEFER_MS = 1600;     // delay after scene-changed before kicking i
 
 let virtualTimer: ReturnType<typeof setInterval> | null = null;
 let virtualDeferTimer: ReturnType<typeof setTimeout> | null = null;
+let autoDialogTimers: ReturnType<typeof setTimeout>[] = [];
+
+/** Clear all pending auto-dialog timers (called on scene change). */
+function clearAutoDialogTimers(): void {
+  autoDialogTimers.forEach((t) => clearTimeout(t));
+  autoDialogTimers = [];
+}
+
+/**
+ * Schedule all registered DialogCues for an event to auto-fire on a stagger.
+ *
+ * The natural firing path (regex-match against the narration window) covers
+ * the case where the narrator's text contains the dialog's trigger phrase
+ * verbatim, but many DialogCues use canonical quotes that don't appear in
+ * the prose narration. To make sure dialogs ALWAYS show, we additionally
+ * schedule each one on a delay; the per-dialog firing set acts as a mutex
+ * so a regex-fired dialog won't be double-fired by the timer.
+ */
+function scheduleAutoDialogs(eventId: string): void {
+  const dialogs = dialogRegistry.get(eventId);
+  if (!dialogs || dialogs.length === 0) return;
+  const START_DELAY_MS = 3500;
+  const PACING_MS = 6000;
+  dialogs.forEach((dialog, i) => {
+    const t = setTimeout(() => {
+      const firedD = getFiredDialogSet(eventId);
+      if (firedD.has(i)) return;
+      const detail: DialogEventDetail = {
+        eventId,
+        speakerCharId: dialog.speaker,
+        addresseeCharId: dialog.addressee,
+        text: dialog.text,
+        holdMs: dialog.holdMs ?? 4500,
+      };
+      try { window.dispatchEvent(new CustomEvent('timeline:dialog', { detail })); } catch {}
+      firedD.add(i);
+    }, START_DELAY_MS + i * PACING_MS);
+    autoDialogTimers.push(t);
+  });
+}
 let realNarrationLastSeenAt = 0;
 const REAL_NARRATION_GRACE_MS = 1500;
 
@@ -383,11 +423,16 @@ export function initNarrationCues(): void {
     // The defer-timer gives real narration (which may be about to start —
     // playMode dispatches scene-changed BEFORE audio.play) a chance to win.
     stopVirtualScrubber();
+    clearAutoDialogTimers();
     if (!newId) return;
     virtualDeferTimer = setTimeout(() => {
       virtualDeferTimer = null;
       if (isRealNarrationActive()) return;
       startVirtualScrubberFor(newId);
     }, VIRTUAL_DEFER_MS);
+    // Auto-show dialogs on a stagger regardless of narration mode — the
+    // per-dialog firing set in tryFireDialog prevents double-fires when
+    // regex matches narration text first.
+    scheduleAutoDialogs(newId);
   });
 }

@@ -508,6 +508,44 @@ const allMarkers = events.map((e) => {
         const cleanup = mountEraAmbient(eraId);
         document.addEventListener('astro:before-swap', () => { try { cleanup?.(); } catch {} }, { once: true });
       }
+
+      // Auto-flash boundaries during play mode: when a scene becomes
+      // active AND the era has boundaries AND we're in play mode, briefly
+      // reveal them twice during the narration so the user gets context
+      // without having to toggle the button manually.
+      if (svg && boundaries && Array.isArray(boundaries) && boundaries.length > 0) {
+        import('../../lib/mapBoundaries').then(({ setBoundariesVisible, areBoundariesVisible }) => {
+          import('../../lib/playMode').then(({ isPlaying }) => {
+            const timers: number[] = [];
+            const flash = (delayMs: number, holdMs: number): void => {
+              timers.push(window.setTimeout(() => {
+                if (!isPlaying()) return;
+                // Don't override if the user has manually turned them on.
+                if (areBoundariesVisible(svg)) return;
+                setBoundariesVisible(svg, true);
+                timers.push(window.setTimeout(() => {
+                  // Only auto-hide if WE turned them on (user didn't intervene).
+                  if (svg.classList.contains('boundaries-auto-on')) {
+                    setBoundariesVisible(svg, false);
+                    svg.classList.remove('boundaries-auto-on');
+                  }
+                }, holdMs));
+                svg.classList.add('boundaries-auto-on');
+              }, delayMs));
+            };
+            window.addEventListener('timeline:scene-changed', () => {
+              timers.forEach((t) => clearTimeout(t)); timers.length = 0;
+              if (svg.classList.contains('boundaries-auto-on')) {
+                setBoundariesVisible(svg, false);
+                svg.classList.remove('boundaries-auto-on');
+              }
+              // Two pulses spaced through the narration window.
+              flash(2500, 4500);
+              flash(11000, 4500);
+            });
+          });
+        });
+      }
     }
   </script>
 

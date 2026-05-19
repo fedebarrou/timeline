@@ -3241,25 +3241,45 @@ function fxFireFromHeaven(svg: SVGSVGElement, data: { position?: [number, number
   if (!t) return;
   const [x, y] = t;
   const layer = getFxLayer(svg);
-  const glow = ensureGlowFilter(svg, 'firesky-glow', 2.0);
+  const glow = ensureGlowFilter(svg, 'firesky-glow', 2.8);
 
-  // descending bolt
+  // Pre-flash on the cloud — sky lights up before the bolt descends.
+  const skyFlash = svgEl('ellipse', { cx: x, cy: y - 72, rx: 28, ry: 6, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(skyFlash);
+
+  // Descending bolt (bigger, longer, faster).
   const bolt = svgEl('polygon', {
-    points: `${x - 1.5},${y - 60} ${x + 1.5},${y - 60} ${x + 4},${y} ${x - 4},${y}`,
+    points: `${x - 2.2},${y - 90} ${x + 2.2},${y - 90} ${x + 5.5},${y} ${x - 5.5},${y}`,
     fill: '#ff8844', opacity: 0, filter: glow,
   });
-  layer.appendChild(bolt);
-  // impact flames
-  const impact = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
-  layer.appendChild(impact);
+  const inner = svgEl('polygon', {
+    points: `${x - 1.0},${y - 90} ${x + 1.0},${y - 90} ${x + 2.5},${y} ${x - 2.5},${y}`,
+    fill: '#fff5c8', opacity: 0, filter: glow,
+  });
+  layer.appendChild(bolt); layer.appendChild(inner);
 
-  const tl = gsap.timeline({ onComplete: () => { bolt.remove(); impact.remove(); } });
-  tl.to(bolt, { attr: { opacity: 0.9 }, duration: 0.2, ease: 'power3.in' });
-  tl.to(impact, { attr: { r: 10, opacity: 0.85 }, duration: 0.3, ease: 'expo.out' }, '<+0.2');
-  tl.to(impact, { attr: { r: 18, opacity: 0 }, duration: 1.4, ease: 'sine.in' });
-  tl.to(bolt, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' }, '<');
-  // call fire-flicker for residual flames
-  setTimeout(() => fxFireFlicker(svg, { position: [x, y] }), 600);
+  // Impact shockwave ring (separate from the central flame).
+  const ring = svgEl('circle', { cx: x, cy: y, r: 0, fill: 'none', stroke: '#ffd866', 'stroke-width': 1.5, opacity: 0, filter: glow });
+  const impact = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
+  layer.appendChild(ring); layer.appendChild(impact);
+
+  const tl = gsap.timeline({ onComplete: () => { skyFlash.remove(); bolt.remove(); inner.remove(); ring.remove(); impact.remove(); } });
+  // 1. Sky pre-flash
+  tl.to(skyFlash, { attr: { opacity: 0.85, rx: 38 }, duration: 0.25, ease: 'expo.out' }, 0);
+  tl.to(skyFlash, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' }, 0.3);
+  // 2. Bolt strike (fast, bright)
+  tl.to(bolt, { attr: { opacity: 1 }, duration: 0.12, ease: 'power3.in' }, 0.18);
+  tl.to(inner, { attr: { opacity: 1 }, duration: 0.1, ease: 'power3.in' }, 0.22);
+  // 3. Impact
+  tl.to(impact, { attr: { r: 14, opacity: 1 }, duration: 0.22, ease: 'expo.out' }, 0.3);
+  tl.to(ring, { attr: { r: 22, opacity: 0.95 }, duration: 0.32, ease: 'expo.out' }, 0.3);
+  // 4. Bolt fades, shockwave expands and dissolves
+  tl.to(inner, { attr: { opacity: 0 }, duration: 0.4, ease: 'sine.in' }, 0.45);
+  tl.to(bolt, { attr: { opacity: 0 }, duration: 0.6, ease: 'sine.in' }, 0.5);
+  tl.to(ring, { attr: { r: 60, opacity: 0, 'stroke-width': 0.2 }, duration: 1.6, ease: 'sine.in' }, 0.5);
+  tl.to(impact, { attr: { r: 26, opacity: 0 }, duration: 1.6, ease: 'sine.in' }, 0.5);
+  // 5. Residual flame on impact site
+  setTimeout(() => fxFireFlicker(svg, { position: [x, y] }), 500);
 }
 
 /** fx:bowing-crowd — silhouettes bowing in unison around the target. */
@@ -4267,37 +4287,64 @@ function fxVignettePulse(svg: SVGSVGElement, _data: any = {}) {
   const defs = getDefs(svg);
   const gradId = 'narration-fx-vignette';
   if (!svg.querySelector(`#${gradId}`)) {
-    const g = svgEl('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '70%' });
-    g.innerHTML = `<stop offset="0.5" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity="0.9"/>`;
+    const g = svgEl('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '78%' });
+    // Softer falloff — clear centre, smooth gradient to warm-dark edges.
+    g.innerHTML = `<stop offset="0.4" stop-color="#000000" stop-opacity="0"/><stop offset="0.78" stop-color="#0c0805" stop-opacity="0.35"/><stop offset="1" stop-color="#000000" stop-opacity="0.72"/>`;
     defs.appendChild(g);
   }
   const rect = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
   layer.appendChild(rect);
   const tl = gsap.timeline({ onComplete: () => rect.remove() });
-  tl.to(rect, { attr: { opacity: 0.85 }, duration: 1.0, ease: 'sine.out' });
-  tl.to({}, { duration: 1.6 });
-  tl.to(rect, { attr: { opacity: 0 }, duration: 1.4, ease: 'sine.in' });
+  tl.to(rect, { attr: { opacity: 0.7 }, duration: 1.6, ease: 'sine.inOut' });
+  tl.to({}, { duration: 2.0 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 1.8, ease: 'sine.inOut' });
 }
 
 /** fx:flash-white — short white flash. */
 function fxFlashWhite(svg: SVGSVGElement, _data: any = {}) {
   const layer = getFxLayer(svg);
-  const rect = viewBoxRect(svg, '#ffffff');
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  // Radial flash centred on the active marker (or viewport centre) so the
+  // bloom feels like it's coming FROM the action, not a TV white-out.
+  const m = currentEventId ? svg.querySelector<SVGGElement>(`[data-marker="${currentEventId}"]`) : null;
+  let cx = vx + vw / 2, cy = vy + vh / 2;
+  if (m) { const t = m.getAttribute('transform') ?? ''; const [tx, ty] = parseTranslate(t); cx = tx; cy = ty; }
+  const defs = getDefs(svg);
+  const gradId = 'narration-fx-flash';
+  if (!svg.querySelector(`#${gradId}`)) {
+    const g = svgEl('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '70%' });
+    g.innerHTML = `<stop offset="0" stop-color="#ffffff" stop-opacity="1"/><stop offset="0.45" stop-color="#fff5c8" stop-opacity="0.85"/><stop offset="1" stop-color="#ffd866" stop-opacity="0"/>`;
+    defs.appendChild(g);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
+  // Position the gradient centre on the marker via CSS transform.
+  rect.style.transformBox = 'fill-box';
+  rect.style.transformOrigin = `${((cx - vx) / vw) * 100}% ${((cy - vy) / vh) * 100}%`;
   layer.appendChild(rect);
   const tl = gsap.timeline({ onComplete: () => rect.remove() });
-  tl.to(rect, { attr: { opacity: 0.85 }, duration: 0.12, ease: 'power2.out' });
-  tl.to(rect, { attr: { opacity: 0 }, duration: 0.5, ease: 'sine.in' });
+  tl.to(rect, { attr: { opacity: 0.95 }, duration: 0.1, ease: 'power3.out' });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 0.7, ease: 'sine.in' });
 }
 
 /** fx:fade-to-black — slow fade to black (deaths, era endings). */
 function fxFadeToBlack(svg: SVGSVGElement, _data: any = {}) {
   const layer = getFxLayer(svg);
-  const rect = viewBoxRect(svg, '#000000');
+  const [vx, vy, vw, vh] = getViewBox(svg);
+  const defs = getDefs(svg);
+  // Radial vignette overlay — warm-dark in centre, almost-black on edges.
+  // Reads as a deepening sepia rather than a brutal black wipe.
+  const gradId = 'narration-fx-fadeblack';
+  if (!svg.querySelector(`#${gradId}`)) {
+    const g = svgEl('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '75%' });
+    g.innerHTML = `<stop offset="0" stop-color="#1a0f08" stop-opacity="0.55"/><stop offset="0.55" stop-color="#0c0805" stop-opacity="0.75"/><stop offset="1" stop-color="#000000" stop-opacity="0.92"/>`;
+    defs.appendChild(g);
+  }
+  const rect = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: `url(#${gradId})`, opacity: 0 });
   layer.appendChild(rect);
   const tl = gsap.timeline({ onComplete: () => rect.remove() });
-  tl.to(rect, { attr: { opacity: 0.85 }, duration: 2.4, ease: 'sine.in' });
-  tl.to({}, { duration: 1.2 });
-  tl.to(rect, { attr: { opacity: 0 }, duration: 1.6, ease: 'sine.out' });
+  tl.to(rect, { attr: { opacity: 0.9 }, duration: 2.8, ease: 'power1.in' });
+  tl.to({}, { duration: 1.4 });
+  tl.to(rect, { attr: { opacity: 0 }, duration: 2.0, ease: 'sine.out' });
 }
 
 /** fx:fade-from-black — fade from black (births, awakenings). */
@@ -4350,12 +4397,41 @@ function fxRadialBloom(svg: SVGSVGElement, data: { position?: [number, number]; 
   if (!t) return;
   const [x, y] = t;
   const layer = getFxLayer(svg);
-  const glow = ensureGlowFilter(svg, 'bloom-glow', 2.4);
-  const c = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
-  layer.appendChild(c);
-  const tl = gsap.timeline({ onComplete: () => c.remove() });
-  tl.to(c, { attr: { r: 28, opacity: 0.9 }, duration: 0.5, ease: 'expo.out' });
-  tl.to(c, { attr: { r: 60, opacity: 0 }, duration: 1.8, ease: 'sine.in' });
+  const glow = ensureGlowFilter(svg, 'bloom-glow', 3.2);
+  // Core flash — hot white centre.
+  const core = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#fff5c8', opacity: 0, filter: glow });
+  // Mid halo — saturated gold.
+  const halo = svgEl('circle', { cx: x, cy: y, r: 0, fill: '#ffd866', opacity: 0, filter: glow });
+  // Outer ray ring — wider, faster expansion for cinematic spread.
+  const ring = svgEl('circle', { cx: x, cy: y, r: 0, fill: 'none', stroke: '#ffd866', 'stroke-width': 1.6, opacity: 0, filter: glow });
+  layer.appendChild(halo); layer.appendChild(ring); layer.appendChild(core);
+  // 6 radial spokes — rays of glory.
+  const spokes: SVGLineElement[] = [];
+  for (let i = 0; i < 6; i++) {
+    const ang = (i * Math.PI * 2) / 6;
+    const sx = x + Math.cos(ang) * 10;
+    const sy = y + Math.sin(ang) * 10;
+    const ex = x + Math.cos(ang) * 14;
+    const ey = y + Math.sin(ang) * 14;
+    const ln = svgEl('line', { x1: sx, y1: sy, x2: ex, y2: ey, stroke: '#fff5c8', 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0, filter: glow });
+    layer.appendChild(ln); spokes.push(ln);
+  }
+  const tl = gsap.timeline({ onComplete: () => { core.remove(); halo.remove(); ring.remove(); spokes.forEach(s => s.remove()); } });
+  // Quick punch
+  tl.to(core, { attr: { r: 18, opacity: 1 }, duration: 0.28, ease: 'expo.out' }, 0);
+  tl.to(halo, { attr: { r: 32, opacity: 0.85 }, duration: 0.45, ease: 'expo.out' }, 0);
+  tl.to(ring, { attr: { r: 26, opacity: 0.95 }, duration: 0.5, ease: 'expo.out' }, 0);
+  spokes.forEach((s, i) => {
+    const ang = (i * Math.PI * 2) / 6;
+    const ex2 = x + Math.cos(ang) * 38;
+    const ey2 = y + Math.sin(ang) * 38;
+    tl.to(s, { attr: { x2: ex2, y2: ey2, opacity: 0.9 }, duration: 0.4, ease: 'expo.out' }, 0.05);
+    tl.to(s, { attr: { opacity: 0 }, duration: 1.1, ease: 'sine.in' }, 0.5);
+  });
+  // Slow fade-out
+  tl.to(core, { attr: { r: 32, opacity: 0 }, duration: 1.4, ease: 'sine.in' }, 0.3);
+  tl.to(halo, { attr: { r: 70, opacity: 0 }, duration: 1.8, ease: 'sine.in' }, 0.4);
+  tl.to(ring, { attr: { r: 85, opacity: 0, 'stroke-width': 0.2 }, duration: 1.8, ease: 'sine.in' }, 0.4);
 }
 
 /** fx:shockwave — expanding ring (earthquake, explosion). */

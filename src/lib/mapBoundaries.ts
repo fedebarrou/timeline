@@ -82,6 +82,10 @@ export function setBoundariesVisible(svg: SVGSVGElement, visible: boolean): void
   const layer = svg.querySelector<SVGGElement>('[data-layer="boundaries"]');
   if (!layer) return;
   layer.classList.toggle('is-hidden', !visible);
+  // Toggle a marker on the SVG root so CSS can dim the static-labels
+  // layer while boundary polygons are visible (city names crash with
+  // dashed regional outlines otherwise).
+  svg.classList.toggle('boundaries-on', visible);
 }
 
 export function areBoundariesVisible(svg: SVGSVGElement): boolean {
