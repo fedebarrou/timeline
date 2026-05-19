@@ -26,7 +26,7 @@ const allEras = isHome
 const allEvents = isHome ? await getCollection('events') : [];
 const eraHasEvents = (id: string) => allEvents.some((e) => e.data.era === id);
 ---
-<nav class="site-nav fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg">
+<nav class="site-nav sticky top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-3 bg-bg">
   <a href="/" class="site-brand font-display text-sm tracking-[0.3em] uppercase hover:text-accent inline-flex items-center gap-2.5" aria-label="Ir al selector de eras">
     <img src="/images/logo2.png" alt="" aria-hidden="true" class="site-brand__mark h-8 w-auto md:h-9" />
     <span>Adán &rarr; Mahoma</span>

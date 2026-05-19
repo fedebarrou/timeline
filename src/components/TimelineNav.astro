@@ -56,7 +56,7 @@ const prevEra = currentEraIdx > 0 ? sortedAllEras[currentEraIdx - 1] : null;
 const nextHref = nextEra ? `/era/${nextEra.data.id}` : '/';
 const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 ---
-<div class="timeline-nav fixed top-12 inset-x-0 z-30 px-3 md:px-5 py-3 bg-bg shadow-lg" data-timeline-nav>
+<div class="timeline-nav sticky top-0 inset-x-0 z-30 px-3 md:px-5 py-3 bg-bg shadow-lg" data-timeline-nav>
   <div class="flex items-center gap-3 md:gap-4 h-8 w-full">
 
     {/* LEFT cluster — era anterior, hugs natural width */}

@@ -154,7 +154,6 @@ const allMarkers = events.map((e) => {
          not flush against it. Matches the JS scrollToElement offset. */
       --scroll-anchor-offset: calc(var(--sticky-header-h) + 1rem);
     }
-    main { padding-top: var(--sticky-header-h) !important; }
     /* The year anchor — not the section top — is what we want under the
        header on hash-based jumps. The section itself uses `flex justify-center`
        inside min-h-[120vh], so its offsetTop is far above the visible content. */
@@ -828,4 +827,23 @@ const allMarkers = events.map((e) => {
   </script>
 
   <EventNavArrows />
+
+  <script>
+    /* Re-measure the sticky nav stack on resize. URL bar collapse/expand in
+       iOS Safari can change the effective height, so we use a ResizeObserver
+       instead of hardcoded rem values. */
+    function measureNavStack() {
+      const nav = document.querySelector<HTMLElement>('.site-nav');
+      const tnav = document.querySelector<HTMLElement>('[data-timeline-nav]');
+      const h = (nav?.offsetHeight ?? 0) + (tnav?.offsetHeight ?? 0);
+      document.documentElement.style.setProperty('--sticky-header-h', `${h}px`);
+    }
+    measureNavStack();
+    const ro = new ResizeObserver(measureNavStack);
+    const nav = document.querySelector('.site-nav');
+    const tnav = document.querySelector('[data-timeline-nav]');
+    if (nav) ro.observe(nav);
+    if (tnav) ro.observe(tnav);
+    window.addEventListener('orientationchange', measureNavStack);
+  </script>
 </BaseLayout>
