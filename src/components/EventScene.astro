@@ -96,9 +96,9 @@ const charactersInEvent = await Promise.all(
 >
   <div class="grid grid-cols-1 md:grid-cols-[40fr_60fr]">
     <div class="narrative px-6 lg:px-10 py-24 flex flex-col justify-center">
-      <p class="text-sm tracking-[0.4em] opacity-60 mb-3" data-event-year-anchor>— AÑO {data.biblicalYear} —</p>
-      <h2 class="font-display text-4xl lg:text-5xl mb-2">{data.title}</h2>
-      {data.subtitle && <p class="font-display italic opacity-70 text-xl mb-4">{data.subtitle}</p>}
+      <p class="tracking-[0.4em] opacity-60 mb-3" style="font-size: var(--fs-year)" data-event-year-anchor>— AÑO {data.biblicalYear} —</p>
+      <h2 class="font-display mb-2" style="font-size: var(--fs-h2); line-height: 1.1">{data.title}</h2>
+      {data.subtitle && <p class="font-display italic opacity-70 mb-4" style={`font-size: var(--fs-h3)`}>{data.subtitle}</p>}
 
       <NarratorButton eventId={data.id} narrationText={narrationText} audioSrc={audioSrc} />
 
