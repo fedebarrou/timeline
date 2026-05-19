@@ -80,6 +80,16 @@ const eventCharacters = events.map((e) => {
   </div>
 </aside>
 
+<aside class="mobile-cip" data-mobile-cip aria-hidden="true">
+  <div class="mcip-portrait">
+    <img alt="" data-mcip-portrait-img onerror="this.style.display='none'" />
+  </div>
+  <div class="mcip-text">
+    <div class="mcip-name" data-mcip-name></div>
+    <div class="mcip-role" data-mcip-role></div>
+  </div>
+</aside>
+
 <script type="application/json" data-character-info-data set:html={JSON.stringify(eventCharacters)}></script>
 
 <style>
@@ -362,6 +372,49 @@ const eventCharacters = events.map((e) => {
   .character-info-panel.cip-fade .cip-canonicity {
     animation: cip-fade-in 320ms ease;
   }
+
+  @media (max-width: 767px) {
+    .character-info-panel { display: none !important; }
+  }
+
+  .mobile-cip {
+    display: none;
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 53;
+    padding: 0.6rem 0.85rem;
+    gap: 0.7rem;
+    background: color-mix(in srgb, var(--era-bg) 88%, transparent);
+    border: 1px solid var(--era-primary);
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    align-items: center;
+  }
+  .mobile-cip.is-active { display: flex; }
+  body.map-fullscreen.map-fullscreen-idle .mobile-cip { opacity: 0; pointer-events: none; }
+  @media (min-width: 768px) {
+    .mobile-cip { display: none !important; }
+  }
+  .mcip-portrait { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+  .mcip-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .mcip-text { min-width: 0; flex: 1 1 auto; }
+  .mcip-name {
+    font-family: var(--era-display);
+    font-size: 1rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mcip-role {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 0.15rem;
+  }
 </style>
 
 <script>
@@ -495,6 +548,21 @@ const eventCharacters = events.map((e) => {
         canonicityEl.innerHTML = `<span class="cip-canonicity-dot" style="background:${col}"></span>${lbl}`;
         canonicityEl.classList.toggle('has-text', !!lbl);
       }
+      // Mirror to the mobile flotante (hidden on desktop via CSS).
+      const mobileEl = document.querySelector<HTMLElement>('[data-mobile-cip]');
+      const mobileImg = document.querySelector<HTMLImageElement>('[data-mcip-portrait-img]');
+      const mobileName = document.querySelector<HTMLElement>('[data-mcip-name]');
+      const mobileRole = document.querySelector<HTMLElement>('[data-mcip-role]');
+      if (mobileEl) {
+        if (c && c.portrait) {
+          if (mobileImg) { mobileImg.src = c.portrait; mobileImg.style.display = ''; }
+          if (mobileName) mobileName.textContent = c.name;
+          if (mobileRole) mobileRole.textContent = (c.role ?? '').replace(/-/g, ' ');
+          mobileEl.classList.add('is-active');
+        } else {
+          mobileEl.classList.remove('is-active');
+        }
+      }
       // Re-trigger fade animation on the inner blocks. Reflow is needed so the
       // animation actually replays when we re-apply the same class.
       panel!.classList.remove('cip-fade');
@@ -509,6 +577,7 @@ const eventCharacters = events.map((e) => {
       stopAutoCycle();
       if (chars.length === 0) {
         panel!.classList.remove('is-active');
+        document.querySelector('[data-mobile-cip]')?.classList.remove('is-active');
         activeIdx = -1;
         return;
       }
