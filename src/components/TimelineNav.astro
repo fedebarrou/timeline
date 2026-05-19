@@ -94,7 +94,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <div class="relative h-8 flex-1 min-w-0 px-2 md:px-3">
+      <div class="timeline-desktop-track relative h-8 flex-1 min-w-0 px-2 md:px-3">
         <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
 
         {sortedEras.map((era) => {
@@ -141,6 +141,15 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 
         <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
       </div>
+      <nav class="timeline-mobile-track" data-timeline-mobile-track aria-label="Eventos de la era">
+        {sortedEventsByYear.map((e) => (
+          <a
+            href={`#event-${e.data.id}`}
+            class="mobile-dot"
+            data-timeline-mobile-marker={e.data.id}
+          >{e.data.title}</a>
+        ))}
+      </nav>
       <button
         type="button"
         class="step-arrow step-arrow-next shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full border border-border bg-bg/80 hover:border-accent hover:text-accent text-primary flex items-center justify-center opacity-70 hover:opacity-100 transition-all"
@@ -181,6 +190,53 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 <style>
   .restart-btn { display: none; }
   body.map-fullscreen .restart-btn { display: inline-flex; }
+
+  /* ── Mobile horizontal track ────────────────────────────────────────
+     <768px: el track absoluto-positioned se reemplaza por flex con
+     overflow-x. Cada timeline-dot se vuelve un botón mín. 44×44px y
+     el evento activo se centra con scrollIntoView. */
+  @media (max-width: 767px) {
+    .timeline-mobile-track {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 0 0.5rem;
+      mask-image: linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+    }
+    .timeline-mobile-track::-webkit-scrollbar { display: none; }
+    .timeline-mobile-track .mobile-dot {
+      scroll-snap-align: center;
+      flex-shrink: 0;
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 .75rem;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--era-muted);
+      border-radius: 999px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .timeline-mobile-track .mobile-dot.is-active {
+      color: var(--era-accent);
+      background: color-mix(in srgb, var(--era-accent) 12%, transparent);
+    }
+    /* Hide the desktop dot/track on mobile. */
+    .timeline-desktop-track { display: none; }
+    /* Hide step arrows on mobile — the swipe IS the step. */
+    .step-arrow { display: none; }
+  }
+  @media (min-width: 768px) {
+    .timeline-mobile-track { display: none; }
+  }
 </style>
 
 <script>
@@ -272,6 +328,46 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
   document.querySelectorAll<HTMLAnchorElement>('[data-timeline-marker]').forEach((dot) => {
     dot.addEventListener('click', (ev) => {
       const id = dot.getAttribute('data-timeline-marker');
+      if (!id) return;
+      if (isPlaying()) {
+        ev.preventDefault();
+        const playBtn = document.querySelector<HTMLElement>('[data-play-mode]');
+        const progress = playBtn?.querySelector<HTMLElement>('[data-play-progress]');
+        jumpToEventId(id, (i, total) => {
+          if (progress) progress.textContent = `${i}/${total}`;
+        });
+        return;
+      }
+      const target = document.getElementById(`event-${id}`);
+      if (target) {
+        ev.preventDefault();
+        scrollToElement(target);
+      }
+    });
+  });
+
+  /* Mobile track: highlight the active event and center it in the scrollable
+     row whenever the scene changes. */
+  const mobileDots = document.querySelectorAll<HTMLAnchorElement>('[data-timeline-mobile-marker]');
+
+  function updateMobileActive(eventId: string) {
+    mobileDots.forEach((d) => {
+      const active = d.getAttribute('data-timeline-mobile-marker') === eventId;
+      d.classList.toggle('is-active', active);
+      if (active) {
+        d.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      }
+    });
+  }
+
+  window.addEventListener('timeline:scene-changed', (e) => {
+    const id = (e as CustomEvent).detail?.eventId;
+    if (id) updateMobileActive(id);
+  });
+
+  mobileDots.forEach((dot) => {
+    dot.addEventListener('click', (ev) => {
+      const id = dot.getAttribute('data-timeline-mobile-marker');
       if (!id) return;
       if (isPlaying()) {
         ev.preventDefault();
