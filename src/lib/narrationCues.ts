@@ -340,6 +340,33 @@ export function initNarrationCues(): void {
         tryFireDialog(eventId, i, dialogs[i], windowText, firedD);
       }
     }
+
+    // Emit cue-pulse so eraEndGuard can track progress. isLast=true when
+    // we're past 95% of the narration text (virtual boundaries excluded
+    // so only real narration drives the guard).
+    if (!detail.virtual) {
+      const progress = text.length > 0 ? charIndex / text.length : 1;
+      const isLast = progress >= 0.95;
+      try {
+        window.dispatchEvent(new CustomEvent('timeline:cue-pulse', {
+          detail: { eventId, isLast },
+        }));
+      } catch {}
+    }
+  });
+
+  // When narration ends (TTS onEnd or audio ended), emit a definitive
+  // isLast=true pulse so eraEndGuard resolves quickly even if the last
+  // boundary event happened before the 95% threshold.
+  window.addEventListener('timeline:narration-ended', (ev) => {
+    const detail = (ev as CustomEvent).detail || {};
+    const eventId: string | undefined = detail.eventId;
+    if (!eventId) return;
+    try {
+      window.dispatchEvent(new CustomEvent('timeline:cue-pulse', {
+        detail: { eventId, isLast: true },
+      }));
+    } catch {}
   });
 
   window.addEventListener('timeline:scene-changed', (ev) => {

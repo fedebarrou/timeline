@@ -1,5 +1,6 @@
 import { speak, onEnd, onBoundary, onProgress, cancelAllNarration } from './tts';
 import { scrollToElement } from './scrollOffset';
+import { awaitEraQuiescence } from './eraEndGuard';
 
 let playing = false;
 let currentIndex = 0;
@@ -248,7 +249,11 @@ export async function startPlay(updateUI?: (i: number, total: number) => void) {
   }
   setPlaying(false);
   onIndexChange = null;
-  if (reachedEnd) emitEraEnded();
+  if (reachedEnd) {
+    const lastScene = scenes[scenes.length - 1];
+    await awaitEraQuiescence(lastScene?.dataset.eventId ?? '');
+    emitEraEnded();
+  }
 }
 
 /**
@@ -311,7 +316,11 @@ export function jumpToEventId(eventId: string, updateUI?: (i: number, total: num
     }
     setPlaying(false);
     onIndexChange = null;
-    if (reachedEnd) emitEraEnded();
+    if (reachedEnd) {
+      const lastScene = scenes[scenes.length - 1];
+      await awaitEraQuiescence(lastScene?.dataset.eventId ?? '');
+      emitEraEnded();
+    }
   })();
 }
 
@@ -371,5 +380,9 @@ export async function restartPlay(updateUI?: (i: number, total: number) => void)
   }
   setPlaying(false);
   onIndexChange = null;
-  if (reachedEnd) emitEraEnded();
+  if (reachedEnd) {
+    const lastScene = scenes[scenes.length - 1];
+    await awaitEraQuiescence(lastScene?.dataset.eventId ?? '');
+    emitEraEnded();
+  }
 }

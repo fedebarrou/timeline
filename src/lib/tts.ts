@@ -291,12 +291,18 @@ function _doSpeak(text: string, opts: { rate?: number; pitch?: number; volume?: 
     console.log('[tts] utterance onend fired');
     // Only clear `currentUtterance` if it's still us — a newer speak()
     // may have replaced it already.
-    if (currentUtterance === u) currentUtterance = null;
+    if (currentUtterance === u) {
+      currentUtterance = null;
+      _emitTtsSilentIfQuiet();
+    }
     if (myEndCb) myEndCb();
   };
   u.onerror = (e) => {
     console.warn('[tts] utterance onerror', e);
-    if (currentUtterance === u) currentUtterance = null;
+    if (currentUtterance === u) {
+      currentUtterance = null;
+      _emitTtsSilentIfQuiet();
+    }
     if (myEndCb) myEndCb();
   };
   u.onboundary = (e) => {
@@ -317,6 +323,29 @@ function _doSpeak(text: string, opts: { rate?: number; pitch?: number; volume?: 
   currentUtterance = u;
   speechSynthesis.speak(u);
   console.log('[tts] speechSynthesis.speak() invoked');
+}
+
+/**
+ * Emit `timeline:tts-silent` exactly once when the engine transitions from
+ * "speaking" to fully silent (no utterance, no playing audio). Called after
+ * utterance onend/onerror and after cancelAllNarration so that
+ * `waitForTtsSilence` (in eraEndGuard) gets a push notification in addition
+ * to its poll — making the common case resolve immediately.
+ */
+function _emitTtsSilentIfQuiet(): void {
+  if (typeof window === 'undefined') return;
+  // Check Web Speech engine is truly idle.
+  if ('speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending)) return;
+  // Check all narrator audio elements are paused.
+  if (typeof document !== 'undefined') {
+    const busy = Array.from(
+      document.querySelectorAll<HTMLAudioElement>('audio[data-narrator-audio]')
+    ).some((a) => !a.paused);
+    if (busy) return;
+  }
+  try {
+    window.dispatchEvent(new CustomEvent('timeline:tts-silent'));
+  } catch {}
 }
 
 export function pause() { if ('speechSynthesis' in window) speechSynthesis.pause(); }
@@ -358,6 +387,8 @@ export function cancelAllNarration(exceptAudio?: HTMLAudioElement | null) {
     if (a.paused) return;
     try { a.pause(); a.currentTime = 0; } catch {}
   });
+  // Notify waiters that narration is now quiet (if nothing else is playing).
+  _emitTtsSilentIfQuiet();
 }
 export function isSpeaking(): boolean {
   return 'speechSynthesis' in window && speechSynthesis.speaking;

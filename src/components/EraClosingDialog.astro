@@ -304,6 +304,7 @@ const narrationText = `${summary} ${nextPreview}`;
      - Counts down 10s; on zero or button click → navigates to next era.
      - Cancels narration + countdown if user dismisses or navigates away. */
   import { speak, cancelAllNarration, onEnd as onTtsEnd } from '../lib/tts';
+  import { waitForTtsSilence, waitForBubblesToClose } from '../lib/eraEndGuard';
 
   const root = document.querySelector<HTMLElement>('[data-era-closing]');
   if (root) {
@@ -408,7 +409,12 @@ const narrationText = `${summary} ${nextPreview}`;
     // letting the unused import note: onTtsEnd reserved for future polish.
     void onTtsEnd;
 
-    window.addEventListener('timeline:era-ended', () => {
+    window.addEventListener('timeline:era-ended', async () => {
+      // Double guard: if era-ended was emitted without passing through the
+      // Guardian (e.g. manually triggered), still wait for quiescence first
+      // so the parchment never interrupts in-flight narration or bubbles.
+      await waitForTtsSilence(Date.now() + 8000);
+      await waitForBubblesToClose(Date.now() + 4000);
       open_();
     });
   }
