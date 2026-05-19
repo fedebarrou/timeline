@@ -32,10 +32,17 @@ Soporte mínimo: 320px (iPhone SE viejo) en adelante.
 ≥ 1024px       → DESKTOP  (igual que hoy)
 ```
 
-Detección extra:
+Detección extra (en `BaseLayout.astro`, script inline al boot):
 
-- `body.is-touch` cuando `pointer: coarse` — para targets táctiles ≥44px y desactivar hovers.
-- `body.fx-reduced` cuando `navigator.hardwareConcurrency <= 4` — para reducir densidad de FX en dispositivos modestos.
+```ts
+if (matchMedia('(pointer: coarse)').matches) document.body.classList.add('is-touch');
+if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) {
+  document.body.classList.add('fx-reduced');
+}
+```
+
+- `body.is-touch` — para targets táctiles ≥44px y desactivar hovers.
+- `body.fx-reduced` — para reducir densidad de FX en dispositivos modestos.
 
 ## Sección 1 — Layout de `era/[id]` en móvil
 
@@ -227,7 +234,7 @@ Solo: imagen 80×80, nombre, rol en uppercase. Sin canonicidad, sin meaning, sin
 </div>
 ```
 
-**Fullscreen móvil**: el `CharacterInfoPanel` actual queda oculto bajo `<768px`. En su lugar, una versión simplificada del MobileCharacterCard aparece anclada abajo del mapa, ciclando con el progreso de narración (mismo evento listener que el panel desktop).
+**Fullscreen móvil**: el `CharacterInfoPanel` actual queda oculto bajo `<768px` (`@media (max-width: 767px) { .character-info-panel { display: none !important; } }`). En su lugar, un `MobileCharacterCard` flotante aparece anclado al borde inferior del mapa (`position: fixed; bottom: 1rem; left: 1rem; right: 1rem`), reusando el mismo listener `timeline:narration-tick` que el panel desktop para ciclar entre personajes según el progreso de narración. Si el evento tiene un solo personaje, no cicla; si tiene cero, no se muestra.
 
 ## Sección 4 — Tipografía fluida
 
