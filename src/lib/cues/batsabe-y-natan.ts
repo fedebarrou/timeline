@@ -12,7 +12,8 @@ const CUES: Cue[] = [
   // Urías rehúsa dormir en casa — su muerte planeada
   { match: /Ur[ií]as .{0,16}(heteo|rehu|no baja|borracho|carta sellada)|Treinta valientes|Arca .{0,8}tiendas/i, cueId: 'fx:character-emerge', data: { pinIdx: 2 } },
   // Carta sellada — la muerte se firma
-  { match: /carta sellada|al frente.{0,8}batalla|lo m[áa]s recio|pondr[eé]is a Ur[ií]as/i, cueId: 'fx:scroll-unfurl', data: { position: [582, 363] } },
+  // REGLA #1: anima el pergamino-natan ya en escena (no duplica scroll-unfurl)
+  { match: /carta sellada|al frente.{0,8}batalla|lo m[áa]s recio|pondr[eé]is a Ur[ií]as/i, cueId: 'fx:animate-scene-object', data: { id: 'pergamino-natan', kind: 'rise', duration: 1.4 } },
   // Urías muere — herido bajo los muros
   { match: /Ur[ií]as muere|bajo los muros|muri[oó] Ur[ií]as|sangre de Ur[ií]as/i, cueId: 'fx:character-recede', data: { pinIdx: 2 } },
   // Natán entra con la parábola

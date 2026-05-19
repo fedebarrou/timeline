@@ -13,8 +13,8 @@ const CUES: Cue[] = [
   { match: /sue[ñn]o|so[ñn][oó]|duerme|piedra .{0,8}almohada|visi[oó]n nocturna/i, cueId: 'fx:glow-pulse', data: { position: [581, 358], color: '#e6d4a0' } },
   // La escalera/rampa que une cielo y tierra
   { match: /escalera|sullam|rampa|extremo tocaba en el cielo|une cielo y tierra/i, cueId: 'fx:lightning-strike', data: { from: [581, 300], to: [581, 358] } },
-  // Escalera figurativa — peldaños tierra→cielo
-  { match: /escalera|sullam|rampa|extremo tocaba en el cielo|une cielo y tierra|subir.{0,10}cielo/i, cueId: 'fx:ladder', data: { from: [581, 358], to: [581, 300] } },
+  // Escalera figurativa — anima 'escalera-betel' ya en escena (REGLA #1)
+  { match: /escalera|sullam|rampa|extremo tocaba en el cielo|une cielo y tierra|subir.{0,10}cielo/i, cueId: 'fx:animate-scene-object', data: { id: 'escalera-betel', kind: 'glow', duration: 2.6 } },
   // Ángeles que suben y bajan
   { match: /[áa]ngeles.{0,16}(sub|descend|bajaban)|sub[íi]an y descend[íi]an|ángeles de Dios/i, cueId: 'fx:angel-descent', data: { position: [581, 358] } },
   // Yahveh en lo alto renueva la promesa — halo divino

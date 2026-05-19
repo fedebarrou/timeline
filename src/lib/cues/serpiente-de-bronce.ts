@@ -13,8 +13,8 @@ const CUES: Cue[] = [
   { match: /muri[óo] mucho pueblo|murieron.{0,10}mordidos|mordieron al pueblo/i, cueId: 'fx:character-recede', data: { position: [568, 410] } },
   // Arrepentimiento del pueblo
   { match: /hemos pecado|arrepent|ora a Yahveh|quita.{0,15}serpientes/i, cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
-  // Moisés fabrica la serpiente de bronce — efigie figurativa
-  { match: /serpiente de bronce|nechash nechoshet|serpiente.{0,15}asta|fabric[óo].{0,15}serpiente|sobre un asta/i, cueId: 'fx:serpent', data: { position: [568, 408] } },
+  // Serpiente de bronce — anima 'serpiente-asta' ya en escena (REGLA #1)
+  { match: /serpiente de bronce|nechash nechoshet|serpiente.{0,15}asta|fabric[óo].{0,15}serpiente|sobre un asta/i, cueId: 'fx:animate-scene-object', data: { id: 'serpiente-asta', kind: 'sway', duration: 2.0 } },
   // Pulso dorado adicional sobre el asta
   { match: /serpiente de bronce|nechash nechoshet|sobre un asta/i, cueId: 'fx:glow-pulse', data: { position: [568, 408], color: '#ffd27a' } },
   // Mirar y vivir

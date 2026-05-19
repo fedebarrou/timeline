@@ -13,8 +13,8 @@ const CUES: Cue[] = [
   { match: /nube espesa|humo|humeaba|fuego sobre el monte|Yahveh.{0,15}descend.{0,15}fuego/i, cueId: 'fx:smoke-rise', data: { position: [550, 420] } },
   // El monte tiembla
   { match: /monte tiembla|tembl[óo] el monte|se estremec|temblaba|monte.{0,10}desintegr|reducido a polvo/i, cueId: 'fx:earthquake-shake', data: { position: [550, 425] } },
-  // Las tablas de piedra
-  { match: /tablas de piedra|aseret ha-dibrot|diez palabras|alwah|tablas.{0,10}(ley|decalogo)/i, cueId: 'fx:stone-tablets', data: { position: [550, 422] } },
+  // Las tablas de piedra — anima 'tabletas' ya en escena (REGLA #1)
+  { match: /tablas de piedra|aseret ha-dibrot|diez palabras|alwah|tablas.{0,10}(ley|decalogo)/i, cueId: 'fx:animate-scene-object', data: { id: 'tabletas', kind: 'glow', duration: 2.4 } },
   // Yahveh / teofanía / halo divino
   { match: /gloria de Yahveh|teofan[íi]a|presencia divina|Dios.{0,15}desciende|Yo soy Yahveh tu Dios/i, cueId: 'fx:halo-divine', data: { pinIdx: 2 } },
   // Decálogo / escritura de la ley

@@ -11,8 +11,8 @@ const CUES: Cue[] = [
   { match: /pendientes de oro|fundieron|fundi[óo]|oro.{0,15}fuego|reuni[óo] el oro/i, cueId: 'fx:dust-burst', data: { position: [550, 428] } },
   // El becerro fabricado (ídolo aparece)
   { match: /becerro|[íi]dolo|estos son tus dioses|mug[íi]a|al-Samir[íi]|Samir[íi]/i, cueId: 'fx:character-emerge', data: { pinIdx: 2 } },
-  // Becerro dorado figurativo — silueta del ídolo
-  { match: /becerro|egel|estos son tus dioses|mug[íi]a/i, cueId: 'fx:golden-calf', data: { position: [550, 428] } },
+  // Becerro dorado — anima el scene-object 'becerro' ya en escena (REGLA #1)
+  { match: /becerro|egel|estos son tus dioses|mug[íi]a/i, cueId: 'fx:animate-scene-object', data: { id: 'becerro', kind: 'sway', duration: 1.8 } },
   // Sacrificios y orgía
   { match: /fiesta|sacrificio|danza|regocij|sentaron a comer.{0,10}beber|altar/i, cueId: 'fx:fire-flicker', data: { position: [550, 428] } },
   // Moisés baja del monte iracundo

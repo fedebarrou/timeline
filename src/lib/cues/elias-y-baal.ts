@@ -13,8 +13,8 @@ const CUES: Cue[] = [
   { match: /450 profetas|profetas de Baal|danza|hieren con cuchillos|chorrear la sangre|quiz[áa] est[áa] dormido/i, cueId: 'fx:idol-shatter', data: { position: [582, 352] } },
   // Empapamiento con agua — doce cántaros
   { match: /doce c[áa]ntaros|cuatro c[áa]ntaros|empap[oó]|agua corre por .{0,8}zanja/i, cueId: 'fx:water-wave', data: { position: [578, 350] } },
-  // Fuego del cielo cae — momento culminante
-  { match: /fuego .{0,8}(cay[oó]|del cielo|de Yahveh|consumi[oó])|holocausto.{0,16}le[ñn]a.{0,16}piedras|lami[oó] el agua/i, cueId: 'fx:fire-flicker', data: { position: [578, 350] } },
+  // Fuego del cielo cae sobre el altar de Yahveh (REGLA #1: anima scene-object)
+  { match: /fuego .{0,8}(cay[oó]|del cielo|de Yahveh|consumi[oó])|holocausto.{0,16}le[ñn]a.{0,16}piedras|lami[oó] el agua/i, cueId: 'fx:animate-scene-object', data: { id: 'altar-yahve', kind: 'burn', duration: 3.0 } },
   // Pueblo se postra — Yahveh es Dios
   { match: /pueblo se postr|Yahveh es el Dios|adonai hu ha-elohim/i, cueId: 'fx:halo-divine', data: { position: [578, 350] } },
   // Profetas degollados en el Cisón

@@ -37,10 +37,10 @@ const CUES: Cue[] = [
     cueId: 'fx:sword-strike',
     data: { from: [582, 348], to: [582, 360] } },
 
-  // 'fuego' — lleva el fuego (efímero, no duplica altar)
+  // 'fuego' → anima el altar-moriah ya en escena (REGLA #1)
   { match: /\bfuego\b|llamas\b/i,
-    cueId: 'fx:fire-flicker',
-    data: { position: [582, 358] } },
+    cueId: 'fx:animate-scene-object',
+    data: { id: 'altar-moriah', kind: 'burn', duration: 2.2 } },
 
   // 'ángel' → descenso
   { match: /\b[áa]ngel(?:es)?\b|malaj|ángel del Se[ñn]or|ángel de Jehov[áa]|le llamamos/i,

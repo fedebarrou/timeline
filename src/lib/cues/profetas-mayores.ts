@@ -13,8 +13,8 @@ const CUES: Cue[] = [
   { match: /Siervo Sufriente|Isa[ií]as 53|cantos del Siervo|despreciado y desechado|cargad[oa] .{0,8}dolores/i, cueId: 'fx:halo-divine', data: { pinIdx: 0 } },
   // Jeremías — el profeta llorón
   { match: /Jerem[ií]as|Anatot|profeta llor[oó]n|cisterna|llevado a Egipto|nueva alianza/i, cueId: 'fx:character-emerge', data: { pinIdx: 1 } },
-  // Rollo / Lamentaciones / scroll desplegado
-  { match: /Lamentaciones|rollo|escrita en los corazones|Jer 31|nueva alianza|cinco poemas/i, cueId: 'fx:scroll-unfurl', data: { position: [582, 363] } },
+  // Rollo / Lamentaciones — anima 'rollo-profetico' ya en escena (REGLA #1)
+  { match: /Lamentaciones|rollo|escrita en los corazones|Jer 31|nueva alianza|cinco poemas/i, cueId: 'fx:animate-scene-object', data: { id: 'rollo-profetico', kind: 'rise', duration: 1.8 } },
   // Ezequiel — visión de la merkavá
   { match: /Ezequiel|merkav[áa]|r[ií]o Quebar|cuatro seres vivientes|cuatro caras|ruedas dentro de ruedas|trono de zafiro/i, cueId: 'fx:character-emerge', data: { pinIdx: 2 } },
   // Valle de los huesos secos — resurrección

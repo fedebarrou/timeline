@@ -12,8 +12,8 @@ const CUES: Cue[] = [
   { match: /una sola lengua|mismas palabras|hablaban una sola lengua/i, cueId: 'fx:glow-pulse', data: { position: [635, 315], color: '#e6d4a0' } },
   // Construcción de la torre — polvo de ladrillos
   { match: /torre|cima al cielo|cúspide llegue al cielo|ladrillos|zigurat|Etemenanki/i, cueId: 'fx:dust-burst', data: { position: [635, 315] } },
-  // Torre figurativa que sube hacia el cielo
-  { match: /\btorre\b|cima al cielo|c[úu]spide.{0,10}cielo|zigurat|Etemenanki/i, cueId: 'fx:tower-babel', data: { position: [635, 315] } },
+  // Torre figurativa — anima 'torre-babel' ya en escena (REGLA #1)
+  { match: /\btorre\b|cima al cielo|c[úu]spide.{0,10}cielo|zigurat|Etemenanki/i, cueId: 'fx:animate-scene-object', data: { id: 'torre-babel', kind: 'wobble', duration: 1.8 } },
   // Yahveh desciende — relámpago desde lo alto
   { match: /descendi[oó] Jehov[áa]|descendi[oó] el Se[ñn]or|intervenci[oó]n divina|confundamos|confundi[oó] sus lenguas/i, cueId: 'fx:lightning-strike', data: { from: [635, 250], to: [635, 315] } },
   // Confusión de las lenguas — pulso disperso

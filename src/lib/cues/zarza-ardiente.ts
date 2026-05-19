@@ -5,8 +5,8 @@ import type { Cue } from '../narrationCues';
  * Pins: moises(0), yhwh(1), aaron(2).
  */
 const CUES: Cue[] = [
-  // La zarza ardiente
-  { match: /zarza|arbusto que ard|zarza ardiente|fuego.{0,15}(zarza|arbusto)/i, cueId: 'fx:burning-bush', data: { position: [550, 425] } },
+  // La zarza ardiente — anima 'zarza' ya en escena (REGLA #1)
+  { match: /zarza|arbusto que ard|zarza ardiente|fuego.{0,15}(zarza|arbusto)/i, cueId: 'fx:animate-scene-object', data: { id: 'zarza', kind: 'burn', duration: 2.4 } },
   // No se consume — fuego que no destruye
   { match: /no se consum|arde sin consumir|fuego divino.{0,15}no destruye/i, cueId: 'fx:fire-flicker', data: { position: [550, 425] } },
   // Moisés se acerca
