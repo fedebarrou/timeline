@@ -138,7 +138,7 @@ export function showPreview(e: MouseEvent, data: PreviewData) {
     parts.push(`
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
         <div style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;opacity:0.55;">${kindLabel}</div>
-        <div title="Canonicidad" style="display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid ${color};color:${color};background:color-mix(in srgb, ${color} 12%, transparent);">
+        <div aria-label="Canonicidad" style="display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid ${color};color:${color};background:color-mix(in srgb, ${color} 12%, transparent);">
           <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};"></span>
           ${escape(label)}
         </div>
@@ -150,7 +150,7 @@ export function showPreview(e: MouseEvent, data: PreviewData) {
     parts.push(`
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
         <div style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;opacity:0.55;">${kindLabel}</div>
-        <div title="Localización académicamente disputada" style="display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid ${amber};color:${amber};background:color-mix(in srgb, ${amber} 14%, transparent);">
+        <div aria-label="Localización académicamente disputada" style="display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid ${amber};color:${amber};background:color-mix(in srgb, ${amber} 14%, transparent);">
           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="${amber}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 9v4"></path>
             <path d="M12 17h.01"></path>

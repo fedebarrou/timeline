@@ -65,7 +65,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         <a
           href={prevHref}
           class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
-          title={`Era anterior: ${prevEra.data.name}`}
+          aria-label={`Era anterior: ${prevEra.data.name}`}
         >
           <span>←</span>
           <span class="hidden md:inline">{prevEra.data.name}</span>
@@ -73,7 +73,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       ) : (
         <span
           class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-25 cursor-not-allowed whitespace-nowrap"
-          title="No hay era anterior"
+          aria-label="No hay era anterior"
           aria-disabled="true"
         >
           <span>←</span>
@@ -91,7 +91,6 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         class="step-arrow step-arrow-prev shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full border border-border bg-bg/80 hover:border-accent hover:text-accent text-primary flex items-center justify-center opacity-70 hover:opacity-100 transition-all"
         data-step-arrow="prev"
         aria-label="Punto anterior"
-        title="Punto anterior"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
@@ -109,7 +108,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
             <div
               class="absolute top-1/2 -translate-y-1/2 h-1 rounded"
               style={`left: ${leftPct}%; width: ${widthPct}%; background: ${era.data.palette.primary}; opacity: 0.4`}
-              title={era.data.name}
+              aria-label={era.data.name}
             />
           );
         })}
@@ -141,7 +140,6 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         class="step-arrow step-arrow-next shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full border border-border bg-bg/80 hover:border-accent hover:text-accent text-primary flex items-center justify-center opacity-70 hover:opacity-100 transition-all"
         data-step-arrow="next"
         aria-label="Punto siguiente"
-        title="Punto siguiente"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
@@ -155,8 +153,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         type="button"
         class="restart-btn inline-flex items-center justify-center w-7 h-7 rounded-full border border-primary bg-bg/70 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors text-[11px] shadow-sm"
         data-timeline-restart
-        aria-label="Volver al inicio"
-        title="Volver al inicio de la era"
+        aria-label="Volver al inicio de la era"
       >
         <span aria-hidden="true">⏮</span>
       </button>
@@ -165,7 +162,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         <a
           href={nextHref}
           class="inline-flex items-center gap-2 text-xs tracking-wider uppercase opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
-          title={`Siguiente era: ${nextEra.data.name}`}
+          aria-label={`Siguiente era: ${nextEra.data.name}`}
         >
           <span class="hidden lg:inline">{nextEra.data.name}</span>
           <span>→</span>
