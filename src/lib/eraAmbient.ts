@@ -186,16 +186,18 @@ function mountReinosYExilio(layer: SVGGElement, svg: SVGSVGElement): () => void 
     }
     cols.push(col);
   }
-  // 2 stained-glass-like diagonal beams
+  // 2 stained-glass-like diagonal beams — masked so only the upper third
+  // shows (avoids reading as a full-height vertical bar on the map).
   const beams: SVGPolygonElement[] = [];
   for (let i = 0; i < 2; i++) {
     const sx = vx + vw * (0.25 + i * 0.5);
+    const beamH = vh * 0.35;
     const beam = svgEl('polygon', {
-      points: `${sx},${vy} ${sx + 6},${vy} ${sx + 30},${vy + vh} ${sx + 24},${vy + vh}`,
-      fill: 'var(--era-accent)', opacity: 0.07,
+      points: `${sx},${vy} ${sx + 6},${vy} ${sx + 18},${vy + beamH} ${sx + 14},${vy + beamH}`,
+      fill: 'var(--era-accent)', opacity: 0.04,
     });
     layer.appendChild(beam); beams.push(beam);
-    tweens.push(gsap.to(beam, { attr: { opacity: 0.12 }, duration: 4 + i, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
+    tweens.push(gsap.to(beam, { attr: { opacity: 0.08 }, duration: 4 + i, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
   }
   return () => {
     tweens.forEach((t) => t.kill());
@@ -207,16 +209,18 @@ function mountReinosYExilio(layer: SVGGElement, svg: SVGSVGElement): () => void 
 function mountEvangelio(layer: SVGGElement, svg: SVGSVGElement): () => void {
   const [vx, vy, vw, vh] = getViewBox(svg);
   const tweens: gsap.core.Tween[] = [];
-  // 3 oblique golden-hour beams
+  // 3 oblique golden-hour beams — only span upper half so they read as
+  // light coming through clouds, not as full-height bars across the map.
   const beams: SVGPolygonElement[] = [];
   for (let i = 0; i < 3; i++) {
     const sx = vx + vw * (0.15 + i * 0.3);
+    const beamH = vh * 0.45;
     const beam = svgEl('polygon', {
-      points: `${sx},${vy} ${sx + 8},${vy} ${sx + 26},${vy + vh} ${sx + 18},${vy + vh}`,
-      fill: '#ffd866', opacity: 0.08,
+      points: `${sx},${vy} ${sx + 8},${vy} ${sx + 20},${vy + beamH} ${sx + 14},${vy + beamH}`,
+      fill: '#ffd866', opacity: 0.05,
     });
     layer.appendChild(beam); beams.push(beam);
-    tweens.push(gsap.to(beam, { attr: { opacity: 0.16 }, duration: 5 + i, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
+    tweens.push(gsap.to(beam, { attr: { opacity: 0.1 }, duration: 5 + i, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
   }
   // Occasional dove silhouettes passing
   let doveTimer: number | null = window.setInterval(() => {

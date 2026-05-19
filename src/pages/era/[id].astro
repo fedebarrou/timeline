@@ -479,6 +479,8 @@ const allMarkers = events.map((e) => {
     import { initNarrationFx } from '../../lib/narrationFx';
     import { renderBoundaries } from '../../lib/mapBoundaries';
     import { initSpeechBubble } from '../../lib/mapSpeechBubble';
+    import { mountEraAmbient } from '../../lib/eraAmbient';
+    import type { EraId } from '../../lib/cues/_eraIds';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
@@ -498,6 +500,14 @@ const allMarkers = events.map((e) => {
       initScrollytelling(sceneConfigs);
       if (svg) initNarrationFx(svg);
       initSpeechBubble();
+      // Ambient FX layer for the ACTIVE era only. Reading from body
+      // (set by data-era on the layout wrapper) ensures we mount the
+      // current era, not whatever EraTheme came first in the DOM.
+      const eraId = (document.body.dataset.era || '') as EraId;
+      if (eraId && svg) {
+        const cleanup = mountEraAmbient(eraId);
+        document.addEventListener('astro:before-swap', () => { try { cleanup?.(); } catch {} }, { once: true });
+      }
     }
   </script>
 

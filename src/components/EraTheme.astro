@@ -1,4 +1,13 @@
 ---
+/**
+ * Theme-only component: emits `[data-era="<id>"] { --era-*: ... }` CSS
+ * vars. Rendered N times by BaseLayout (one per era) so every era's
+ * palette is pre-loaded.
+ *
+ * NOTE: the per-page ambient mount lives in `pages/era/[id].astro`,
+ * NOT here, because this component is rendered multiple times and we
+ * only want to mount ambient for the ONE active era.
+ */
 import type { Era } from '../lib/eras';
 import { eraToCssVars } from '../lib/eras';
 
@@ -8,31 +17,3 @@ const vars = eraToCssVars(era.data);
 const eraId = era.data.id;
 ---
 <style set:html={`[data-era="${eraId}"] {\n  ${vars}\n}`}></style>
-<!-- Sentinel for the hoisted ambient-mount script below. -->
-<div data-era-ambient-sentinel data-era-id={eraId} hidden></div>
-<script>
-  // Hoisted (Astro-bundled) script that mounts the per-era ambient
-  // FX layer once the SVG map is in the DOM. Reads the era id from
-  // the sentinel emitted by this component.
-  import { mountEraAmbient } from '../lib/eraAmbient';
-  import type { EraId } from '../lib/cues/_eraIds';
-
-  const sentinel = document.querySelector<HTMLElement>('[data-era-ambient-sentinel]');
-  const eraId = sentinel?.dataset.eraId as EraId | undefined;
-  if (eraId) {
-    let cleanup: (() => void) | null = null;
-    const tryMount = (): boolean => {
-      const svg = document.querySelector('[data-map-root]');
-      if (!svg) return false;
-      cleanup = mountEraAmbient(eraId);
-      return true;
-    };
-    if (!tryMount()) {
-      const t = window.setInterval(() => { if (tryMount()) clearInterval(t); }, 200);
-      window.setTimeout(() => clearInterval(t), 8000);
-    }
-    const teardown = (): void => { try { cleanup?.(); } catch {} };
-    window.addEventListener('beforeunload', teardown, { once: true });
-    document.addEventListener('astro:before-swap', teardown, { once: true });
-  }
-</script>
