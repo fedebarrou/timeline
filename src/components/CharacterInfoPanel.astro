@@ -260,10 +260,10 @@ const eventCharacters = events.map((e) => {
       height: 100px;
     }
     body:not(.map-fullscreen) .character-info-panel .cip-row { gap: 0.55rem; margin-bottom: 0.3rem; }
-    body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 14.5px; }
-    body:not(.map-fullscreen) .character-info-panel .cip-meaning { font-size: 12px; }
-    body:not(.map-fullscreen) .character-info-panel .cip-body { font-size: 12.5px; line-height: 1.5; }
-    body:not(.map-fullscreen) .character-info-panel .cip-kind { font-size: 9.5px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-name { font-size: 16.5px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-meaning { font-size: 14px; }
+    body:not(.map-fullscreen) .character-info-panel .cip-body { font-size: 14.5px; line-height: 1.55; }
+    body:not(.map-fullscreen) .character-info-panel .cip-kind { font-size: 11px; }
   }
 
   .character-info-panel .cip-portrait {
@@ -298,14 +298,14 @@ const eventCharacters = events.map((e) => {
     margin-bottom: 4px;
   }
   .character-info-panel .cip-kind {
-    font-size: 10.5px; letter-spacing: 0.25em; text-transform: uppercase;
+    font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
     /* Darken the kicker — 0.55 was unreadable on the warm parchment. */
     opacity: 0.85;
     color: color-mix(in srgb, var(--era-primary) 60%, #1a0f08);
   }
   .character-info-panel .cip-name {
     font-family: var(--era-display, 'Cinzel', serif);
-    font-size: 17px; letter-spacing: 0.03em;
+    font-size: 19.5px; letter-spacing: 0.03em;
     /* Always mix with dark ink so the name reads on cream papyrus even
        in eras whose --era-primary is a light tone (primordial, evangelio). */
     color: color-mix(in srgb, var(--era-primary) 55%, #1a0f08);
@@ -313,7 +313,7 @@ const eventCharacters = events.map((e) => {
   }
   .character-info-panel .cip-meaning {
     display: none;
-    font-style: italic; font-size: 13.5px; opacity: 0.95; margin-top: 2px;
+    font-style: italic; font-size: 15.5px; opacity: 0.95; margin-top: 2px;
   }
   .character-info-panel .cip-meaning.has-text { display: block; }
   /* Body sits below the full portrait+text row so it can use the entire
@@ -321,7 +321,7 @@ const eventCharacters = events.map((e) => {
      paragraph than if it were squeezed into the narrow right column. */
   .character-info-panel .cip-body {
     display: none;
-    font-size: 13.5px; line-height: 1.55; margin-top: 0.2rem;
+    font-size: 15.5px; line-height: 1.55; margin-top: 0.2rem;
     opacity: 1; white-space: pre-line;
   }
   .character-info-panel .cip-body.has-text { display: block; }
