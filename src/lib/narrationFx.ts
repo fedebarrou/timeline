@@ -87,6 +87,21 @@ import { triggerSandstorm } from './mapSandstorm';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/**
+ * Scale a particle/element count for the active viewport.
+ *
+ * INFRASTRUCTURE helper (opt-in). Default behavior unchanged: callers that
+ * don't pass a `mobileDensity` factor get their original count back. On
+ * mobile (max-width: 767px) the count is multiplied by `mobileDensity` and
+ * rounded down to a minimum of 1 element so effects remain visible.
+ */
+export function scaleCountForViewport(count: number, mobileDensity: number | undefined): number {
+  if (typeof window === 'undefined') return count;
+  if (typeof mobileDensity !== 'number') return count;
+  if (!window.matchMedia('(max-width: 767px)').matches) return count;
+  return Math.max(1, Math.round(count * mobileDensity));
+}
+
 // Active event id derived from the latest `timeline:scene-changed` event.
 let currentEventId: string | null = null;
 
