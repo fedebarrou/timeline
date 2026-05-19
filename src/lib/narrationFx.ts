@@ -4262,15 +4262,30 @@ function fxEarthquakeMajor(svg: SVGSVGElement, _data: any = {}) {
   }
 }
 
-/** fx:divine-light-beam — vertical golden beam from heaven to target. */
+/** fx:divine-light-beam — vertical golden beam from heaven to target.
+ *
+ * The shaft widens from a narrow top at the viewBox roof down to the target
+ * pin, then continues at the wide width all the way to the viewBox floor so
+ * the beam fills the FULL visible map height. Previously the beam stopped at
+ * the target Y, which — combined with `fitMarkerBBox`'s zoom-and-center on
+ * each scene — left a noticeable empty band below the pin (most evident on
+ * events whose pin sits in the upper half of the focused frame, e.g.
+ * `nacimiento-cain` and `nacimiento-abel`).
+ */
 function fxDivineLightBeam(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
   const t = targetOrMarker(svg, data);
   if (!t) return;
   const [x, y] = t;
   const layer = getFxLayer(svg);
-  const [, vy] = getViewBox(svg);
+  const [, vy, , vh] = getViewBox(svg);
+  const vyBottom = vy + vh;
   const glow = ensureGlowFilter(svg, 'beam-glow', 2.4);
-  const beam = svgEl('polygon', { points: `${x - 1.5},${vy} ${x + 1.5},${vy} ${x + 8},${y} ${x - 8},${y}`, fill: '#ffd866', opacity: 0, filter: glow });
+  // Top→target: narrow (1.5) → wide (8). Target→bottom: stays wide so the
+  // beam spans the entire visible viewport, not just the top half.
+  const beam = svgEl('polygon', {
+    points: `${x - 1.5},${vy} ${x + 1.5},${vy} ${x + 8},${y} ${x + 8},${vyBottom} ${x - 8},${vyBottom} ${x - 8},${y}`,
+    fill: '#ffd866', opacity: 0, filter: glow,
+  });
   layer.appendChild(beam);
   const tl = gsap.timeline({ onComplete: () => beam.remove() });
   tl.to(beam, { attr: { opacity: 0.7 }, duration: 0.8, ease: 'sine.out' });
