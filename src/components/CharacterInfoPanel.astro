@@ -320,10 +320,14 @@ const eventCharacters = events.map((e) => {
   .character-info-panel .cip-meaning.has-text { display: block; }
   .character-info-panel .cip-role {
     display: none;
-    margin-top: 5px;
+    /* Center the pill horizontally — auto margins on a block element
+       with width: fit-content collapse the box around its text and
+       center the result. */
+    margin: 8px auto 0;
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     font-weight: 600;
-    padding: 3px 8px;
+    padding: 3px 10px;
+    text-align: center;
     /* Strong border + darker text so the role pill reads as a stamp,
        not a faint outline. */
     border: 1.5px solid color-mix(in srgb, var(--era-primary) 75%, #1a0f08);
@@ -332,7 +336,7 @@ const eventCharacters = events.map((e) => {
     background: color-mix(in srgb, var(--era-text) 50%, transparent);
     width: fit-content;
   }
-  .character-info-panel .cip-role.has-text { display: inline-block; }
+  .character-info-panel .cip-role.has-text { display: block; }
   /* Body sits below the full portrait+text row so it can use the entire
      panel width — better reading line length for the longer lore/significance
      paragraph than if it were squeezed into the narrow right column. */
