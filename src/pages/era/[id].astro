@@ -9,6 +9,7 @@ import MapFullscreenButton from '../../components/MapFullscreenButton.astro';
 import FullscreenControls from '../../components/FullscreenControls.astro';
 import FullscreenTimeline from '../../components/FullscreenTimeline.astro';
 import EraClosingDialog from '../../components/EraClosingDialog.astro';
+import MobileTimelineDialog from '../../components/MobileTimelineDialog.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
 import EventNavArrows from '../../components/EventNavArrows.astro';
@@ -467,6 +468,9 @@ const allMarkers = events.map((e) => {
 
   {/* End-of-era parchment dialog — shown when play mode finishes. */}
   <EraClosingDialog currentEraId={era.data.id} />
+
+  {/* Mobile timeline dialog — shown when the mobile timeline trigger is tapped. */}
+  <MobileTimelineDialog events={events} eraName={era.data.name} />
 
   <div class="scenes">
     {events.map((event) => <EventScene event={event} />)}
