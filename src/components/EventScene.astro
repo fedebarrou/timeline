@@ -91,6 +91,8 @@ const charactersInEvent = await Promise.all(
   class="event-scene min-h-[120vh]"
   data-event-scene
   data-event-id={data.id}
+  data-event-year={data.biblicalYear}
+  data-event-title={data.title}
   data-era={data.era}
   data-svg-x={primaryLocation?.svgPosition[0]}
   data-svg-y={primaryLocation?.svgPosition[1]}
