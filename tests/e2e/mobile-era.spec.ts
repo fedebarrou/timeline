@@ -78,6 +78,26 @@ test.describe('mobile era page', () => {
     await expect(page.locator('[data-tl-mobile-dialog]')).toBeHidden();
   });
 
+  test('first event shows "inicio" cap on the left of the mobile track', async ({ page }) => {
+    await page.goto('/era/exodo');
+    // At page load, the first event is the active one → expect cap at slot 0.
+    const slot0 = page.locator('[data-tl-mobile-slot][data-slot-index="0"]');
+    await expect(slot0).toHaveAttribute('data-slot-kind', 'cap');
+    await expect(slot0).toHaveAttribute('data-cap-side', 'start');
+    await expect(slot0).toContainText('inicio');
+  });
+
+  test('label updates when scrolling to a different event', async ({ page }) => {
+    await page.goto('/era/exodo');
+    const initialLabel = await page.locator('[data-tl-mobile-label]').textContent();
+    // Scroll the third event scene into view so GSAP ScrollTrigger fires.
+    const thirdScene = page.locator('[data-event-scene]').nth(2);
+    await thirdScene.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    const newLabel = await page.locator('[data-tl-mobile-label]').textContent();
+    expect(newLabel).not.toBe(initialLabel);
+  });
+
   test('map stays visible while scrolling', async ({ page }) => {
     await page.goto('/era/primordial');
     const map = page.locator('.map-container').first();
