@@ -44,6 +44,40 @@ test.describe('mobile era page', () => {
     await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
   });
 
+  test('tap on mobile timeline header opens parchment dialog', async ({ page }) => {
+    await page.goto('/era/exodo');
+    await page.locator('[data-tl-mobile-trigger]').tap();
+    await expect(page.locator('[data-tl-mobile-dialog]')).toBeVisible();
+  });
+
+  test('dialog lists all era events with year + title', async ({ page }) => {
+    await page.goto('/era/exodo');
+    await page.locator('[data-tl-mobile-trigger]').tap();
+    const rows = page.locator('[data-tl-mobile-dialog-row]');
+    expect(await rows.count()).toBeGreaterThan(3);
+    await expect(rows.first().locator('[data-tl-dialog-year]')).toBeVisible();
+    await expect(rows.first().locator('[data-tl-dialog-title]')).toBeVisible();
+  });
+
+  test('tap on a dialog row closes dialog and scrolls to event', async ({ page }) => {
+    await page.goto('/era/exodo');
+    await page.locator('[data-tl-mobile-trigger]').tap();
+    const targetRow = page.locator('[data-tl-mobile-dialog-row]').nth(2);
+    const eventId = await targetRow.getAttribute('data-event-id');
+    await targetRow.tap();
+    await expect(page.locator('[data-tl-mobile-dialog]')).toBeHidden();
+    const targetScene = page.locator(`#event-${eventId}`);
+    await expect(targetScene).toBeInViewport();
+  });
+
+  test('escape key closes the dialog', async ({ page }) => {
+    await page.goto('/era/exodo');
+    await page.locator('[data-tl-mobile-trigger]').tap();
+    await expect(page.locator('[data-tl-mobile-dialog]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-tl-mobile-dialog]')).toBeHidden();
+  });
+
   test('map stays visible while scrolling', async ({ page }) => {
     await page.goto('/era/primordial');
     const map = page.locator('.map-container').first();
