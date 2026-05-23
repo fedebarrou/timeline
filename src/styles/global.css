@@ -14,6 +14,13 @@
   --era-display: 'Cinzel', serif;
   --era-body: 'EB Garamond', Georgia, serif;
   --era-ui: 'Inter', system-ui, sans-serif;
+
+  /* Fluid typography — scales smoothly between 320px and 1024px+ viewports. */
+  --fs-h2:    clamp(1.75rem, 5.5vw, 3rem);
+  --fs-h3:    clamp(1.25rem, 4vw, 1.75rem);
+  --fs-body:  clamp(15px, 1.05vw + 12px, 17px);
+  --fs-small: clamp(12px, 0.6vw + 10px, 14px);
+  --fs-year:  clamp(10px, 0.7vw + 8px, 13px);
 }
 
 html { scroll-behavior: smooth; }
@@ -22,11 +29,7 @@ body {
   background: var(--era-bg);
   color: var(--era-text);
   font-family: var(--era-body);
-  /* Subtle bump: default 16px → 17px so `text-base` (1rem) inherits a roomier reading size.
-     Tailwind's other text-* utilities still produce their nominal px values because they
-     use absolute rem values relative to the html root (16px), so this only affects
-     elements that rely on inherited em/1rem sizing — exactly what we want for body prose. */
-  font-size: 17px;
+  font-size: var(--fs-body);
   transition: background-color 1.5s ease, color 1.5s ease;
 }
 

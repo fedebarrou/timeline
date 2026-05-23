@@ -87,6 +87,21 @@ import { triggerSandstorm } from './mapSandstorm';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/**
+ * Scale a particle/element count for the active viewport.
+ *
+ * INFRASTRUCTURE helper (opt-in). Default behavior unchanged: callers that
+ * don't pass a `mobileDensity` factor get their original count back. On
+ * mobile (max-width: 767px) the count is multiplied by `mobileDensity` and
+ * rounded down to a minimum of 1 element so effects remain visible.
+ */
+export function scaleCountForViewport(count: number, mobileDensity: number | undefined): number {
+  if (typeof window === 'undefined') return count;
+  if (typeof mobileDensity !== 'number') return count;
+  if (!window.matchMedia('(max-width: 767px)').matches) return count;
+  return Math.max(1, Math.round(count * mobileDensity));
+}
+
 // Active event id derived from the latest `timeline:scene-changed` event.
 let currentEventId: string | null = null;
 
@@ -104,6 +119,48 @@ function getFxLayer(svg: SVGSVGElement): SVGGElement {
     svg.appendChild(layer);
   }
   return layer;
+}
+
+/**
+ * Tear down every in-flight FX on the narration-fx layer.
+ *
+ * Each primitive (fxFireFlicker, fxLightningStrike, fxGoldenCalf, …)
+ * appends transient nodes to `[data-layer="narration-fx"]` and ties their
+ * GSAP tweens to those nodes; an `onComplete: () => node.remove()` only
+ * cleans up *after* the full duration (up to 4–6 seconds for the long
+ * cinematic primitives). Without a scene-change teardown, a cue triggered
+ * for event A keeps painting flames / lightning / haloes on top of the
+ * map while the user has already scrolled into event B — and because the
+ * user's virtual scrubber takes ~1.6 s to start firing event B's own cues,
+ * the perceived effect is "the previous event's animation stayed stuck
+ * and the new event has none". This kills every active tween targeting
+ * an FX node, drops the nodes, and also removes the floating HTML
+ * tradition badge so the new era doesn't inherit the previous tradition's
+ * glyph.
+ *
+ * Filters/gradients stored under `<defs>` are intentionally preserved so
+ * subsequent cues can keep referencing them by id (#narration-fx-…).
+ */
+export function clearFxLayer(svg: SVGSVGElement): void {
+  const layer = svg.querySelector<SVGGElement>('[data-layer="narration-fx"]');
+  if (layer) {
+    layer.querySelectorAll('*').forEach((node) => {
+      try { gsap.killTweensOf(node); } catch {}
+      // Inline-style writes (e.g. fxTraditionBadge wrote to badge.style)
+      // and attribute tweens both register on the element; killing the
+      // node-level tween covers both.
+    });
+    try { gsap.killTweensOf(layer); } catch {}
+    layer.innerHTML = '';
+  }
+  // The tradition-badge primitive renders a fixed-position HTML node on
+  // document.body — kill its tween + element so a leftover ✡/✝/☪ doesn't
+  // float over the new event.
+  document.querySelectorAll<HTMLElement>('[data-narration-tradition-badge]').forEach((b) => {
+    try { gsap.killTweensOf(b); } catch {}
+    try { gsap.killTweensOf(b.style); } catch {}
+    b.remove();
+  });
 }
 
 /** Parse a `translate(x, y)` string into [x, y]. */
@@ -4205,15 +4262,30 @@ function fxEarthquakeMajor(svg: SVGSVGElement, _data: any = {}) {
   }
 }
 
-/** fx:divine-light-beam — vertical golden beam from heaven to target. */
+/** fx:divine-light-beam — vertical golden beam from heaven to target.
+ *
+ * The shaft widens from a narrow top at the viewBox roof down to the target
+ * pin, then continues at the wide width all the way to the viewBox floor so
+ * the beam fills the FULL visible map height. Previously the beam stopped at
+ * the target Y, which — combined with `fitMarkerBBox`'s zoom-and-center on
+ * each scene — left a noticeable empty band below the pin (most evident on
+ * events whose pin sits in the upper half of the focused frame, e.g.
+ * `nacimiento-cain` and `nacimiento-abel`).
+ */
 function fxDivineLightBeam(svg: SVGSVGElement, data: { position?: [number, number]; pinIdx?: number } = {}) {
   const t = targetOrMarker(svg, data);
   if (!t) return;
   const [x, y] = t;
   const layer = getFxLayer(svg);
-  const [, vy] = getViewBox(svg);
+  const [, vy, , vh] = getViewBox(svg);
+  const vyBottom = vy + vh;
   const glow = ensureGlowFilter(svg, 'beam-glow', 2.4);
-  const beam = svgEl('polygon', { points: `${x - 1.5},${vy} ${x + 1.5},${vy} ${x + 8},${y} ${x - 8},${y}`, fill: '#ffd866', opacity: 0, filter: glow });
+  // Top→target: narrow (1.5) → wide (8). Target→bottom: stays wide so the
+  // beam spans the entire visible viewport, not just the top half.
+  const beam = svgEl('polygon', {
+    points: `${x - 1.5},${vy} ${x + 1.5},${vy} ${x + 8},${y} ${x + 8},${vyBottom} ${x - 8},${vyBottom} ${x - 8},${y}`,
+    fill: '#ffd866', opacity: 0, filter: glow,
+  });
   layer.appendChild(beam);
   const tl = gsap.timeline({ onComplete: () => beam.remove() });
   tl.to(beam, { attr: { opacity: 0.7 }, duration: 0.8, ease: 'sine.out' });
@@ -4577,9 +4649,21 @@ export function initNarrationFx(svg: SVGSVGElement): void {
   inited = true;
 
   // Track the active scene so pinIdx-only cues know which marker to use.
+  // On a genuine event change (newId !== currentEventId) we also tear
+  // down every in-flight FX so the previous event's long-running tweens
+  // (4–6 s timelines for fire flicker, golden-calf sway, etc.) stop
+  // painting on top of the new scene. Re-broadcasts for the same id —
+  // playMode + request-activate funnel through scene-changed twice on a
+  // single navigation — leave the layer alone so legitimate cues already
+  // playing for the active event are not nuked mid-animation.
   window.addEventListener('timeline:scene-changed', (e: Event) => {
     const detail = (e as CustomEvent<{ eventId?: string }>).detail;
-    if (detail?.eventId) currentEventId = detail.eventId;
+    const newId = detail?.eventId;
+    if (!newId) return;
+    if (newId !== currentEventId) {
+      clearFxLayer(svg);
+    }
+    currentEventId = newId;
   });
 
   window.addEventListener('timeline:cue', (e: Event) => {

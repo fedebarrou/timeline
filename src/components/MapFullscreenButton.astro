@@ -29,34 +29,61 @@
 </button>
 
 <script>
+  import { enterFullscreen, exitFullscreen, onFullscreenChange, isFullscreenActive } from '../lib/fullscreenApi';
+
   const btn = document.querySelector<HTMLButtonElement>('[data-map-fullscreen-toggle]');
   const iconExpand   = btn?.querySelector<HTMLElement>('.icon-expand');
   const iconCollapse = btn?.querySelector<HTMLElement>('.icon-collapse');
+
   if (btn && iconExpand && iconCollapse) {
     let idleTimer: number | null = null;
     const IDLE_MS = 2800;
+    /* iOS hint flag — show "rotate phone" hint once when fullscreen API
+       silently fails (iOS Safari). Persisted so we don't nag every visit. */
+    const IOS_HINT_KEY = 'fs-ios-hint-shown';
 
-    function activateFullscreen() {
+    async function activateFullscreen() {
       document.body.classList.add('map-fullscreen');
       iconExpand!.classList.add('hidden');
       iconCollapse!.classList.remove('hidden');
       btn!.setAttribute('aria-label', 'Salir de pantalla completa');
       bindIdle();
-      // Hide the toggle itself in fullscreen — the "Volver" pill replaces it.
       btn!.style.display = 'none';
-      // Force a quick window resize event so any animated component (canvas,
-      // maplibre via toggleMap, etc.) recomputes its dimensions.
+
+      const realFs = await enterFullscreen();
+      if (!realFs) {
+        try {
+          if (!localStorage.getItem(IOS_HINT_KEY)) {
+            showIosHint();
+            localStorage.setItem(IOS_HINT_KEY, '1');
+          }
+        } catch { /* localStorage blocked */ }
+      }
       window.dispatchEvent(new Event('resize'));
     }
-    function deactivateFullscreen() {
+
+    async function deactivateFullscreen() {
       document.body.classList.remove('map-fullscreen', 'map-fullscreen-idle');
       iconExpand!.classList.remove('hidden');
       iconCollapse!.classList.add('hidden');
       btn!.setAttribute('aria-label', 'Ver mapa en pantalla completa');
       unbindIdle();
-      // Restore the toggle visibility when exiting fullscreen.
       btn!.style.display = '';
+      await exitFullscreen();
       window.dispatchEvent(new Event('resize'));
+    }
+
+    function showIosHint() {
+      const hint = document.createElement('div');
+      hint.className = 'fs-ios-hint';
+      hint.textContent = 'Girá el teléfono para una vista más inmersiva';
+      hint.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--era-bg);color:var(--era-text);padding:.5rem 1rem;border:1px solid var(--era-primary);border-radius:999px;font-size:13px;z-index:9999;opacity:0;transition:opacity 300ms ease;pointer-events:none;';
+      document.body.appendChild(hint);
+      requestAnimationFrame(() => { hint.style.opacity = '1'; });
+      setTimeout(() => {
+        hint.style.opacity = '0';
+        setTimeout(() => hint.remove(), 400);
+      }, 3500);
     }
 
     function resetIdle() {
@@ -95,6 +122,14 @@
         deactivateFullscreen();
       }
       if (e.key === 'f' || e.key === 'F') btn!.click();
+    });
+
+    /* Sync overlay state with browser-level fullscreen — if the user exits
+       via ESC at the browser level (different from our app ESC handler) or
+       a system gesture on iOS, we must remove .map-fullscreen too. */
+    onFullscreenChange((active) => {
+      const overlayOn = document.body.classList.contains('map-fullscreen');
+      if (!active && overlayOn) deactivateFullscreen();
     });
   }
 </script>

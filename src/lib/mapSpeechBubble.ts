@@ -91,7 +91,7 @@ function installStyles(): void {
         0 8px 22px rgba(0, 0, 0, 0.5);
       color: #1a0f08;
       font-family: var(--era-body, 'EB Garamond', Georgia, serif);
-      font-size: 16.5px;
+      font-size: 19px;
       line-height: 1.5;
     }
     [data-speech-bubble].is-visible {
@@ -108,7 +108,7 @@ function installStyles(): void {
     [data-speech-bubble] .sb-quote::after  { content: '”'; margin-left: 2px; }
     [data-speech-bubble] .sb-attrib {
       margin-top: 0.4rem;
-      font-size: 11.5px;
+      font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       opacity: 0.72;
@@ -267,8 +267,8 @@ function installDialogStyles(): void {
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
       color: #1a0f08;
       font-family: var(--era-body, 'EB Garamond', Georgia, serif);
-      font-size: 13px;
-      line-height: 1.42;
+      font-size: 15.5px;
+      line-height: 1.45;
     }
     [data-dialog-bubble].is-visible { opacity: 1; transform: translateY(0) scale(1); }
     [data-dialog-bubble].is-leaving {
@@ -304,7 +304,7 @@ function installDialogStyles(): void {
     }
     [data-dialog-bubble] .db-attrib {
       margin-top: 0.3rem;
-      font-size: 9px;
+      font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       opacity: 0.72;

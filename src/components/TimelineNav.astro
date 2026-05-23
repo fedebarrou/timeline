@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import PlayButton from './PlayButton.astro';
+import { computeSlots, computeLinePct, type Slot } from '../lib/mobileTimelineWindow';
 
 interface Props {
   events: CollectionEntry<'events'>[];
@@ -55,6 +56,12 @@ const prevEra = currentEraIdx > 0 ? sortedAllEras[currentEraIdx - 1] : null;
 
 const nextHref = nextEra ? `/era/${nextEra.data.id}` : '/';
 const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
+
+const slotEvents = sortedEventsByYear.map((e) => ({ id: e.data.id, biblicalYear: e.data.biblicalYear, title: e.data.title }));
+const initialSlots: Slot[] = computeSlots(slotEvents, 0);
+const [initialLineFrom, initialLineTo] = computeLinePct(initialSlots);
+const initialActive = sortedEventsByYear[0];
+const totalEvents = sortedEventsByYear.length;
 ---
 <div class="timeline-nav fixed top-12 inset-x-0 z-30 px-3 md:px-5 py-3 bg-bg shadow-lg" data-timeline-nav>
   <div class="flex items-center gap-3 md:gap-4 h-8 w-full">
@@ -94,7 +101,7 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <div class="relative h-8 flex-1 min-w-0 px-2 md:px-3">
+      <div class="timeline-desktop-track relative h-8 flex-1 min-w-0 px-2 md:px-3">
         <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-px bg-border"></div>
 
         {sortedEras.map((era) => {
@@ -142,6 +149,47 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-accent bg-bg transition-all duration-500" data-timeline-active style="left: 0%; box-shadow: 0 0 8px var(--era-accent);"></div>
       </div>
       <button
+  type="button"
+  class="tl-mobile-trigger"
+  data-tl-mobile-trigger
+  aria-haspopup="dialog"
+  aria-controls="mobile-timeline-dialog"
+  aria-label="Abrir línea de tiempo de la era"
+>
+  <div class="tl-mobile-track" data-tl-mobile-track>
+    <div
+      class="tl-mobile-line"
+      data-tl-mobile-line
+      style={`left: ${initialLineFrom}%; right: ${100 - initialLineTo}%`}
+    ></div>
+    {initialSlots.map((slot, idx) => (
+      slot.kind === 'dot' ? (
+        <div
+          class:list={["tl-mobile-slot", { "is-active": slot.active }]}
+          data-tl-mobile-slot
+          data-slot-index={idx}
+          data-slot-kind="dot"
+          data-event-id={slot.eventId}
+        >
+          <span class="tl-mobile-dot"></span>
+        </div>
+      ) : (
+        <div
+          class="tl-mobile-slot tl-mobile-slot--cap"
+          data-tl-mobile-slot
+          data-slot-index={idx}
+          data-slot-kind="cap"
+          data-cap-side={slot.side}
+        >
+          <span class="tl-mobile-cap">{slot.side === 'start' ? '‹ inicio' : 'fin ›'}</span>
+        </div>
+      )
+    ))}
+  </div>
+  <div class="tl-mobile-label" data-tl-mobile-label>{initialActive.data.title}</div>
+  <div class="tl-mobile-meta" data-tl-mobile-meta>año {initialActive.data.biblicalYear} · 1/{totalEvents}</div>
+</button>
+      <button
         type="button"
         class="step-arrow step-arrow-next shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full border border-border bg-bg/80 hover:border-accent hover:text-accent text-primary flex items-center justify-center opacity-70 hover:opacity-100 transition-all"
         data-step-arrow="next"
@@ -181,11 +229,104 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
 <style>
   .restart-btn { display: none; }
   body.map-fullscreen .restart-btn { display: inline-flex; }
+
+  @media (max-width: 767px) {
+    /* La timeline-nav crece para acomodar la fila de label + año. */
+    .timeline-nav { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .timeline-nav > .flex { height: auto; min-height: 3.25rem; }
+
+    /* Botón trigger que envuelve todo el bloque móvil. */
+    .tl-mobile-trigger {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.25rem;
+      padding: 0;
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tl-mobile-trigger:focus-visible { outline: 2px solid var(--era-accent); outline-offset: 2px; border-radius: 4px; }
+
+    .tl-mobile-track {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      height: 22px;
+    }
+    .tl-mobile-line {
+      position: absolute;
+      top: 50%;
+      height: 1px;
+      transform: translateY(-50%);
+      background: color-mix(in srgb, var(--era-primary) 25%, transparent);
+      pointer-events: none;
+    }
+    .tl-mobile-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 22px;
+      z-index: 1;
+    }
+    .tl-mobile-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--era-primary) 40%, transparent);
+      transition: width 200ms ease, height 200ms ease, box-shadow 200ms ease, background 200ms ease;
+    }
+    .tl-mobile-slot.is-active .tl-mobile-dot {
+      width: 11px;
+      height: 11px;
+      background: var(--era-accent);
+      box-shadow: 0 0 8px var(--era-accent);
+    }
+    .tl-mobile-cap {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: lowercase;
+      color: color-mix(in srgb, var(--era-primary) 55%, transparent);
+      white-space: nowrap;
+    }
+    .tl-mobile-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--era-primary);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tl-mobile-meta {
+      font-size: 9px;
+      opacity: 0.55;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hide desktop track + step arrows on mobile. */
+    .timeline-desktop-track { display: none; }
+    .step-arrow { display: none; }
+
+    /* Con restart-btn visible (map-fullscreen), comprimir el row. */
+    body.map-fullscreen .timeline-nav > .flex { gap: 0.5rem; }
+  }
+  @media (min-width: 768px) {
+    .tl-mobile-trigger { display: none; }
+  }
 </style>
 
 <script>
   import { isPlaying, jumpToEventId, restartPlay } from '../lib/playMode';
   import { scrollToElement } from '../lib/scrollOffset';
+  import { computeSlots, computeLinePct } from '../lib/mobileTimelineWindow';
 
   // Restart pill (only visible in fullscreen via CSS). PlayButton listens
   // to `timeline:play-state-changed` and syncs its own UI, so we only kick
@@ -288,5 +429,75 @@ const prevHref = prevEra ? `/era/${prevEra.data.id}` : '/';
         scrollToElement(target);
       }
     });
+  });
+
+  /* ── Mobile compact header ─────────────────────────────────────────── */
+
+  const tlMobileTrigger = document.querySelector<HTMLButtonElement>('[data-tl-mobile-trigger]');
+  const tlMobileTrack = document.querySelector<HTMLElement>('[data-tl-mobile-track]');
+  const tlMobileLabel = document.querySelector<HTMLElement>('[data-tl-mobile-label]');
+  const tlMobileMeta = document.querySelector<HTMLElement>('[data-tl-mobile-meta]');
+
+  interface SerializedEvent { id: string; biblicalYear: number; title: string; }
+  const slotEventsClient: SerializedEvent[] = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-event-scene]')
+  ).map((el) => ({
+    id: el.dataset.eventId || '',
+    biblicalYear: Number(el.dataset.eventYear || 0),
+    title: el.dataset.eventTitle || '',
+  })).filter((e) => e.id)
+    .sort((a, b) => a.biblicalYear - b.biblicalYear);
+
+  function renderMobileSlots(activeIndex: number) {
+    if (!tlMobileTrack || activeIndex < 0 || activeIndex >= slotEventsClient.length) return;
+    const slots = computeSlots(slotEventsClient, activeIndex);
+    const [lineFrom, lineTo] = computeLinePct(slots);
+
+    tlMobileTrack.innerHTML = '';
+    const line = document.createElement('div');
+    line.className = 'tl-mobile-line';
+    line.setAttribute('data-tl-mobile-line', '');
+    line.style.left = `${lineFrom}%`;
+    line.style.right = `${100 - lineTo}%`;
+    tlMobileTrack.appendChild(line);
+
+    slots.forEach((slot, idx) => {
+      const cell = document.createElement('div');
+      cell.setAttribute('data-tl-mobile-slot', '');
+      cell.dataset.slotIndex = String(idx);
+      if (slot.kind === 'dot') {
+        cell.className = 'tl-mobile-slot' + (slot.active ? ' is-active' : '');
+        cell.dataset.slotKind = 'dot';
+        cell.dataset.eventId = slot.eventId;
+        const dot = document.createElement('span');
+        dot.className = 'tl-mobile-dot';
+        cell.appendChild(dot);
+      } else {
+        cell.className = 'tl-mobile-slot tl-mobile-slot--cap';
+        cell.dataset.slotKind = 'cap';
+        cell.dataset.capSide = slot.side;
+        const cap = document.createElement('span');
+        cap.className = 'tl-mobile-cap';
+        cap.textContent = slot.side === 'start' ? '‹ inicio' : 'fin ›';
+        cell.appendChild(cap);
+      }
+      tlMobileTrack.appendChild(cell);
+    });
+
+    const active = slotEventsClient[activeIndex];
+    if (active && tlMobileLabel) tlMobileLabel.textContent = active.title;
+    if (active && tlMobileMeta) tlMobileMeta.textContent = `año ${active.biblicalYear} · ${activeIndex + 1}/${slotEventsClient.length}`;
+  }
+
+  window.addEventListener('timeline:scene-changed', (e) => {
+    const id = (e as CustomEvent).detail?.eventId;
+    if (!id) return;
+    const idx = slotEventsClient.findIndex((ev) => ev.id === id);
+    if (idx >= 0) renderMobileSlots(idx);
+  });
+
+  // Trigger opens the dialog (component listens to this event).
+  tlMobileTrigger?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('mobile-timeline:open'));
   });
 </script>

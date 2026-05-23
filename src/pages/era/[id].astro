@@ -9,6 +9,7 @@ import MapFullscreenButton from '../../components/MapFullscreenButton.astro';
 import FullscreenControls from '../../components/FullscreenControls.astro';
 import FullscreenTimeline from '../../components/FullscreenTimeline.astro';
 import EraClosingDialog from '../../components/EraClosingDialog.astro';
+import MobileTimelineDialog from '../../components/MobileTimelineDialog.astro';
 import EraTheme from '../../components/EraTheme.astro';
 import TimelineNav from '../../components/TimelineNav.astro';
 import EventNavArrows from '../../components/EventNavArrows.astro';
@@ -154,6 +155,10 @@ const allMarkers = events.map((e) => {
          not flush against it. Matches the JS scrollToElement offset. */
       --scroll-anchor-offset: calc(var(--sticky-header-h) + 1rem);
     }
+    /* Both navs are fixed (SiteNav top:0 + TimelineNav top:3rem), so main
+       must pad-top by their combined height to avoid being tapped under
+       the nav stack. Overrides BaseLayout's pt-16 since the timeline nav
+       adds an extra row beyond the SiteNav. */
     main { padding-top: var(--sticky-header-h) !important; }
     /* The year anchor — not the section top — is what we want under the
        header on hash-based jumps. The section itself uses `flex justify-center`
@@ -430,44 +435,45 @@ const allMarkers = events.map((e) => {
   <TimelineNav events={events} eras={eras} allEras={allEras} currentEraId={era.data.id} />
   <FullscreenControls />
 
-  <div class="relative">
-    <!-- Single map instance: fixed right on desktop, sticky top on mobile -->
-    <div class="map-container md:fixed md:right-0 md:w-[55%] lg:w-[60%] sticky z-20 h-[40vh] md:h-[calc(100vh-var(--sticky-header-h))] w-full" data-map-mode="manuscript" style="top: var(--sticky-header-h); background: var(--era-bg);">
-      <ManuscriptMap />
-      <ModernMapLayer />
-      <MapToggleButton />
-      <BoundariesToggleButton
-        hasBoundaries={boundarySet !== null}
-        caption={boundarySet?.caption}
-      />
-      <MapFullscreenButton />
-    </div>
+  <!-- Single map instance: fixed right on desktop, sticky top on mobile -->
+  <div class="map-container md:fixed md:right-0 md:w-[55%] lg:w-[60%] sticky z-20 h-[35vh] md:h-[calc(100vh-var(--sticky-header-h))] w-full" data-map-mode="manuscript" style="top: var(--sticky-header-h); background: var(--era-bg);">
+    <ManuscriptMap />
+    <ModernMapLayer />
+    <MapToggleButton />
+    <BoundariesToggleButton
+      hasBoundaries={boundarySet !== null}
+      caption={boundarySet?.caption}
+    />
+    <MapFullscreenButton />
+  </div>
 
-    {/* Persistent fullscreen title — always visible in fullscreen mode,
-        updates with each scene change so the user always knows which
-        step they're on. Lives OUTSIDE the narration panel so it doesn't
-        fade with idle/narration state. */}
-    <h2 class="fs-narration-title" data-fs-narration-title aria-live="polite">{events[0]?.data.title ?? ''}</h2>
+  {/* Persistent fullscreen title — always visible in fullscreen mode,
+      updates with each scene change so the user always knows which
+      step they're on. Lives OUTSIDE the narration panel so it doesn't
+      fade with idle/narration state. */}
+  <h2 class="fs-narration-title" data-fs-narration-title aria-live="polite">{events[0]?.data.title ?? ''}</h2>
 
-    {/* Floating narration text panel — only shown in fullscreen. */}
-    <aside class="fs-narration-panel" data-fs-narration-panel aria-hidden="true">
-      <div data-fs-narration-body>Empezá la reproducción para ver el texto.</div>
-      <div class="fs-narration-duration" data-fs-narration-duration aria-hidden="true"></div>
-    </aside>
+  {/* Floating narration text panel — only shown in fullscreen. */}
+  <aside class="fs-narration-panel" data-fs-narration-panel aria-hidden="true">
+    <div data-fs-narration-body>Empezá la reproducción para ver el texto.</div>
+    <div class="fs-narration-duration" data-fs-narration-duration aria-hidden="true"></div>
+  </aside>
 
-    {/* Dedicated fullscreen-only timeline pill (top-center). */}
-    <FullscreenTimeline events={events} />
+  {/* Dedicated fullscreen-only timeline pill (top-center). */}
+  <FullscreenTimeline events={events} />
 
-    {/* Right-side character info panel — cycles through the event's
-        characters as narration progresses (fullscreen only). */}
-    <CharacterInfoPanel events={events} charById={charByIdMap} />
+  {/* Right-side character info panel — cycles through the event's
+      characters as narration progresses (fullscreen only). */}
+  <CharacterInfoPanel events={events} charById={charByIdMap} />
 
-    {/* End-of-era parchment dialog — shown when play mode finishes. */}
-    <EraClosingDialog currentEraId={era.data.id} />
+  {/* End-of-era parchment dialog — shown when play mode finishes. */}
+  <EraClosingDialog currentEraId={era.data.id} />
 
-    <div class="scenes">
-      {events.map((event) => <EventScene event={event} />)}
-    </div>
+  {/* Mobile timeline dialog — shown when the mobile timeline trigger is tapped. */}
+  <MobileTimelineDialog events={events} eraName={era.data.name} />
+
+  <div class="scenes">
+    {events.map((event) => <EventScene event={event} />)}
   </div>
 
   <script type="application/json" id="map-data" set:html={JSON.stringify({ sceneConfigs, allMarkers, boundaries: boundarySet?.polygons ?? null })}></script>
@@ -481,6 +487,7 @@ const allMarkers = events.map((e) => {
     import { initSpeechBubble } from '../../lib/mapSpeechBubble';
     import { mountEraAmbient } from '../../lib/eraAmbient';
     import type { EraId } from '../../lib/cues/_eraIds';
+    import { initMobileZoom } from '../../lib/mapMobileZoom';
 
     const dataEl = document.getElementById('map-data');
     if (dataEl) {
@@ -498,6 +505,11 @@ const allMarkers = events.map((e) => {
         id: m.id, coords: m.coords, label: m.label,
       })));
       initScrollytelling(sceneConfigs);
+      if (svg) {
+        initMobileZoom(svg, sceneConfigs).then((cleanup) => {
+          document.addEventListener('astro:before-swap', () => { try { cleanup?.(); } catch {} }, { once: true });
+        });
+      }
       if (svg) initNarrationFx(svg);
       initSpeechBubble();
       // Ambient FX layer for the ACTIVE era only. Reading from body
@@ -830,4 +842,23 @@ const allMarkers = events.map((e) => {
   </script>
 
   <EventNavArrows />
+
+  <script>
+    /* Re-measure the sticky nav stack on resize. URL bar collapse/expand in
+       iOS Safari can change the effective height, so we use a ResizeObserver
+       instead of hardcoded rem values. */
+    function measureNavStack() {
+      const nav = document.querySelector<HTMLElement>('.site-nav');
+      const tnav = document.querySelector<HTMLElement>('[data-timeline-nav]');
+      const h = (nav?.offsetHeight ?? 0) + (tnav?.offsetHeight ?? 0);
+      document.documentElement.style.setProperty('--sticky-header-h', `${h}px`);
+    }
+    measureNavStack();
+    const ro = new ResizeObserver(measureNavStack);
+    const nav = document.querySelector('.site-nav');
+    const tnav = document.querySelector('[data-timeline-nav]');
+    if (nav) ro.observe(nav);
+    if (tnav) ro.observe(tnav);
+    window.addEventListener('orientationchange', measureNavStack);
+  </script>
 </BaseLayout>

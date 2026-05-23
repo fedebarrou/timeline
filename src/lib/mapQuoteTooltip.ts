@@ -41,8 +41,8 @@ function installStyles(): void {
       );
       color: #1a0f08;
       font-family: var(--era-body, 'EB Garamond', Georgia, serif);
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: 15.5px;
+      line-height: 1.45;
       border: 1px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, var(--era-text, #e8d4c8));
       border-radius: 6px;
       box-shadow:
@@ -62,7 +62,7 @@ function installStyles(): void {
     [data-quote-tooltip] .qt-quote::after  { content: '”'; margin-left: 2px; }
     [data-quote-tooltip] .qt-attrib {
       margin-top: 0.3rem;
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       opacity: 0.7;
