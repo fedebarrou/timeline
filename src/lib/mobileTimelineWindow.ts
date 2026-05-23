@@ -15,7 +15,7 @@ export interface SlotEvent {
  * - Always returns exactly 5 slots.
  * - N >= 5, 2 <= i <= N-3 (center): slots = events [i-2..i+2], active at slot 2.
  * - N >= 5, i < 2 (start): slot 0 = cap 'start'; slots 1..4 = events [0..3]; active at slot 1 + i.
- * - N >= 5, i > N-3 (end): slots 0..3 = events [N-4..N-1]; slot 4 = cap 'end'; active at slot i - (N-5).
+ * - N >= 5, i > N-3 (end): slots 0..3 = events [N-4..N-1]; slot 4 = cap 'end'; active at slot i - (N-4).
  * - N < 5 (small): center the N real events; caps fill the remaining slots on both sides.
  */
 export function computeSlots(events: SlotEvent[], currentIndex: number): Slot[] {
