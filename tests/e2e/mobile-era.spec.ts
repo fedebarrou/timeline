@@ -23,21 +23,33 @@ test.describe('mobile era page', () => {
     expect(bodyOverflow).toBeLessThanOrEqual(1);
   });
 
+  test('mobile timeline header renders exactly 5 slots', async ({ page }) => {
+    await page.goto('/era/exodo');
+    const slots = page.locator('[data-tl-mobile-slot]');
+    await expect(slots).toHaveCount(5);
+  });
+
+  test('mobile timeline header shows active dot + current event label', async ({ page }) => {
+    await page.goto('/era/exodo');
+    const active = page.locator('[data-tl-mobile-slot].is-active');
+    await expect(active).toHaveCount(1);
+    await expect(page.locator('[data-tl-mobile-label]')).toBeVisible();
+    await expect(page.locator('[data-tl-mobile-meta]')).toBeVisible();
+  });
+
+  test('mobile timeline header trigger is a button with aria attributes', async ({ page }) => {
+    await page.goto('/era/exodo');
+    const trigger = page.locator('[data-tl-mobile-trigger]');
+    await expect(trigger).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+  });
+
   test('map stays visible while scrolling', async ({ page }) => {
     await page.goto('/era/primordial');
     const map = page.locator('.map-container').first();
     await expect(map).toBeVisible();
     await page.evaluate(() => window.scrollBy(0, 800));
     await expect(map).toBeVisible();
-  });
-
-  test('timeline mobile track is scrollable and shows event labels', async ({ page }) => {
-    await page.goto('/era/primordial');
-    const track = page.locator('[data-timeline-mobile-track]');
-    await expect(track).toBeVisible();
-    const dots = page.locator('[data-timeline-mobile-marker]');
-    await expect(dots.first()).toBeVisible();
-    expect(await dots.count()).toBeGreaterThan(0);
   });
 
   test('mobile character cards render in event scene', async ({ page }) => {
