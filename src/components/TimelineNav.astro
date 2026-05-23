@@ -445,7 +445,8 @@ const totalEvents = sortedEventsByYear.length;
     id: el.dataset.eventId || '',
     biblicalYear: Number(el.dataset.eventYear || 0),
     title: el.dataset.eventTitle || '',
-  })).filter((e) => e.id);
+  })).filter((e) => e.id)
+    .sort((a, b) => a.biblicalYear - b.biblicalYear);
 
   function renderMobileSlots(activeIndex: number) {
     if (!tlMobileTrack || activeIndex < 0 || activeIndex >= slotEventsClient.length) return;

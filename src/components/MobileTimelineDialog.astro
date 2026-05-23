@@ -12,13 +12,16 @@ const sortedEvents = [...events].sort((a, b) => a.data.biblicalYear - b.data.bib
   class="mtd"
   data-tl-mobile-dialog
   id="mobile-timeline-dialog"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="mtd-title"
   aria-hidden="true"
 >
   <div class="mtd-backdrop" data-tl-mobile-dialog-backdrop></div>
-  <article class="mtd-parchment" tabindex="-1">
+  <article
+    class="mtd-parchment"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mtd-title"
+    tabindex="-1"
+  >
     <header class="mtd-header">
       <div>
         <p class="mtd-eyebrow">Línea de tiempo</p>
@@ -219,7 +222,9 @@ const sortedEvents = [...events].sort((a, b) => a.data.biblicalYear - b.data.bib
       document.body.style.overflow = 'hidden';
       requestAnimationFrame(() => {
         scrollActiveIntoView();
-        parchment?.focus();
+        const activeRow = root!.querySelector<HTMLElement>('.mtd-row.is-active');
+        if (activeRow) activeRow.focus();
+        else parchment?.focus();
       });
     }
 
@@ -236,11 +241,39 @@ const sortedEvents = [...events].sort((a, b) => a.data.biblicalYear - b.data.bib
 
     backdrop?.addEventListener('click', close);
     closeBtn?.addEventListener('click', close);
+    function focusableElements(): HTMLElement[] {
+      if (!root) return [];
+      // Close button + all event rows, in DOM order.
+      const els: HTMLElement[] = [];
+      const closeBtnEl = root.querySelector<HTMLElement>('[data-tl-mobile-dialog-close]');
+      if (closeBtnEl) els.push(closeBtnEl);
+      rows.forEach((r) => els.push(r));
+      return els;
+    }
+
     document.addEventListener('keydown', (e) => {
       if (!root!.classList.contains('is-open')) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         close();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusables = focusableElements();
+        if (focusables.length === 0) return;
+        const active = document.activeElement as HTMLElement | null;
+        const idx = active ? focusables.indexOf(active) : -1;
+        if (e.shiftKey) {
+          if (idx <= 0) {
+            e.preventDefault();
+            focusables[focusables.length - 1].focus();
+          }
+        } else {
+          if (idx === -1 || idx === focusables.length - 1) {
+            e.preventDefault();
+            focusables[0].focus();
+          }
+        }
       }
     });
 
