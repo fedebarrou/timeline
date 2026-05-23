@@ -326,7 +326,7 @@ const totalEvents = sortedEventsByYear.length;
 <script>
   import { isPlaying, jumpToEventId, restartPlay } from '../lib/playMode';
   import { scrollToElement } from '../lib/scrollOffset';
-  import { computeSlots, computeLinePct, type Slot } from '../lib/mobileTimelineWindow';
+  import { computeSlots, computeLinePct } from '../lib/mobileTimelineWindow';
 
   // Restart pill (only visible in fullscreen via CSS). PlayButton listens
   // to `timeline:play-state-changed` and syncs its own UI, so we only kick
@@ -435,7 +435,6 @@ const totalEvents = sortedEventsByYear.length;
 
   const tlMobileTrigger = document.querySelector<HTMLButtonElement>('[data-tl-mobile-trigger]');
   const tlMobileTrack = document.querySelector<HTMLElement>('[data-tl-mobile-track]');
-  let tlMobileLine = document.querySelector<HTMLElement>('[data-tl-mobile-line]');
   const tlMobileLabel = document.querySelector<HTMLElement>('[data-tl-mobile-label]');
   const tlMobileMeta = document.querySelector<HTMLElement>('[data-tl-mobile-meta]');
 
@@ -454,12 +453,12 @@ const totalEvents = sortedEventsByYear.length;
     const [lineFrom, lineTo] = computeLinePct(slots);
 
     tlMobileTrack.innerHTML = '';
-    tlMobileLine = document.createElement('div');
-    tlMobileLine.className = 'tl-mobile-line';
-    tlMobileLine.setAttribute('data-tl-mobile-line', '');
-    tlMobileLine.style.left = `${lineFrom}%`;
-    tlMobileLine.style.right = `${100 - lineTo}%`;
-    tlMobileTrack.appendChild(tlMobileLine);
+    const line = document.createElement('div');
+    line.className = 'tl-mobile-line';
+    line.setAttribute('data-tl-mobile-line', '');
+    line.style.left = `${lineFrom}%`;
+    line.style.right = `${100 - lineTo}%`;
+    tlMobileTrack.appendChild(line);
 
     slots.forEach((slot, idx) => {
       const cell = document.createElement('div');
