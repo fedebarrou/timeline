@@ -137,11 +137,20 @@ function installStyles(): void {
       border-right: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, var(--era-text, #e8d4c8));
       border-top: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, var(--era-text, #e8d4c8));
     }
+    /* Docked mode (mobile): bubble sits at the bottom of the viewport
+       instead of next to a pin, so the tail is meaningless — hide it.
+       Slightly stronger drop shadow lifts the card off the map below. */
+    [data-speech-bubble].is-docked .sb-tail { display: none; }
+    [data-speech-bubble].is-docked {
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--era-text, #e8d4c8) 70%, transparent),
+        0 -6px 24px rgba(0, 0, 0, 0.55);
+    }
     /* Narrow viewports: never let the bubble overflow the screen. The
        380px max-width is wider than a 375px iPhone, so on mobile we cap
        at viewport-24px and shrink the typography a tick to keep it
        legible without forcing huge bubbles. */
-    @media (max-width: 640px) {
+    @media (max-width: 767px) {
       [data-speech-bubble] {
         max-width: calc(100vw - 24px);
         min-width: 0;
@@ -180,6 +189,14 @@ function findPin(eventId: string, charId: string): SVGElement | null {
   );
 }
 
+/** Mobile = no room for pin-anchored bubbles. We dock everything to the
+ *  bottom of the viewport instead of trying to point at tiny pins on a
+ *  35vh map. Threshold matches the existing `<768px` mobile breakpoint
+ *  used across the codebase. */
+function isMobile(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth < 768;
+}
+
 function positionBubble(): void {
   if (!bubble || !pinEl) return;
   const r = pinEl.getBoundingClientRect();
@@ -194,7 +211,23 @@ function positionBubble(): void {
   const vh = window.innerHeight;
   const pad = 14;
   const edge = 8;
-  // Default: bubble RIGHT of the pin, vertically centered.
+
+  // Mobile: dock to the bottom of the viewport, centered. The tail is
+  // hidden via the `is-docked` class — pointing at a pin on a tiny map
+  // doesn't add information and bubbles kept overflowing when the pin
+  // was near a screen edge.
+  if (isMobile()) {
+    const x = Math.max(edge, (vw - w) / 2);
+    const y = vh - h - 16;
+    bubble.style.left = `${x}px`;
+    bubble.style.top = `${y}px`;
+    bubble.setAttribute('data-side', 'docked');
+    bubble.classList.add('is-docked');
+    return;
+  }
+  bubble.classList.remove('is-docked');
+
+  // Desktop: bubble RIGHT of the pin, vertically centered.
   let x = r.right + pad;
   let y = r.top + r.height / 2 - h / 2;
   let side = 'left'; // tail on the bubble's LEFT, pointing at pin on its left
@@ -203,9 +236,7 @@ function positionBubble(): void {
     x = r.left - w - pad;
     side = 'right'; // tail on the bubble's RIGHT, pointing at pin on its right
   }
-  // Final viewport clamp — on narrow phones a 280–380px bubble can't fit
-  // on either side of a pin near the middle of the screen. Without this
-  // either flip can still leave the bubble cut off.
+  // Final viewport clamp — handles narrow desktops where neither side fits.
   if (x + w + edge > vw) x = vw - w - edge;
   if (x < edge) x = edge;
   if (y < edge) y = edge;
@@ -338,12 +369,17 @@ function installDialogStyles(): void {
       opacity: 0.72;
       color: color-mix(in srgb, var(--era-primary, #a04048) 70%, #1a0f08);
     }
-    @media (max-width: 640px) {
+    [data-dialog-bubble].is-docked {
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--era-text, #e8d4c8) 70%, transparent),
+        0 -6px 24px rgba(0, 0, 0, 0.55);
+    }
+    @media (max-width: 767px) {
       [data-dialog-bubble] {
         max-width: calc(100vw - 24px);
         min-width: 0;
         font-size: 14px;
-        padding: 0.5rem 0.75rem 0.55rem;
+        padding: 0.55rem 0.85rem 0.6rem;
       }
     }
   `;
@@ -373,30 +409,93 @@ function virtualAnchorRect(kind: 'top-center' | 'top-side' | 'bottom-center'): {
   }
 }
 
+/** Top of the safe area below the sticky nav stack, so virtual-anchor
+ *  bubbles ('top-center' / 'top-side') don't slide under SiteNav +
+ *  TimelineNav. Falls back to a generous default when the nav can't be
+ *  measured. */
+function navStackBottom(): number {
+  const tnav = document.querySelector<HTMLElement>('[data-timeline-nav]');
+  const snav = document.querySelector<HTMLElement>('[data-site-nav]');
+  const bottoms: number[] = [];
+  if (tnav) bottoms.push(tnav.getBoundingClientRect().bottom);
+  if (snav) bottoms.push(snav.getBoundingClientRect().bottom);
+  return bottoms.length ? Math.max(...bottoms) : 120;
+}
+
 function positionDialogSlot(slot: DialogSlot): void {
   const el = slot.el;
   if (!el) return;
-  let cx = 0, cy = 0;
-  if (slot.pinEl) {
-    const r = slot.pinEl.getBoundingClientRect();
-    if (r.width === 0 && r.height === 0) { el.classList.remove('is-visible'); return; }
-    cx = r.right;
-    cy = r.top + r.height / 2;
-  } else if (slot.virtualAnchor) {
-    const a = virtualAnchorRect(slot.virtualAnchor);
-    cx = a.x; cy = a.y;
-  }
   const w = el.offsetWidth || 200;
   const h = el.offsetHeight || 50;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const pad = 14;
   const edge = 8;
-  let x = cx + pad;
-  let y = cy - h / 2;
-  if (x + w + edge > vw) x = cx - w - pad;
-  // Final viewport clamp — handle the case where neither side of the pin
-  // has enough room (typical on narrow mobile viewports).
+  let x = 0;
+  let y = 0;
+
+  // Mobile: dock ALL bubbles (virtual + pin-anchored) to the bottom of
+  // the viewport, stacked vertically. Pointing at a pin on a 35vh map
+  // is more confusing than helpful on a phone, and Yahvé's top-center
+  // placement was hitting the nav stack / overflowing the side.
+  if (isMobile()) {
+    el.classList.add('is-docked');
+    if (slot.connector) slot.connector.setAttribute('opacity', '0');
+    // Stack order: newest at the bottom, older ones above it. The slot's
+    // index in `dialogSlots` is its stack position (0 = oldest).
+    const idx = Math.max(0, dialogSlots.indexOf(slot));
+    const gap = 8;
+    // Heights of slots stacked BELOW this one (newer entries pushed up
+    // above by counting from the bottom).
+    let below = 0;
+    for (let i = dialogSlots.length - 1; i > idx; i--) {
+      below += (dialogSlots[i].el.offsetHeight || h) + gap;
+    }
+    x = Math.max(edge, (vw - w) / 2);
+    y = vh - h - 16 - below;
+    if (y < edge) y = edge;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    return;
+  }
+  el.classList.remove('is-docked');
+  if (slot.connector) slot.connector.setAttribute('opacity', '0.7');
+
+  if (slot.virtualAnchor) {
+    // Virtual anchors render as standalone bubbles (no pin to point at),
+    // so we CENTER on the anchor's intent instead of treating it as a
+    // pin-offset. Without this, the old code laid them out as `cx + pad`
+    // which on narrow phones immediately overflowed the right edge.
+    const navBottom = navStackBottom();
+    const topY = Math.max(navBottom + 12, 16);
+    switch (slot.virtualAnchor) {
+      case 'top-center':
+        x = (vw - w) / 2;
+        y = topY;
+        break;
+      case 'top-side':
+        x = vw - w - 16;
+        y = topY + 8;
+        break;
+      case 'bottom-center':
+        x = (vw - w) / 2;
+        y = vh - h - 24;
+        break;
+    }
+  } else if (slot.pinEl) {
+    const r = slot.pinEl.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) { el.classList.remove('is-visible'); return; }
+    const cx = r.right;
+    const cy = r.top + r.height / 2;
+    const pad = 14;
+    x = cx + pad;
+    y = cy - h / 2;
+    if (x + w + edge > vw) x = cx - w - pad;
+  } else {
+    return;
+  }
+
+  // Final viewport clamp — applies to BOTH pin-anchored and virtual
+  // bubbles, so nothing can ever overflow on narrow phones.
   if (x + w + edge > vw) x = vw - w - edge;
   if (x < edge) x = edge;
   if (y < edge) y = edge;
