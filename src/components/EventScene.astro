@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { render, getEntry } from 'astro:content';
+import { render, getEntry, getCollection } from 'astro:content';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import ComparativeBlock from './ComparativeBlock.astro';
@@ -12,13 +12,37 @@ import VideoEmbed from './VideoEmbed.astro';
 import NarratorButton from './NarratorButton.astro';
 import PortraitPlaceholder from './PortraitPlaceholder.astro';
 import MiniHistorySection from './MiniHistorySection.astro';
-import MobileCharacterCard from './MobileCharacterCard.astro';
+import { VIRTUAL_SPEAKERS, type DialogCue } from '../lib/dialogTypes';
+import PRIMORDIAL_DIALOGS from '../lib/dialogs/primordial';
+import PATRIARCAL_DIALOGS from '../lib/dialogs/patriarcal';
+import EXODO_DIALOGS from '../lib/dialogs/exodo';
+import REINOS_DIALOGS from '../lib/dialogs/reinos-y-exilio';
+import EVANGELIO_DIALOGS from '../lib/dialogs/evangelio';
+import REVELACION_DIALOGS from '../lib/dialogs/revelacion';
 
 interface Props { event: CollectionEntry<'events'>; }
 const { event } = Astro.props;
 const data = event.data;
 const { Content } = await render(event);
 const primaryLocation = data.locations[0];
+
+// Religiones donde aparece cada personaje — mismo helper que CharacterInfoPanel.
+type Tradition = 'tora' | 'biblia' | 'coran';
+function hasRealMentions(arr: any[] | undefined): boolean {
+  if (!arr || arr.length === 0) return false;
+  return arr.some((m) => {
+    const marker = m?.book ?? m?.sura ?? m?.reference ?? '';
+    return marker !== '—' && marker !== '';
+  });
+}
+function religionsFor(cd: any): Tradition[] {
+  const m = cd?.mentions ?? {};
+  const out: Tradition[] = [];
+  if (hasRealMentions(m.tora))   out.push('tora');
+  if (hasRealMentions(m.biblia)) out.push('biblia');
+  if (hasRealMentions(m.coran))  out.push('coran');
+  return out;
+}
 
 // Build-time detection: is there a pre-generated narration MP3 for this event?
 // File path resolved relative to project root (this .astro file lives in
@@ -82,9 +106,37 @@ const charactersInEvent = await Promise.all(
       deathYear: ch.data.deathYear,
       significance: ch.data.significance,
       trivia: ch.data.trivia,
+      religions: religionsFor(ch.data),
     };
   })
 ).then((arr) => arr.filter(Boolean) as Array<NonNullable<typeof arr[0]>>);
+
+// Diálogos del evento (móvil) — agrupados por era en módulos separados.
+const ERA_DIALOGS: Record<string, Record<string, DialogCue[]>> = {
+  primordial: PRIMORDIAL_DIALOGS,
+  patriarcal: PATRIARCAL_DIALOGS,
+  exodo: EXODO_DIALOGS,
+  'reinos-y-exilio': REINOS_DIALOGS,
+  evangelio: EVANGELIO_DIALOGS,
+  revelacion: REVELACION_DIALOGS,
+};
+const eventDialogs: DialogCue[] = ERA_DIALOGS[data.era]?.[data.id] ?? [];
+
+// Para mostrar el nombre del speaker/addressee necesitamos lookup global —
+// un speaker puede ser un personaje que NO aparece en charactersInEvent.
+const VIRTUAL_SPEAKER_NAMES: Record<string, string> = {
+  yahve: 'Yahvé',
+  allah: 'Alá',
+  'dios-padre': 'Dios Padre',
+  'angel-anonimo': 'Ángel',
+  'voz-multitud': 'Voz de la multitud',
+};
+const speakerNameMap = new Map<string, string>();
+if (eventDialogs.length > 0) {
+  const allChars = await getCollection('characters');
+  for (const ch of allChars) speakerNameMap.set(ch.id, ch.data.name);
+  for (const [id, n] of Object.entries(VIRTUAL_SPEAKER_NAMES)) speakerNameMap.set(id, n);
+}
 ---
 <section
   id={`event-${data.id}`}
@@ -117,24 +169,36 @@ const charactersInEvent = await Promise.all(
       <MediaGallery items={data.media?.gallery ?? []} />
 
       {charactersInEvent.length > 0 && (
-        <>
-          {/* Mobile: tarjetas simples apiladas */}
-          <div class="md:hidden flex flex-col gap-2 mt-6" data-mobile-char-cards>
-            {charactersInEvent.map((c) => <MobileCharacterCard char={{ id: c.id, name: c.name, portrait: c.portrait, avatar: c.avatar, role: c.role }} />)}
-          </div>
-          {/* Desktop: bloque actual con tooltips y portrait clouds */}
-          <div class="hidden md:block characters-in-event mt-8">
-            <h3 class="text-sm tracking-[0.3em] uppercase opacity-60 mb-4">Personajes en este momento</h3>
-            <div class="flex flex-wrap gap-3">
-              {charactersInEvent.map((c) => (
+        <div class="hidden md:block characters-in-event mt-8">
+          <h3 class="text-sm tracking-[0.3em] uppercase opacity-60 mb-4">Personajes en este momento</h3>
+          <div class="flex flex-wrap gap-3">
+            {charactersInEvent.map((c) => {
+              const lifeYears = (c.birthYear != null && c.deathYear != null)
+                ? `${c.birthYear}–${c.deathYear} año bíblico`
+                : null;
+              return (
                 <a
-                  href={`/personajes/${c.id}`}
+                  href={`/personajes/${c.id}?from=${data.era}/event-${data.id}`}
                   class="char-pin group relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border bg-surface/40 hover:border-accent transition-colors"
                   aria-label={`Ver perfil de ${c.name}`}
                 >
                   <PortraitPlaceholder name={c.name} src={c.portrait ?? undefined} avatar={c.avatar ?? undefined} size="sm" />
                   <span class="text-base font-display">{c.name}</span>
                   <span class="text-[11px] tracking-wider uppercase opacity-60">{c.role.replace(/-/g, ' ')}</span>
+                  {c.religions.length > 0 && (
+                    <span class="chip-religions inline-flex items-center gap-1 ml-1" aria-label={`Aparece en: ${c.religions.join(', ')}`}>
+                      {c.religions.includes('tora') && (
+                        <svg class="rel-icon" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M50 8 L88 70 L12 70 Z" /><path d="M50 92 L12 30 L88 30 Z" fill-opacity="0.85" /></svg>
+                      )}
+                      {c.religions.includes('biblia') && (
+                        <svg class="rel-icon" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><rect x="42" y="10" width="16" height="80" rx="2" /><rect x="22" y="32" width="56" height="16" rx="2" /></svg>
+                      )}
+                      {c.religions.includes('coran') && (
+                        <svg class="rel-icon" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M50 12 a38 38 0 1 0 32 60 a30 30 0 1 1 0 -44 a38 38 0 0 0 -32 -16 z" /><polygon points="78,28 81,36 89,36 83,41 86,49 78,44 70,49 73,41 67,36 75,36" /></svg>
+                      )}
+                    </span>
+                  )}
+                  {c.meaning && <span class="chip-meaning text-[11px] italic opacity-70 ml-1">"{c.meaning}"</span>}
 
                   <div class="tooltip absolute left-0 top-full z-30 w-80 p-3 rounded-lg border border-border bg-bg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none group-hover:pointer-events-auto transition-all duration-200 flex gap-3">
                     {(c.portrait || c.avatar) && (
@@ -146,6 +210,9 @@ const charactersInEvent = await Promise.all(
                       <div class="font-display text-base leading-tight">{c.name}</div>
                       {c.meaning && <div class="text-[11px] italic opacity-70 leading-snug">"{c.meaning}"</div>}
                       <div class="text-[10px] tracking-[0.15em] uppercase opacity-60 mt-1">{c.role.replace(/-/g, ' ')}</div>
+                      {lifeYears && (
+                        <div class="text-[10px] tracking-[0.12em] uppercase opacity-60 mt-0.5">{lifeYears}</div>
+                      )}
                       {c.lore ? (
                         <p class="text-[12px] opacity-90 mt-2 leading-snug max-h-28 overflow-y-auto pr-1 whitespace-pre-line">{c.lore}</p>
                       ) : c.significance && (
@@ -157,10 +224,32 @@ const charactersInEvent = await Promise.all(
                     </div>
                   </div>
                 </a>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </>
+        </div>
+      )}
+
+      {eventDialogs.length > 0 && (
+        <div class="md:hidden mt-6">
+          <h3 class="text-sm tracking-[0.3em] uppercase opacity-60 mb-3">Diálogos del evento</h3>
+          <ol class="event-dialogs space-y-3">
+            {eventDialogs.map((d) => {
+              const isVirtual = VIRTUAL_SPEAKERS.has(d.speaker);
+              return (
+                <li class={`event-dialog ${isVirtual ? 'event-dialog-virtual' : 'event-dialog-mortal'}`}>
+                  <div class="ed-speaker">
+                    <span class="ed-name">{speakerNameMap.get(d.speaker) ?? d.speaker}</span>
+                    {d.addressee && (
+                      <span class="ed-arrow">→ <span class="ed-addressee">{speakerNameMap.get(d.addressee) ?? d.addressee}</span></span>
+                    )}
+                  </div>
+                  <blockquote class="ed-text">{d.text}</blockquote>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       )}
 
       {/* Mobile: bloques colapsables */}
@@ -300,4 +389,56 @@ const charactersInEvent = await Promise.all(
       margin-top: 0.5rem;
     }
   }
+
+  /* Chip extras: religion icons + significado del nombre.
+     Icons use the same SVG as CharacterInfoPanel watermarks; sized small
+     so the chip stays compact and readable. */
+  .chip-religions .rel-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--era-primary);
+    opacity: 0.85;
+  }
+  .chip-meaning {
+    max-width: 16ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Diálogos del evento (móvil) — bloque conversación tipo pergamino.
+     Hablantes virtuales (deidades) reciben acento dorado e itálica;
+     mortales se quedan con el primary de la era. */
+  .event-dialogs { list-style: none; padding: 0; margin: 0; }
+  .event-dialog {
+    padding: 0.75rem 0.9rem;
+    border-left: 3px solid var(--era-primary);
+    background: color-mix(in srgb, var(--era-surface) 35%, transparent);
+    border-radius: 0 6px 6px 0;
+  }
+  .event-dialog-virtual {
+    border-left-color: var(--era-accent);
+    background: color-mix(in srgb, var(--era-accent) 12%, var(--era-surface) 35%);
+  }
+  .ed-speaker {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 0.35rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .ed-name { font-family: var(--era-display); font-weight: 600; }
+  .event-dialog-virtual .ed-name { color: var(--era-accent); font-style: italic; }
+  .ed-arrow { opacity: 0.55; }
+  .ed-text {
+    font-family: var(--era-body, 'EB Garamond', Georgia, serif);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    margin: 0;
+    font-style: italic;
+  }
+  .event-dialog-virtual .ed-text { font-weight: 500; }
 </style>

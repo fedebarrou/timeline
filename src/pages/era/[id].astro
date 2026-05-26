@@ -846,11 +846,22 @@ const allMarkers = events.map((e) => {
   <script>
     /* Re-measure the sticky nav stack on resize. URL bar collapse/expand in
        iOS Safari can change the effective height, so we use a ResizeObserver
-       instead of hardcoded rem values. */
+       instead of hardcoded rem values.
+       BUG-FIX: previously summed offsetHeight of both navs, but the
+       TimelineNav is positioned at `fixed top-12` (3rem = 48px) while the
+       SiteNav is ~60px tall — the two navs OVERLAP by ~12px. Summing heights
+       overshot the real bottom edge, leaving that 12px as a visible gap
+       between the TimelineNav and the sticky map on mobile (and the
+       right-side fixed map on desktop). Use the TimelineNav's actual
+       getBoundingClientRect().bottom — that's the single source of truth for
+       where the nav stack ends regardless of overlap. */
     function measureNavStack() {
-      const nav = document.querySelector<HTMLElement>('.site-nav');
       const tnav = document.querySelector<HTMLElement>('[data-timeline-nav]');
-      const h = (nav?.offsetHeight ?? 0) + (tnav?.offsetHeight ?? 0);
+      const nav = document.querySelector<HTMLElement>('.site-nav');
+      // bottom edge of the lowest fixed nav = where the map should start
+      const tnavBottom = tnav?.getBoundingClientRect().bottom ?? 0;
+      const navBottom = nav?.getBoundingClientRect().bottom ?? 0;
+      const h = Math.max(tnavBottom, navBottom);
       document.documentElement.style.setProperty('--sticky-header-h', `${h}px`);
     }
     measureNavStack();

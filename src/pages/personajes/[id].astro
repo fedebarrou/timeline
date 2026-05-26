@@ -106,12 +106,73 @@ const yearsLivedLabel: string =
   <CharacterNavSidebar currentId={data.id} ordered={ordered} eraName={eraName} />
   <div class="relative z-10">
   <article class="px-6 py-16 max-w-4xl mx-auto">
-    <a href="/personajes" class="back-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity mb-8">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-      Volver a personajes
-    </a>
+    <div class="back-link-bar">
+      <a
+        href="/personajes"
+        class="back-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
+        data-back-link
+        data-default-href="/personajes"
+        data-default-label="Volver a personajes"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span data-back-label>Volver a personajes</span>
+      </a>
+    </div>
+    <script is:inline>
+      (function () {
+        var link = document.querySelector('[data-back-link]');
+        if (!link) return;
+        var labelEl = link.querySelector('[data-back-label]');
+        var bar = link.closest('.back-link-bar');
+
+        function applyEventReturn(era, eventId) {
+          link.setAttribute('href', '/era/' + era + '#event-' + eventId);
+          if (labelEl) labelEl.textContent = 'Volver al evento';
+          if (bar) bar.setAttribute('data-has-return', 'event');
+        }
+        function applyEraReturn(era) {
+          link.setAttribute('href', '/era/' + era);
+          if (labelEl) labelEl.textContent = 'Volver a la era';
+          if (bar) bar.setAttribute('data-has-return', 'era');
+        }
+
+        // Priority 1: explicit ?from=eraId/event-eventId query param.
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var from = params.get('from');
+          if (from) {
+            var parts = from.split('/');
+            if (parts.length === 2 && parts[0] && parts[1].indexOf('event-') === 0) {
+              applyEventReturn(parts[0], parts[1].slice('event-'.length));
+              return;
+            }
+            // Just an era id, no event anchor
+            if (parts.length === 1 && parts[0]) {
+              applyEraReturn(parts[0]);
+              return;
+            }
+          }
+        } catch (_) { /* noop */ }
+
+        // Priority 2: document.referrer — if user came from /era/{id} (hash
+        // is stripped by the browser, so we cannot recover the event anchor)
+        // we still offer a generic "Volver a la era".
+        try {
+          if (document.referrer) {
+            var refUrl = new URL(document.referrer);
+            if (refUrl.origin === window.location.origin) {
+              var m = refUrl.pathname.match(/^\/era\/([^\/]+)\/?$/);
+              if (m) {
+                applyEraReturn(m[1]);
+                return;
+              }
+            }
+          }
+        } catch (_) { /* noop */ }
+      })();
+    </script>
     <header class="mb-10 flex items-start gap-8">
       <PortraitPlaceholder name={data.name} src={data.portrait} avatar={data.avatar ?? undefined} size="lg" />
       <div>
@@ -233,3 +294,35 @@ const yearsLivedLabel: string =
   </article>
   </div>
 </BaseLayout>
+
+<style>
+  /* Default (desktop): inline back-link, generous breathing room below. */
+  .back-link-bar {
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 767px) {
+    /* On mobile, the back-link becomes a sticky bar so it remains
+       accessible while the user scrolls long bios/timelines. Extra
+       prominence (border, full-width pill background) when a back-to-event
+       or back-to-era return target has been resolved by the inline script. */
+    .back-link-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      margin: -1rem -1.5rem 1.25rem;
+      padding: 0.65rem 1.5rem;
+      background: color-mix(in srgb, var(--era-bg, #0b0b0e) 92%, transparent);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid color-mix(in srgb, var(--era-border, #333) 60%, transparent);
+    }
+    .back-link-bar .back-link {
+      opacity: 1;
+      min-height: 44px;
+    }
+    .back-link-bar[data-has-return] .back-link {
+      color: var(--era-accent, currentColor);
+    }
+  }
+</style>
