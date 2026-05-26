@@ -683,7 +683,11 @@ function mountDialog(detail: DialogEventDetail): void {
   dialogSlots.push(slot);
   positionDialogSlot(slot);
   startDialogTracking(slot);
-  if (pin) addSpeakBadge(pin);
+  // Speaker badge is a mobile-only cue — on desktop the dialog bubble
+  // sits right next to the pin so the speaker is already obvious. On
+  // mobile the bubble is docked at the bottom of the viewport, so we
+  // need the badge to indicate WHO is talking.
+  if (pin && isMobile()) addSpeakBadge(pin);
   requestAnimationFrame(() => {
     el.classList.remove('is-leaving');
     el.classList.add('is-visible');
