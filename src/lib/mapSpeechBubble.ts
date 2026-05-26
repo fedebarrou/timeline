@@ -137,6 +137,18 @@ function installStyles(): void {
       border-right: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, var(--era-text, #e8d4c8));
       border-top: 1.5px solid color-mix(in srgb, var(--era-primary, #a04048) 55%, var(--era-text, #e8d4c8));
     }
+    /* Narrow viewports: never let the bubble overflow the screen. The
+       380px max-width is wider than a 375px iPhone, so on mobile we cap
+       at viewport-24px and shrink the typography a tick to keep it
+       legible without forcing huge bubbles. */
+    @media (max-width: 640px) {
+      [data-speech-bubble] {
+        max-width: calc(100vw - 24px);
+        min-width: 0;
+        font-size: 16px;
+        padding: 0.65rem 0.9rem 0.7rem;
+      }
+    }
   `;
   const style = document.createElement('style');
   style.setAttribute('data-speech-bubble-styles', '');
@@ -181,20 +193,36 @@ function positionBubble(): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const pad = 14;
+  const edge = 8;
   // Default: bubble RIGHT of the pin, vertically centered.
   let x = r.right + pad;
   let y = r.top + r.height / 2 - h / 2;
   let side = 'left'; // tail on the bubble's LEFT, pointing at pin on its left
-  if (x + w + 8 > vw) {
+  if (x + w + edge > vw) {
     // Flip to the LEFT of the pin instead.
     x = r.left - w - pad;
     side = 'right'; // tail on the bubble's RIGHT, pointing at pin on its right
   }
-  if (y < 8) y = 8;
-  if (y + h + 8 > vh) y = vh - h - 8;
+  // Final viewport clamp — on narrow phones a 280–380px bubble can't fit
+  // on either side of a pin near the middle of the screen. Without this
+  // either flip can still leave the bubble cut off.
+  if (x + w + edge > vw) x = vw - w - edge;
+  if (x < edge) x = edge;
+  if (y < edge) y = edge;
+  if (y + h + edge > vh) y = vh - h - edge;
   bubble.style.left = `${x}px`;
   bubble.style.top = `${y}px`;
   bubble.setAttribute('data-side', side);
+  // Realign the tail to the pin's vertical center within the bubble.
+  // After horizontal clamping the bubble may sit far from the pin; keeping
+  // the tail at 50% would point at empty space.
+  const tail = bubble.querySelector<HTMLElement>('.sb-tail');
+  if (tail) {
+    const pinCenterY = r.top + r.height / 2;
+    const localY = Math.max(10, Math.min(h - 10, pinCenterY - y));
+    tail.style.top = `${localY}px`;
+    tail.style.marginTop = '-5px';
+  }
 }
 
 function trackLoop(): void {
@@ -310,6 +338,14 @@ function installDialogStyles(): void {
       opacity: 0.72;
       color: color-mix(in srgb, var(--era-primary, #a04048) 70%, #1a0f08);
     }
+    @media (max-width: 640px) {
+      [data-dialog-bubble] {
+        max-width: calc(100vw - 24px);
+        min-width: 0;
+        font-size: 14px;
+        padding: 0.5rem 0.75rem 0.55rem;
+      }
+    }
   `;
   const style = document.createElement('style');
   style.setAttribute('data-dialog-bubble-styles', '');
@@ -355,11 +391,16 @@ function positionDialogSlot(slot: DialogSlot): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const pad = 14;
+  const edge = 8;
   let x = cx + pad;
   let y = cy - h / 2;
-  if (x + w + 8 > vw) x = cx - w - pad;
-  if (y < 8) y = 8;
-  if (y + h + 8 > vh) y = vh - h - 8;
+  if (x + w + edge > vw) x = cx - w - pad;
+  // Final viewport clamp — handle the case where neither side of the pin
+  // has enough room (typical on narrow mobile viewports).
+  if (x + w + edge > vw) x = vw - w - edge;
+  if (x < edge) x = edge;
+  if (y < edge) y = edge;
+  if (y + h + edge > vh) y = vh - h - edge;
   el.style.left = `${x}px`;
   el.style.top = `${y}px`;
   // update connector
