@@ -161,6 +161,29 @@ if (eventDialogs.length > 0) {
 
       <MediaHero media={data.media?.hero} />
 
+      {charactersInEvent.length > 0 && (
+        <div class="md:hidden mt-4 mb-2">
+          <div class="mini-chars flex gap-3 overflow-x-auto pb-2 -mx-6 px-6">
+            {charactersInEvent.map((c) => (
+              <a
+                href={`/personajes/${c.id}?from=${data.era}/event-${data.id}`}
+                class="mini-char shrink-0 w-14 flex flex-col items-center gap-1"
+                aria-label={`Ver perfil de ${c.name}`}
+              >
+                {(c.portrait || c.avatar) ? (
+                  <img src={c.avatar ?? c.portrait} alt={c.name} loading="lazy" class="w-11 h-11 rounded-full object-cover object-top border border-border" />
+                ) : (
+                  <div class="w-11 h-11 rounded-full border border-border bg-surface/40 flex items-center justify-center text-sm font-display opacity-70">
+                    {c.name.charAt(0)}
+                  </div>
+                )}
+                <span class="text-[10px] leading-tight opacity-75 text-center truncate w-full">{c.name}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div class="prose prose-invert max-w-none text-text">
         <Content />
       </div>
@@ -380,6 +403,13 @@ if (eventDialogs.length > 0) {
   .mobile-accordion-body {
     padding: 0 1rem 1rem;
   }
+  .mini-chars { scrollbar-width: none; }
+  .mini-chars::-webkit-scrollbar { display: none; }
+  .mini-char { text-decoration: none; color: inherit; transition: opacity 200ms ease; }
+  .mini-char:active { opacity: 0.6; }
+  .mini-char img { transition: border-color 200ms ease; }
+  .mini-char:hover img { border-color: var(--era-accent); }
+
   .narrator-mobile-sticky { display: flex; justify-content: flex-end; }
   @media (max-width: 767px) {
     .narrator-mobile-sticky {
