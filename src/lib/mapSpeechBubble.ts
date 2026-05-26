@@ -393,6 +393,71 @@ function getMapSvg(): SVGSVGElement | null {
   return document.querySelector<SVGSVGElement>('[data-map-root]');
 }
 
+/** Bounding box of the map container (where pins live). On desktop the
+ *  map is the right ~60% of the screen; virtual anchors must center on
+ *  THAT box, not on the viewport, or Yahvé renders over the narrative
+ *  column on the left. Falls back to the full viewport if missing. */
+function getMapRect(): { left: number; top: number; right: number; bottom: number; width: number; height: number } {
+  const el = document.querySelector<HTMLElement>('.map-container');
+  if (el) {
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+  }
+  return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight };
+}
+
+/** Speaking indicator — a tiny SVG speech-bubble badge with three blinking
+ *  dots, anchored to the pin's top-right. Visual cue that THIS character
+ *  is the one speaking, especially useful on mobile where the bubble is
+ *  docked far away from the pin. */
+function ensureSpeakBadgeStyles(): void {
+  if (document.querySelector('[data-speak-badge-styles]')) return;
+  const css = `
+    @keyframes speak-blink {
+      0%, 60%, 100% { opacity: 0.3; }
+      30%           { opacity: 1; }
+    }
+    [data-speak-badge] { pointer-events: none; }
+    [data-speak-badge] .sb-dot { animation: speak-blink 1.2s infinite ease-in-out; transform-origin: center; }
+    [data-speak-badge] .sb-dot-2 { animation-delay: 0.18s; }
+    [data-speak-badge] .sb-dot-3 { animation-delay: 0.36s; }
+    @keyframes speak-badge-in {
+      from { opacity: 0; transform: translate(10px, -22px) scale(0.6); }
+      to   { opacity: 1; transform: translate(10px, -22px) scale(1); }
+    }
+    [data-speak-badge] { animation: speak-badge-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: center; }
+  `;
+  const style = document.createElement('style');
+  style.setAttribute('data-speak-badge-styles', '');
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+
+function addSpeakBadge(pin: SVGElement): void {
+  if (!pin) return;
+  if (pin.querySelector('[data-speak-badge]')) return;
+  ensureSpeakBadgeStyles();
+  const ns = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(ns, 'g');
+  g.setAttribute('data-speak-badge', '');
+  g.setAttribute('transform', 'translate(10, -22)');
+  // Speech-bubble ellipse + tail pointing back at the pin.
+  g.innerHTML = `
+    <ellipse cx="0" cy="0" rx="10" ry="7" fill="var(--era-text, #e8d4c8)" stroke="var(--era-primary, #a04048)" stroke-width="0.8" />
+    <path d="M -4 5 L -7 9 L -1 6 Z" fill="var(--era-text, #e8d4c8)" stroke="var(--era-primary, #a04048)" stroke-width="0.8" stroke-linejoin="round" />
+    <circle class="sb-dot sb-dot-1" cx="-3.5" cy="0" r="1.1" fill="var(--era-primary, #a04048)" />
+    <circle class="sb-dot sb-dot-2" cx="0"    cy="0" r="1.1" fill="var(--era-primary, #a04048)" />
+    <circle class="sb-dot sb-dot-3" cx="3.5"  cy="0" r="1.1" fill="var(--era-primary, #a04048)" />
+  `;
+  pin.appendChild(g);
+}
+
+function removeSpeakBadge(pin: SVGElement | null): void {
+  if (!pin) return;
+  const b = pin.querySelector('[data-speak-badge]');
+  if (b) b.remove();
+}
+
 function findCharPin(eventId: string, charId: string): SVGElement | null {
   return document.querySelector<SVGElement>(
     `[data-marker="${eventId}"] [data-char-pin-wrap][data-char-id="${charId}"]`,
@@ -461,24 +526,26 @@ function positionDialogSlot(slot: DialogSlot): void {
   if (slot.connector) slot.connector.setAttribute('opacity', '0.7');
 
   if (slot.virtualAnchor) {
-    // Virtual anchors render as standalone bubbles (no pin to point at),
-    // so we CENTER on the anchor's intent instead of treating it as a
-    // pin-offset. Without this, the old code laid them out as `cx + pad`
-    // which on narrow phones immediately overflowed the right edge.
+    // Virtual anchors render as standalone bubbles (no pin to point at).
+    // CENTER on the MAP container — on desktop the map is only the right
+    // ~60% of the viewport, so centering on `vw` would land Yahvé over
+    // the narrative column. Using the map rect keeps the bubble visually
+    // tied to the place the action is happening.
+    const m = getMapRect();
     const navBottom = navStackBottom();
-    const topY = Math.max(navBottom + 12, 16);
+    const topY = Math.max(m.top + 12, navBottom + 12, 16);
     switch (slot.virtualAnchor) {
       case 'top-center':
-        x = (vw - w) / 2;
+        x = m.left + (m.width - w) / 2;
         y = topY;
         break;
       case 'top-side':
-        x = vw - w - 16;
+        x = m.right - w - 16;
         y = topY + 8;
         break;
       case 'bottom-center':
-        x = (vw - w) / 2;
-        y = vh - h - 24;
+        x = m.left + (m.width - w) / 2;
+        y = m.bottom - h - 24;
         break;
     }
   } else if (slot.pinEl) {
@@ -540,6 +607,7 @@ function hideDialogSlot(slot: DialogSlot): void {
   slot.el.classList.add('is-leaving');
   slot.el.classList.remove('is-visible');
   if (slot.hideTimer != null) { clearTimeout(slot.hideTimer); slot.hideTimer = null; }
+  removeSpeakBadge(slot.pinEl);
   setTimeout(() => {
     stopDialogTracking(slot);
     if (slot.connector?.parentNode) slot.connector.parentNode.removeChild(slot.connector);
@@ -615,6 +683,7 @@ function mountDialog(detail: DialogEventDetail): void {
   dialogSlots.push(slot);
   positionDialogSlot(slot);
   startDialogTracking(slot);
+  if (pin) addSpeakBadge(pin);
   requestAnimationFrame(() => {
     el.classList.remove('is-leaving');
     el.classList.add('is-visible');
