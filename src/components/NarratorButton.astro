@@ -371,4 +371,29 @@ const tokens = tokenize(narrationText);
     font-weight: 600;
     opacity: 1;
   }
+
+  /* Mobile: the narrator lives inside `.narrator-mobile-sticky` (sticky at
+     the bottom of the viewport). When narration starts, the inline display
+     grows to fit the entire transcript, which previously inflated the
+     sticky container and overlapped the title, subtitle and content above
+     it. Lift the display out of the document flow on mobile so the sticky
+     button keeps its compact size and the panel floats above as its own
+     bounded, scrollable overlay. */
+  @media (max-width: 767px) {
+    .narrator-control .narration-display:not(.hidden) {
+      position: fixed;
+      left: 0.75rem;
+      right: 0.75rem;
+      bottom: 4.25rem;
+      margin-top: 0 !important;
+      max-height: 32vh;
+      overflow-y: auto;
+      z-index: 31;
+      background: var(--era-bg);
+      border-color: var(--era-accent);
+      font-size: 0.95rem;
+      line-height: 1.45;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+  }
 </style>

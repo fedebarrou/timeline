@@ -90,7 +90,10 @@ function mountPrimordial(layer: SVGGElement, svg: SVGSVGElement): () => void {
 function mountPatriarcal(layer: SVGGElement, svg: SVGSVGElement): () => void {
   const [vx, vy, vw, vh] = getViewBox(svg);
   const tweens: gsap.core.Tween[] = [];
-  // Heat shimmer rect over lower horizon (uses turbulence filter)
+  // Heat shimmer wash — full viewBox with a vertical alpha gradient so the
+  // tint fades softly from invisible at the top to a faint glow at the
+  // bottom. Earlier versions used a half-height rect which left a visible
+  // horizontal seam where the shimmer began.
   const defs = svg.querySelector('defs') ?? (() => {
     const d = svgEl('defs');
     svg.insertBefore(d, svg.firstChild);
@@ -102,7 +105,17 @@ function mountPatriarcal(layer: SVGGElement, svg: SVGSVGElement): () => void {
     f.innerHTML = `<feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.2"/>`;
     defs.appendChild(f);
   }
-  const shimmer = svgEl('rect', { x: vx, y: vy + vh * 0.55, width: vw, height: vh * 0.45, fill: 'var(--era-accent)', opacity: 0.08, filter: `url(#${fid})` });
+  const gid = 'era-ambient-patri-heat-grad';
+  if (!svg.querySelector(`#${gid}`)) {
+    const g = svgEl('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' });
+    g.innerHTML = `
+      <stop offset="0%"   stop-color="var(--era-accent)" stop-opacity="0"/>
+      <stop offset="55%"  stop-color="var(--era-accent)" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="var(--era-accent)" stop-opacity="0.09"/>
+    `;
+    defs.appendChild(g);
+  }
+  const shimmer = svgEl('rect', { x: vx, y: vy, width: vw, height: vh, fill: `url(#${gid})`, filter: `url(#${fid})` });
   layer.appendChild(shimmer);
   // dust devils (distant) — every 8-12s
   let devilTimer: number | null = window.setInterval(() => {

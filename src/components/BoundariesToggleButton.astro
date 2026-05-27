@@ -16,7 +16,7 @@ if (!hasBoundaries) return null;
 ---
 <button
   type="button"
-  class="boundaries-toggle-btn absolute z-[60] bottom-4 left-4 md:bottom-5 md:left-5 px-3 md:px-4 py-2 rounded-full border-2 border-primary bg-bg/90 backdrop-blur text-primary hover:bg-primary hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
+  class="boundaries-toggle-btn absolute z-[60] bottom-4 left-4 md:bottom-5 md:left-5 px-3 md:px-4 py-2 rounded-full border-2 border-accent bg-surface text-accent hover:bg-accent hover:text-bg transition-colors flex items-center gap-2 text-[10px] md:text-xs tracking-wider uppercase shadow-xl"
   data-boundaries-toggle
   aria-pressed="false"
   aria-label={caption ? `Divisiones políticas — ${caption}` : 'Mostrar divisiones políticas históricas'}
@@ -67,7 +67,7 @@ if (!hasBoundaries) return null;
 
 <style>
   .boundaries-toggle-btn.is-active {
-    background: var(--era-primary);
+    background: var(--era-accent);
     color: var(--era-bg);
   }
 </style>
