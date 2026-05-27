@@ -110,32 +110,39 @@ const yearsLivedLabel: string =
       <a
         href="/personajes"
         class="back-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase opacity-70 hover:opacity-100 hover:text-accent transition-opacity"
-        data-back-link
-        data-default-href="/personajes"
-        data-default-label="Volver a personajes"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
-        <span data-back-label>Volver a personajes</span>
+        <span>Volver a personajes</span>
+      </a>
+      {/* Secondary return — only visible when a `?from=…` query param or a
+          same-origin `/era/{id}` referrer surfaces a specific era/event to
+          go back to. The inline script below toggles it on. */}
+      <a
+        href="#"
+        class="event-return-link inline-flex items-center gap-2 text-sm tracking-[0.25em] uppercase border border-accent text-accent px-3 py-2 rounded-full hover:bg-accent hover:text-bg transition-colors"
+        data-event-return-link
+        hidden
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span data-event-return-label>Volver al evento</span>
       </a>
     </div>
     <script is:inline>
       (function () {
-        var link = document.querySelector('[data-back-link]');
-        if (!link) return;
-        var labelEl = link.querySelector('[data-back-label]');
-        var bar = link.closest('.back-link-bar');
+        var extra = document.querySelector('[data-event-return-link]');
+        if (!extra) return;
+        var labelEl = extra.querySelector('[data-event-return-label]');
+        var bar = extra.closest('.back-link-bar');
 
-        function applyEventReturn(era, eventId) {
-          link.setAttribute('href', '/era/' + era + '#event-' + eventId);
-          if (labelEl) labelEl.textContent = 'Volver al evento';
-          if (bar) bar.setAttribute('data-has-return', 'event');
-        }
-        function applyEraReturn(era) {
-          link.setAttribute('href', '/era/' + era);
-          if (labelEl) labelEl.textContent = 'Volver a la era';
-          if (bar) bar.setAttribute('data-has-return', 'era');
+        function show(href, label, kind) {
+          extra.setAttribute('href', href);
+          if (labelEl) labelEl.textContent = label;
+          extra.removeAttribute('hidden');
+          if (bar) bar.setAttribute('data-has-return', kind);
         }
 
         // Priority 1: explicit ?from=eraId/event-eventId query param.
@@ -145,12 +152,12 @@ const yearsLivedLabel: string =
           if (from) {
             var parts = from.split('/');
             if (parts.length === 2 && parts[0] && parts[1].indexOf('event-') === 0) {
-              applyEventReturn(parts[0], parts[1].slice('event-'.length));
+              show('/era/' + parts[0] + '#' + parts[1], 'Volver al evento', 'event');
               return;
             }
             // Just an era id, no event anchor
             if (parts.length === 1 && parts[0]) {
-              applyEraReturn(parts[0]);
+              show('/era/' + parts[0], 'Volver a la era', 'era');
               return;
             }
           }
@@ -165,7 +172,7 @@ const yearsLivedLabel: string =
             if (refUrl.origin === window.location.origin) {
               var m = refUrl.pathname.match(/^\/era\/([^\/]+)\/?$/);
               if (m) {
-                applyEraReturn(m[1]);
+                show('/era/' + m[1], 'Volver a la era', 'era');
                 return;
               }
             }
@@ -296,8 +303,15 @@ const yearsLivedLabel: string =
 </BaseLayout>
 
 <style>
-  /* Default (desktop): inline back-link, generous breathing room below. */
+  /* Default (desktop): inline back-link, generous breathing room below.
+     `gap` + `flex-wrap` lets the secondary "Volver al evento" pill sit
+     next to the plain "Volver a personajes" link, or wrap below on
+     narrow screens. */
   .back-link-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
     margin-bottom: 2rem;
   }
 
@@ -321,8 +335,8 @@ const yearsLivedLabel: string =
       opacity: 1;
       min-height: 44px;
     }
-    .back-link-bar[data-has-return] .back-link {
-      color: var(--era-accent, currentColor);
+    .back-link-bar .event-return-link {
+      min-height: 44px;
     }
   }
 </style>
